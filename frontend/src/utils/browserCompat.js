@@ -313,7 +313,29 @@ export const loadPolyfills = async () => {
   // IntersectionObserver polyfill
   if (!featureDetection.supportsIntersectionObserver()) {
     polyfills.push(
-      import('intersection-observer').catch(() => {
+      // Provide a simple fallback instead of importing the polyfill
+      Promise.resolve().then(() => {
+        if (!window.IntersectionObserver) {
+          // Simple fallback that immediately triggers callback
+          window.IntersectionObserver = class {
+            constructor(callback) {
+              this.callback = callback;
+            }
+            observe(element) {
+              // Immediately trigger callback with visible entry
+              setTimeout(() => {
+                this.callback([{
+                  target: element,
+                  isIntersecting: true,
+                  intersectionRatio: 1
+                }]);
+              }, 0);
+            }
+            unobserve() {}
+            disconnect() {}
+          };
+        }
+      }).catch(() => {
         console.warn('Failed to load IntersectionObserver polyfill');
       })
     );

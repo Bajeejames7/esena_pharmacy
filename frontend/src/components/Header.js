@@ -1,7 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
-import { useTheme } from '../contexts/ThemeContext';
 import ThemeToggle from './ThemeToggle';
 
 /**
@@ -12,13 +11,12 @@ import ThemeToggle from './ThemeToggle';
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
-  const { cart } = useCart();
-  const { isDark } = useTheme();
+  const { itemCount } = useCart();
   const location = useLocation();
   const dropdownRef = useRef(null);
 
-  // Calculate total items in cart
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  // Use the pre-calculated item count
+  const totalItems = itemCount || 0;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -211,41 +209,52 @@ const Header = () => {
 
           {/* Right side items */}
           <div className="flex items-center space-x-3">
-            {/* Theme Toggle */}
-            <ThemeToggle />
+            {/* Theme Toggle - More prominent */}
+            <div className="order-2 lg:order-1">
+              <ThemeToggle showLabel={true} />
+            </div>
 
             {/* Cart Icon */}
-            <Link
-              to="/shop"
-              className="relative p-2 glass-button rounded-lg focus:outline-none focus:ring-2 focus:ring-glass-blue/50"
-              aria-label={`Shopping cart with ${totalItems} items`}
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
-              </svg>
-              {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                  {totalItems > 99 ? '99+' : totalItems}
-                </span>
-              )}
-            </Link>
+            <div className="order-1 lg:order-2">
+              <Link
+                to="/shop"
+                className={`relative p-3 rounded-xl hover:scale-105 transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-glass-blue/50 ${
+                  totalItems > 0 ? 'glass-button' : 'hover:bg-white/10 dark:hover:bg-slate-700/30'
+                }`}
+                aria-label={`Shopping cart with ${totalItems} items`}
+              >
+                {/* Modern shopping bag icon */}
+                <svg className="w-6 h-6 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 10H6L5 9z" />
+                </svg>
+                
+                {/* Cart count badge - only show when items exist */}
+                {totalItems > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg animate-pulse">
+                    {totalItems > 99 ? '99+' : totalItems}
+                  </span>
+                )}
+              </Link>
+            </div>
 
             {/* Mobile menu button */}
-            <button
-              onClick={toggleMobileMenu}
-              onKeyDown={(e) => handleKeyDown(e, toggleMobileMenu)}
-              className="lg:hidden p-2 glass-button rounded-lg focus:outline-none focus:ring-2 focus:ring-glass-blue/50"
-              aria-expanded={isMobileMenuOpen}
-              aria-label="Toggle mobile menu"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {isMobileMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
+            <div className="lg:hidden">
+              <button
+                onClick={toggleMobileMenu}
+                onKeyDown={(e) => handleKeyDown(e, toggleMobileMenu)}
+                className="p-3 glass-button rounded-xl hover:scale-105 transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-glass-blue/50"
+                aria-expanded={isMobileMenuOpen}
+                aria-label="Toggle mobile menu"
+              >
+                <svg className="w-6 h-6 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {isMobileMenuOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -340,6 +349,18 @@ const Header = () => {
               <Link to="/shop" className={navLinkClass('/shop')}>
                 Shop
               </Link>
+
+              {/* Theme Toggle in Mobile Menu */}
+              <div className="pt-4 mt-4 border-t border-white/20 dark:border-slate-600/30">
+                <div className="px-4 py-2">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-3 block">
+                    Theme Settings
+                  </span>
+                  <div className="flex justify-center">
+                    <ThemeToggle showLabel={false} />
+                  </div>
+                </div>
+              </div>
             </nav>
           </div>
         )}

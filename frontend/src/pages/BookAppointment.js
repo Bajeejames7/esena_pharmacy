@@ -125,8 +125,8 @@ const BookAppointment = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="text-gray-800 mb-4">Appointment Booked Successfully!</h1>
-            <p className="text-gray-600 mb-6">
+            <h1 className="text-gray-800 dark:text-white mb-4">Appointment Booked Successfully!</h1>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
               Your appointment has been scheduled. We'll send you a confirmation email with all the details.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -154,7 +154,7 @@ const BookAppointment = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Appointment Form */}
           <GlassCard className="p-8">
-            <h1 className="text-gray-800 mb-6">Book an Appointment</h1>
+            <h1 className="text-gray-800 dark:text-white mb-6">Book an Appointment</h1>
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -262,15 +262,15 @@ const BookAppointment = () => {
           {/* Information Panel */}
           <div className="space-y-6">
             <GlassCard className="p-6">
-              <h2 className="text-gray-800 mb-4">Our Services</h2>
+              <h2 className="text-gray-800 dark:text-white mb-4">Our Services</h2>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
                   <div className="w-8 h-8 bg-gradient-to-br from-glass-blue to-glass-green rounded-lg flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-sm">👩‍⚕️</span>
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-800">Dermatology Consultation</h3>
-                    <p className="text-gray-600 text-sm">Skin health assessment and treatment recommendations</p>
+                    <h3 className="font-medium text-gray-800 dark:text-white">Dermatology Consultation</h3>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm">Skin health assessment and treatment recommendations</p>
                   </div>
                 </div>
                 
@@ -279,8 +279,8 @@ const BookAppointment = () => {
                     <span className="text-white text-sm">🔬</span>
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-800">Lab Tests</h3>
-                    <p className="text-gray-600 text-sm">Blood work, urine tests, and health screenings</p>
+                    <h3 className="font-medium text-gray-800 dark:text-white">Lab Tests</h3>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm">Blood work, urine tests, and health screenings</p>
                   </div>
                 </div>
                 
@@ -289,8 +289,8 @@ const BookAppointment = () => {
                     <span className="text-white text-sm">💊</span>
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-800">Pharmacist Consultation</h3>
-                    <p className="text-gray-600 text-sm">Medication reviews and health advice</p>
+                    <h3 className="font-medium text-gray-800 dark:text-white">Pharmacist Consultation</h3>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm">Medication reviews and health advice</p>
                   </div>
                 </div>
                 
@@ -299,30 +299,30 @@ const BookAppointment = () => {
                     <span className="text-white text-sm">💉</span>
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-800">Vaccinations</h3>
-                    <p className="text-gray-600 text-sm">Flu shots, travel vaccines, and immunizations</p>
+                    <h3 className="font-medium text-gray-800 dark:text-white">Vaccinations</h3>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm">Flu shots, travel vaccines, and immunizations</p>
                   </div>
                 </div>
               </div>
             </GlassCard>
             
             <GlassCard className="p-6">
-              <h2 className="text-gray-800 mb-4">Appointment Information</h2>
-              <div className="space-y-3 text-gray-600">
+              <h2 className="text-gray-800 dark:text-white mb-4">Appointment Information</h2>
+              <div className="space-y-3 text-gray-600 dark:text-gray-300">
                 <div className="flex items-center space-x-2">
-                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <span>Appointments available Monday-Saturday</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <span>Confirmation email sent within 1 hour</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                   <span>Call (555) 123-4567 for urgent appointments</span>

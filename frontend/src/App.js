@@ -97,13 +97,14 @@ function App() {
               <Route path="/products/:id" element={<ProductDetails />} />
               <Route path="/supplements" element={<Supplements />} />
               <Route path="/personal-care" element={<PersonalCare />} />
-              <Route path="/appointments" element={<BookAppointment />} />
+              <Route path="/book-appointment" element={<BookAppointment />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/shop" element={<Shop />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order-success" element={<OrderSuccess />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/track/:token" element={<TrackOrder />} />
+              <Route path="/track-order" element={<TrackOrder />} />
               
               {/* Admin Routes */}
               <Route path="/admin/login" element={<AdminLogin />} />

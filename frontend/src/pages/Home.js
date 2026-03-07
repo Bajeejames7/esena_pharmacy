@@ -44,7 +44,7 @@ const Home = () => {
     { name: 'Prescription Medications', link: '/products', icon: '💊' },
     { name: 'Health Supplements', link: '/supplements', icon: '🌿' },
     { name: 'Personal Care', link: '/personal-care', icon: '🧴' },
-    { name: 'Health Consultations', link: '/appointments', icon: '👩‍⚕️' }
+    { name: 'Health Consultations', link: '/book-appointment', icon: '👩‍⚕️' }
   ];
 
   return (
@@ -68,7 +68,7 @@ const Home = () => {
                 Browse Products
               </Link>
               <Link
-                to="/appointments"
+                to="/book-appointment"
                 className="glass-button-secondary inline-flex items-center justify-center"
               >
                 Book Appointment

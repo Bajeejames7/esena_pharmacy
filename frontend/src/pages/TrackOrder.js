@@ -172,8 +172,8 @@ const TrackOrder = () => {
       <div className="max-w-6xl mx-auto px-4">
         {/* Page Header */}
         <GlassCard className="p-8 text-center mb-8">
-          <h1 className="text-gray-800 mb-4">Track Your Order</h1>
-          <p className="text-gray-600">
+          <h1 className="text-gray-800 dark:text-white mb-4">Track Your Order</h1>
+          <p className="text-gray-600 dark:text-gray-300">
             Enter your tracking token to view your order status and delivery information.
           </p>
         </GlassCard>
@@ -204,9 +204,9 @@ const TrackOrder = () => {
             </form>
 
             {/* Demo Instructions */}
-            <div className="mt-8 p-4 bg-blue-50/50 border border-blue-200 rounded-lg">
-              <h3 className="font-medium text-blue-800 mb-2">Demo Instructions</h3>
-              <p className="text-blue-700 text-sm">
+            <div className="mt-8 p-4 bg-blue-50/50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg">
+              <h3 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Demo Instructions</h3>
+              <p className="text-blue-700 dark:text-blue-300 text-sm">
                 Try entering any token (at least 5 characters) to see a demo order, 
                 or use "notfound" to test error handling.
               </p>
@@ -222,7 +222,7 @@ const TrackOrder = () => {
               {/* Status Card */}
               <GlassCard className="p-6 mb-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-gray-800">Order Status</h2>
+                  <h2 className="text-gray-800 dark:text-white">Order Status</h2>
                   <GlassButton
                     variant="secondary"
                     size="sm"
@@ -244,27 +244,27 @@ const TrackOrder = () => {
                     <p className={`text-xl font-semibold capitalize ${getStatusInfo(orderData.status).color}`}>
                       {orderData.status}
                     </p>
-                    <p className="text-gray-600">{getStatusInfo(orderData.status).message}</p>
+                    <p className="text-gray-600 dark:text-gray-300">{getStatusInfo(orderData.status).message}</p>
                   </div>
                 </div>
 
                 {/* Order Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-white/10 rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-white/10 dark:bg-slate-700/30 rounded-lg">
                   <div>
-                    <p className="text-gray-600 text-sm">Order ID</p>
-                    <p className="font-mono text-gray-800">{orderData.id}</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">Order ID</p>
+                    <p className="font-mono text-gray-800 dark:text-white">{orderData.id}</p>
                   </div>
                   <div>
-                    <p className="text-gray-600 text-sm">Tracking Token</p>
-                    <p className="font-mono text-gray-800">{orderData.token}</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">Tracking Token</p>
+                    <p className="font-mono text-gray-800 dark:text-white">{orderData.token}</p>
                   </div>
                   <div>
-                    <p className="text-gray-600 text-sm">Order Date</p>
-                    <p className="text-gray-800">{new Date(orderData.createdAt).toLocaleDateString()}</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">Order Date</p>
+                    <p className="text-gray-800 dark:text-white">{new Date(orderData.createdAt).toLocaleDateString()}</p>
                   </div>
                   <div>
-                    <p className="text-gray-600 text-sm">Estimated Delivery</p>
-                    <p className="text-gray-800">
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">Estimated Delivery</p>
+                    <p className="text-gray-800 dark:text-white">
                       {orderData.status === 'delivered' 
                         ? 'Delivered' 
                         : new Date(orderData.estimatedDelivery).toLocaleDateString()
@@ -275,7 +275,7 @@ const TrackOrder = () => {
 
                 {/* Status Timeline */}
                 <div className="space-y-4">
-                  <h3 className="font-medium text-gray-800">Order Timeline</h3>
+                  <h3 className="font-medium text-gray-800 dark:text-white">Order Timeline</h3>
                   <div className="space-y-3">
                     {getStatusTimeline(orderData.status).map((step, index) => (
                       <div key={step.key} className="flex items-center space-x-4">
@@ -284,18 +284,18 @@ const TrackOrder = () => {
                             ? 'bg-green-500 text-white' 
                             : step.active 
                               ? 'bg-blue-500 text-white'
-                              : 'bg-gray-200 text-gray-500'
+                              : 'bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400'
                         }`}>
                           {step.completed ? '✓' : index + 1}
                         </div>
                         <div className="flex-1">
                           <p className={`font-medium ${
-                            step.completed || step.active ? 'text-gray-800' : 'text-gray-500'
+                            step.completed || step.active ? 'text-gray-800 dark:text-white' : 'text-gray-500 dark:text-gray-400'
                           }`}>
                             {step.label}
                           </p>
                           <p className={`text-sm ${
-                            step.completed || step.active ? 'text-gray-600' : 'text-gray-400'
+                            step.completed || step.active ? 'text-gray-600 dark:text-gray-300' : 'text-gray-400 dark:text-gray-500'
                           }`}>
                             {step.description}
                           </p>
@@ -308,25 +308,25 @@ const TrackOrder = () => {
 
               {/* Order Items */}
               <GlassCard className="p-6">
-                <h3 className="font-medium text-gray-800 mb-4">Order Items</h3>
+                <h3 className="font-medium text-gray-800 dark:text-white mb-4">Order Items</h3>
                 <div className="space-y-3">
                   {orderData.items.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-4 bg-white/10 rounded-lg">
+                    <div key={item.id} className="flex items-center justify-between p-4 bg-white/10 dark:bg-slate-700/30 rounded-lg">
                       <div className="flex items-center space-x-4">
                         <div className="w-12 h-12 bg-gradient-to-br from-glass-blue/20 to-glass-green/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs text-gray-500">IMG</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">IMG</span>
                         </div>
                         <div>
-                          <p className="font-medium text-gray-800">{item.name}</p>
-                          <p className="text-gray-600 text-sm">{item.category}</p>
-                          <p className="text-gray-600 text-sm">Quantity: {item.quantity}</p>
+                          <p className="font-medium text-gray-800 dark:text-white">{item.name}</p>
+                          <p className="text-gray-600 dark:text-gray-300 text-sm">{item.category}</p>
+                          <p className="text-gray-600 dark:text-gray-300 text-sm">Quantity: {item.quantity}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-gray-800">
+                        <p className="font-semibold text-gray-800 dark:text-white">
                           ${(item.price * item.quantity).toFixed(2)}
                         </p>
-                        <p className="text-gray-600 text-sm">
+                        <p className="text-gray-600 dark:text-gray-300 text-sm">
                           ${item.price.toFixed(2)} each
                         </p>
                       </div>
@@ -340,7 +340,7 @@ const TrackOrder = () => {
             <div className="space-y-6">
               {/* Order Summary */}
               <GlassCard className="p-6">
-                <h3 className="font-medium text-gray-800 mb-4">Order Summary</h3>
+                <h3 className="font-medium text-gray-800 dark:text-white mb-4">Order Summary</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
@@ -367,15 +367,15 @@ const TrackOrder = () => {
 
               {/* Customer Information */}
               <GlassCard className="p-6">
-                <h3 className="font-medium text-gray-800 mb-4">Delivery Information</h3>
-                <div className="space-y-3 text-gray-600">
+                <h3 className="font-medium text-gray-800 dark:text-white mb-4">Delivery Information</h3>
+                <div className="space-y-3 text-gray-600 dark:text-gray-300">
                   <div>
-                    <p className="font-medium text-gray-800">{orderData.customer.name}</p>
+                    <p className="font-medium text-gray-800 dark:text-white">{orderData.customer.name}</p>
                     <p className="text-sm">{orderData.customer.email}</p>
                     <p className="text-sm">{orderData.customer.phone}</p>
                   </div>
-                  <div className="pt-2 border-t border-white/20">
-                    <p className="font-medium text-gray-700 mb-1">Delivery Address</p>
+                  <div className="pt-2 border-t border-white/20 dark:border-slate-600/30">
+                    <p className="font-medium text-gray-700 dark:text-gray-200 mb-1">Delivery Address</p>
                     <p className="text-sm">{orderData.customer.address}</p>
                   </div>
                 </div>
@@ -383,22 +383,22 @@ const TrackOrder = () => {
 
               {/* Help Section */}
               <GlassCard className="p-6">
-                <h3 className="font-medium text-gray-800 mb-4">Need Help?</h3>
-                <div className="space-y-3 text-gray-600 text-sm">
+                <h3 className="font-medium text-gray-800 dark:text-white mb-4">Need Help?</h3>
+                <div className="space-y-3 text-gray-600 dark:text-gray-300 text-sm">
                   <div className="flex items-center space-x-2">
-                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
                     <span>Call us: (555) 123-4567</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                     <span>Email: support@esenapharmacy.com</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
                     <span>Live chat available 24/7</span>

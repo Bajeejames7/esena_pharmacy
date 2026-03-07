@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 /**
  * Theme Context for managing dark/light mode across the application
  * Provides theme state and toggle functionality with localStorage persistence
+ * Enhanced with better system preference handling and responsive behavior
  */
 
 const ThemeContext = createContext();
@@ -20,7 +21,7 @@ export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('esena-theme');
-      if (savedTheme) {
+      if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
         return savedTheme;
       }
       
@@ -30,6 +31,17 @@ export const ThemeProvider = ({ children }) => {
       }
     }
     return 'light';
+  });
+
+  const [systemPreference, setSystemPreference] = useState(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'light';
+  });
+
+  const [isUsingSystemPreference, setIsUsingSystemPreference] = useState(() => {
+    return !localStorage.getItem('esena-theme');
   });
 
   // Apply theme to document root
@@ -42,35 +54,58 @@ export const ThemeProvider = ({ children }) => {
       root.classList.remove('dark');
     }
     
-    // Save to localStorage
-    localStorage.setItem('esena-theme', theme);
-  }, [theme]);
+    // Save to localStorage only if user manually set it
+    if (!isUsingSystemPreference) {
+      localStorage.setItem('esena-theme', theme);
+    }
+  }, [theme, isUsingSystemPreference]);
 
   // Listen for system theme changes
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && window.matchMedia) {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       
       const handleChange = (e) => {
-        // Only auto-switch if user hasn't manually set a preference
-        const savedTheme = localStorage.getItem('esena-theme');
-        if (!savedTheme) {
-          setTheme(e.matches ? 'dark' : 'light');
+        const newSystemPreference = e.matches ? 'dark' : 'light';
+        setSystemPreference(newSystemPreference);
+        
+        // Only auto-switch if user is using system preference
+        if (isUsingSystemPreference) {
+          setTheme(newSystemPreference);
         }
       };
 
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
     }
-  }, []);
+  }, [isUsingSystemPreference]);
 
   const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    setIsUsingSystemPreference(false);
+    localStorage.setItem('esena-theme', newTheme);
+  };
+
+  const switchToSystemTheme = () => {
+    setIsUsingSystemPreference(true);
+    setTheme(systemPreference);
+    localStorage.removeItem('esena-theme');
+  };
+
+  const switchToManualTheme = (newTheme) => {
+    setTheme(newTheme);
+    setIsUsingSystemPreference(false);
+    localStorage.setItem('esena-theme', newTheme);
   };
 
   const value = {
     theme,
+    systemPreference,
+    isUsingSystemPreference,
     toggleTheme,
+    switchToSystemTheme,
+    switchToManualTheme,
     isDark: theme === 'dark',
     isLight: theme === 'light'
   };
