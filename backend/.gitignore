@@ -1,0 +1,91 @@
+# Backend specific ignores
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dependencies
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Build directory
+build/
+dist/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# File uploads directory
+uploads/
+public/uploads/
+
+# SSL certificates and keys
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Session store
+sessions/
+
+# Cache
+.cache/
+
+# Temporary files
+tmp/
+temp/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Test files
+test-results/
+
+# Backup files
+*.bak
+
+# Local configuration
+config/local.js
+config/local.json
+
+# PM2 logs
+.pm2/
+
+# Docker
+.dockerignore
+Dockerfile.dev
+
+# Email templates cache
+.email-cache/

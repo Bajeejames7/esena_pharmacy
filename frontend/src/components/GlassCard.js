@@ -53,14 +53,17 @@ const GlassCard = ({
       className={`${baseClasses} ${hoverClasses} ${interactiveClasses} ${className}`}
       style={backgroundStyle}
       onClick={onClick}
-      role={onClick ? 'button' : undefined}
-      tabIndex={onClick ? 0 : undefined}
+      role={onClick ? 'button' : props.role}
+      tabIndex={onClick ? 0 : props.tabIndex}
+      aria-label={props['aria-label']}
+      aria-labelledby={props['aria-labelledby']}
+      aria-describedby={props['aria-describedby']}
       onKeyDown={onClick ? (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           onClick(e);
         }
-      } : undefined}
+      } : props.onKeyDown}
       {...props}
     >
       {children}

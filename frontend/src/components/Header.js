@@ -103,8 +103,10 @@ const Header = ({ transparent = false, fixed = true }) => {
             {breakpoint === 'mobile' && (
               <button
                 onClick={toggleMenu}
-                className="md:hidden p-2 rounded-lg hover:bg-white/20 transition-colors duration-200"
-                aria-label="Toggle menu"
+                className="md:hidden p-2 rounded-lg hover:bg-white/20 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-glass-blue/50"
+                aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                aria-expanded={isMenuOpen}
+                aria-controls="mobile-menu"
               >
                 <svg
                   className="w-6 h-6 text-gray-700"
@@ -163,7 +165,12 @@ const Header = ({ transparent = false, fixed = true }) => {
 
           {/* Mobile Menu */}
           {breakpoint === 'mobile' && isMenuOpen && (
-            <div className="mt-4 pt-4 border-t border-white/20">
+            <div 
+              id="mobile-menu"
+              className="mt-4 pt-4 border-t border-white/20"
+              role="menu"
+              aria-label="Mobile navigation menu"
+            >
               <div className="space-y-2">
                 {navigation.map((item) => (
                   <Link

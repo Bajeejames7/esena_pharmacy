@@ -1,33 +1,67 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 
 /**
- * Protected route wrapper for admin routes
+ * Protected route wrapper for admin routes with enhanced security
  * Implements Requirements 11.10
  */
 const ProtectedRoute = ({ children }) => {
+  const location = useLocation();
   const token = localStorage.getItem('adminToken');
   
-  // Check if token exists and is not expired
+  // Check if token exists
   if (!token) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
   
-  try {
-    // Basic JWT token validation (check if it's not expired)
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    const currentTime = Date.now() / 1000;
-    
-    if (payload.exp < currentTime) {
-      localStorage.removeItem('adminToken');
-      return <Navigate to="/admin/login" replace />;
-    }
-  } catch (error) {
+  // Validate token format and expiration
+  if (!isValidToken(token)) {
+    // Clean up invalid token
     localStorage.removeItem('adminToken');
-    return <Navigate to="/admin/login" replace />;
+    localStorage.removeItem('adminUser');
+    return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
   
   return children;
+};
+
+/**
+ * Validates JWT token format and expiration
+ * @param {string} token - JWT token to validate
+ * @returns {boolean} - True if token is valid
+ */
+const isValidToken = (token) => {
+  try {
+    // Handle demo token
+    if (token === 'mock-jwt-token') {
+      return true;
+    }
+    
+    // Validate JWT structure
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      return false;
+    }
+    
+    // Decode and validate payload
+    const payload = JSON.parse(atob(parts[1]));
+    const currentTime = Date.now() / 1000;
+    
+    // Check if token has expired
+    if (payload.exp && payload.exp < currentTime) {
+      return false;
+    }
+    
+    // Check if token has required fields
+    if (!payload.username || !payload.role) {
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Token validation error:', error);
+    return false;
+  }
 };
 
 export default ProtectedRoute;

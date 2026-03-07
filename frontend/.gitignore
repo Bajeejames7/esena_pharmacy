@@ -1,0 +1,120 @@
+# Frontend specific ignores
+
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+
+# Production build
+/build
+/dist
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Storybook build outputs
+storybook-static
+
+# Temporary folders
+.tmp
+.temp
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+# React specific
+.eslintcache
+
+# Tailwind CSS
+/src/styles/tailwind.css
+
+# Bundle analyzer
+bundle-analyzer-report.html
+
+# Service worker
+sw.js
+sw.js.map
+workbox-*.js
+workbox-*.js.map
+
+# PWA
+manifest.json
+
+# Sentry
+.sentryclirc
+
+# Webpack Bundle Analyzer
+webpack-bundle-analyzer-report.html
+
+# TypeScript
+*.tsbuildinfo
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
+
+# Jest
+jest_html_reporters.html
+
+# Lighthouse CI
+.lighthouseci/
+
+# Performance budgets
+lighthouse-budget.json

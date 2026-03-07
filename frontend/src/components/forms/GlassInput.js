@@ -21,7 +21,7 @@ const GlassInput = ({
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
-  const inputId = id || name || `input-${Math.random().toString(36).substr(2, 9)}`;
+  const inputId = id || name || `input-${Math.random().toString(36).slice(2, 11)}`;
 
   const handleFocus = () => {
     setIsFocused(true);
