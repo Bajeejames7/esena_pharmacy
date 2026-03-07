@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const { logger } = require("../utils/logger");
 
 // Valid product categories
 const VALID_CATEGORIES = ['Prescription', 'OTC', 'Chronic', 'Supplements', 'PersonalCare'];
@@ -96,6 +97,11 @@ exports.createProduct = async (req, res) => {
     // Validate product data
     const validationErrors = validateProductData({ name, category, price, stock });
     if (validationErrors.length > 0) {
+      logger.warn('Product creation validation failed', {
+        errors: validationErrors,
+        userId: req.user?.userId,
+        productData: { name, category, price, stock }
+      });
       return res.status(400).json({ 
         message: "Validation failed", 
         errors: validationErrors 
@@ -112,21 +118,33 @@ exports.createProduct = async (req, res) => {
       [name, category, parseFloat(price), description || null, image, video, parseInt(stock)]
     );
     
+    const newProduct = {
+      id: result.insertId,
+      name,
+      category,
+      price: parseFloat(price),
+      description,
+      image,
+      video,
+      stock: parseInt(stock)
+    };
+    
+    // Log successful product creation
+    logger.audit('PRODUCT_CREATED', {
+      productId: result.insertId,
+      productData: newProduct
+    }, req);
+    
     res.status(201).json({ 
       id: result.insertId, 
       message: "Product created successfully",
-      product: {
-        id: result.insertId,
-        name,
-        category,
-        price: parseFloat(price),
-        description,
-        image,
-        video,
-        stock: parseInt(stock)
-      }
+      product: newProduct
     });
   } catch (error) {
+    logger.error('Error creating product', error, {
+      userId: req.user?.userId,
+      productData: req.body
+    });
     console.error("Error creating product:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }

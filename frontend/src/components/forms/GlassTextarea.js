@@ -50,7 +50,7 @@ const GlassTextarea = forwardRef(({
       {label && (
         <label 
           htmlFor={textareaId}
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-200"
         >
           {label}
           {required && <span className="text-red-500 ml-1" aria-label="required">*</span>}
@@ -82,7 +82,7 @@ const GlassTextarea = forwardRef(({
       <div className="flex justify-between items-center">
         <div className="flex-1">
           {helperText && !error && (
-            <p id={helperId} className="text-sm text-gray-600">
+            <p id={helperId} className="text-sm text-gray-600 dark:text-gray-300">
               {helperText}
             </p>
           )}
@@ -90,7 +90,7 @@ const GlassTextarea = forwardRef(({
           {error && (
             <p 
               id={errorId}
-              className="text-sm text-red-600"
+              className="text-sm text-red-600 dark:text-red-400"
               role="alert"
             >
               {error}
@@ -100,7 +100,7 @@ const GlassTextarea = forwardRef(({
         
         {maxLength && (
           <p 
-            className={`text-sm ml-4 ${isOverLimit ? 'text-red-500' : 'text-gray-500'}`}
+            className={`text-sm ml-4 ${isOverLimit ? 'text-red-500 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}
             aria-live="polite"
             aria-label={`Character count: ${characterCount} of ${maxLength}`}
           >

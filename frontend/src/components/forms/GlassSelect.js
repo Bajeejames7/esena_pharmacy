@@ -48,7 +48,7 @@ const GlassSelect = forwardRef(({
       {label && (
         <label 
           htmlFor={selectId}
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-200"
         >
           {label}
           {required && <span className="text-red-500 ml-1" aria-label="required">*</span>}
@@ -95,7 +95,7 @@ const GlassSelect = forwardRef(({
         {/* Custom dropdown arrow */}
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
           <svg 
-            className="w-5 h-5 text-gray-400" 
+            className="w-5 h-5 text-gray-400 dark:text-gray-500" 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
@@ -108,7 +108,7 @@ const GlassSelect = forwardRef(({
       
       {/* Helper text */}
       {helperText && !error && (
-        <p id={helperId} className="text-sm text-gray-600">
+        <p id={helperId} className="text-sm text-gray-600 dark:text-gray-300">
           {helperText}
         </p>
       )}
@@ -117,7 +117,7 @@ const GlassSelect = forwardRef(({
       {error && (
         <p 
           id={errorId}
-          className="text-sm text-red-600"
+          className="text-sm text-red-600 dark:text-red-400"
           role="alert"
         >
           {error}

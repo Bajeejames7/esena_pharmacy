@@ -11,6 +11,11 @@ describe("JWT Authentication Middleware", () => {
   beforeEach(() => {
     req = {
       header: jest.fn(),
+      get: jest.fn(),
+      ip: '::ffff:127.0.0.1',
+      path: '/test',
+      method: 'GET',
+      headers: {}
     };
     res = {
       status: jest.fn().mockReturnThis(),
@@ -88,6 +93,7 @@ describe("JWT Authentication Middleware", () => {
             expect(next).not.toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(401);
             expect(res.json).toHaveBeenCalledWith({
+              error: "Authentication failed",
               message: "Invalid authorization header format",
             });
           }
@@ -119,7 +125,8 @@ describe("JWT Authentication Middleware", () => {
             expect(next).not.toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(401);
             expect(res.json).toHaveBeenCalledWith({
-              message: "Invalid token signature",
+              error: "Invalid token",
+              message: "Authentication token is invalid",
             });
           }
         ),
@@ -149,7 +156,8 @@ describe("JWT Authentication Middleware", () => {
       expect(next).not.toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({
-        message: "Token has expired",
+        error: "Token expired",
+        message: "Your session has expired. Please log in again.",
       });
     });
 
@@ -166,7 +174,8 @@ describe("JWT Authentication Middleware", () => {
           expect(next).not.toHaveBeenCalled();
           expect(res.status).toHaveBeenCalledWith(401);
           expect(res.json).toHaveBeenCalledWith({
-            message: "No token, authorization denied",
+            error: "Authentication required",
+            message: "No authorization token provided",
           });
         }),
         { numRuns: 10 }
@@ -189,12 +198,12 @@ describe("JWT Authentication Middleware", () => {
             // Assertions: Should reject due to malformed token
             expect(next).not.toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(401);
-            // Should return either invalid signature or verification failed
+            // Should return either invalid token or verification failed
             expect(res.json).toHaveBeenCalled();
             const errorMessage = res.json.mock.calls[0][0].message;
             expect(
-              errorMessage === "Invalid token signature" ||
-                errorMessage === "Token verification failed"
+              errorMessage === "Authentication token is invalid" ||
+                errorMessage === "No authorization token provided"
             ).toBe(true);
           }
         ),
@@ -213,7 +222,8 @@ describe("JWT Authentication Middleware", () => {
       expect(next).not.toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({
-        message: "No token, authorization denied",
+        error: "Authentication required",
+        message: "No authorization token provided",
       });
     });
 

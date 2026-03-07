@@ -115,32 +115,32 @@ const ProductCard = ({
       {/* Product Content */}
       <div className={contentClasses[layout]}>
         {/* Product Name */}
-        <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">
+        <h3 className="font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2">
           {product.name}
         </h3>
 
         {/* Category */}
         {product.category && (
-          <p className="text-sm text-gray-500 mb-2" aria-label={`Category: ${product.category}`}>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-2" aria-label={`Category: ${product.category}`}>
             {product.category}
           </p>
         )}
 
         {/* Description */}
         {product.description && (
-          <p className="text-gray-600 text-sm mb-3 line-clamp-2" aria-label={`Description: ${product.description}`}>
+          <p className="text-gray-600 dark:text-gray-300 text-sm mb-3 line-clamp-2" aria-label={`Description: ${product.description}`}>
             {product.description}
           </p>
         )}
 
         {/* Stock Info with proper status indicators */}
-        <div className="text-xs text-gray-500 mb-3" role="status">
+        <div className="text-xs text-gray-500 dark:text-gray-400 mb-3" role="status">
           {isOutOfStock ? (
-            <span className="text-red-600 font-medium" aria-label="Product is out of stock">
+            <span className="text-red-600 dark:text-red-400 font-medium" aria-label="Product is out of stock">
               Out of Stock
             </span>
           ) : isLowStock ? (
-            <span className="text-orange-600 font-medium" aria-label={`Low stock: only ${product.stock} items remaining`}>
+            <span className="text-orange-600 dark:text-orange-400 font-medium" aria-label={`Low stock: only ${product.stock} items remaining`}>
               Only {product.stock} left
             </span>
           ) : (
@@ -153,11 +153,11 @@ const ProductCard = ({
         {/* Price and Actions */}
         <div className="flex justify-between items-center mt-auto">
           <div className="flex flex-col" role="group" aria-label="Product pricing">
-            <span className="text-lg font-bold text-gray-800" aria-label={`Current price: $${product.price.toFixed(2)}`}>
+            <span className="text-lg font-bold text-gray-800 dark:text-white" aria-label={`Current price: $${product.price.toFixed(2)}`}>
               ${product.price.toFixed(2)}
             </span>
             {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-sm text-gray-500 line-through" aria-label={`Original price: $${product.originalPrice.toFixed(2)}`}>
+              <span className="text-sm text-gray-500 dark:text-gray-400 line-through" aria-label={`Original price: $${product.originalPrice.toFixed(2)}`}>
                 ${product.originalPrice.toFixed(2)}
               </span>
             )}

@@ -53,10 +53,10 @@ const Home = () => {
       <section className="px-4 mb-16">
         <div className="max-w-6xl mx-auto">
           <GlassCard className="p-8 md:p-12 text-center">
-            <h1 className="mb-6 text-gray-800">
+            <h1 className="mb-6 text-gray-800 dark:text-white">
               Welcome to Esena Pharmacy
             </h1>
-            <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
               Your trusted healthcare partner providing quality medications, 
               professional consultations, and personalized care for your wellness journey.
             </p>
@@ -90,8 +90,8 @@ const Home = () => {
                 <div className="w-16 h-16 bg-gradient-to-br from-glass-blue to-glass-green rounded-full flex items-center justify-center mx-auto mb-4">
                   {feature.icon}
                 </div>
-                <h3 className="text-gray-800 mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+                <h3 className="text-gray-800 dark:text-white mb-2">{feature.title}</h3>
+                <p className="text-gray-600 dark:text-gray-300">{feature.description}</p>
               </GlassCard>
             ))}
           </div>
@@ -102,8 +102,8 @@ const Home = () => {
       <section className="px-4 mb-16">
         <div className="max-w-6xl mx-auto">
           <GlassCard className="p-8 mb-8 text-center">
-            <h2 className="text-gray-800 mb-4">Our Services</h2>
-            <p className="text-gray-600">
+            <h2 className="text-gray-800 dark:text-white mb-4">Our Services</h2>
+            <p className="text-gray-600 dark:text-gray-300">
               Comprehensive healthcare solutions tailored to your needs
             </p>
           </GlassCard>
@@ -116,7 +116,7 @@ const Home = () => {
               <Link key={index} to={service.link}>
                 <GlassCard className="p-6 text-center h-full" hover>
                   <div className="text-4xl mb-4">{service.icon}</div>
-                  <h3 className="text-gray-800 font-medium">{service.name}</h3>
+                  <h3 className="text-gray-800 dark:text-white font-medium">{service.name}</h3>
                 </GlassCard>
               </Link>
             ))}
@@ -133,20 +133,20 @@ const Home = () => {
               breakpoint === 'tablet' ? 'grid-cols-2' : 'grid-cols-4'
             }`}>
               <div>
-                <div className="text-3xl font-bold text-gray-800 mb-2">20+</div>
-                <div className="text-gray-600">Years of Service</div>
+                <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2">20+</div>
+                <div className="text-gray-600 dark:text-gray-300">Years of Service</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-gray-800 mb-2">10K+</div>
-                <div className="text-gray-600">Happy Customers</div>
+                <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2">10K+</div>
+                <div className="text-gray-600 dark:text-gray-300">Happy Customers</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-gray-800 mb-2">500+</div>
-                <div className="text-gray-600">Products Available</div>
+                <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2">500+</div>
+                <div className="text-gray-600 dark:text-gray-300">Products Available</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-gray-800 mb-2">24/7</div>
-                <div className="text-gray-600">Customer Support</div>
+                <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2">24/7</div>
+                <div className="text-gray-600 dark:text-gray-300">Customer Support</div>
               </div>
             </div>
           </GlassCard>
@@ -157,10 +157,10 @@ const Home = () => {
       <section className="px-4">
         <div className="max-w-4xl mx-auto">
           <GlassCard className="p-8 text-center">
-            <h2 className="text-gray-800 mb-4">
+            <h2 className="text-gray-800 dark:text-white mb-4">
               Need Help with Your Health?
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
               Our experienced pharmacists are here to help you with medication questions, 
               health consultations, and personalized care recommendations.
             </p>

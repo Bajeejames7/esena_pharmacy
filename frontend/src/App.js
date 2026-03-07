@@ -1,7 +1,10 @@
 import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { CartProvider } from './contexts/CartContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { initPerformanceMonitoring } from './utils/performance';
+import { compatibilityManager } from './utils/browserCompat';
+import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
@@ -44,32 +47,39 @@ function App() {
   useEffect(() => {
     // Initialize performance monitoring
     initPerformanceMonitoring();
+    
+    // Initialize browser compatibility
+    if (!compatibilityManager.initialized) {
+      compatibilityManager.init();
+    }
   }, []);
 
   return (
-    <CartProvider>
-      <Router>
-        {/* Skip Links for keyboard navigation */}
-        <div className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 z-50">
-          <a 
-            href="#main-content" 
-            className="glass-button-primary p-2 m-2 rounded"
-            onFocus={(e) => e.target.classList.remove('sr-only')}
-            onBlur={(e) => e.target.classList.add('sr-only')}
-          >
-            Skip to main content
-          </a>
-          <a 
-            href="#navigation" 
-            className="glass-button-secondary p-2 m-2 rounded ml-2"
-            onFocus={(e) => e.target.classList.remove('sr-only')}
-            onBlur={(e) => e.target.classList.add('sr-only')}
-          >
-            Skip to navigation
-          </a>
-        </div>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <CartProvider>
+          <Router>
+          {/* Skip Links for keyboard navigation */}
+          <div className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 z-50">
+            <a 
+              href="#main-content" 
+              className="glass-button-primary p-2 m-2 rounded"
+              onFocus={(e) => e.target.classList.remove('sr-only')}
+              onBlur={(e) => e.target.classList.add('sr-only')}
+            >
+              Skip to main content
+            </a>
+            <a 
+              href="#navigation" 
+              className="glass-button-secondary p-2 m-2 rounded ml-2"
+              onFocus={(e) => e.target.classList.remove('sr-only')}
+              onBlur={(e) => e.target.classList.add('sr-only')}
+            >
+              Skip to navigation
+            </a>
+          </div>
 
-        <FocusManager>
+          <FocusManager>
           <div className="min-h-screen flex flex-col">
             <Header />
             <main 
@@ -130,6 +140,8 @@ function App() {
         </FocusManager>
       </Router>
     </CartProvider>
+  </ThemeProvider>
+  </ErrorBoundary>
   );
 }
 

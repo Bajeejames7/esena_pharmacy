@@ -1,8 +1,9 @@
 import React from 'react';
+import { useCompatibility } from '../utils/browserCompat';
 
 /**
- * Reusable glassmorphism card component
- * Implements Requirements 1.1, 1.2, 1.3, 1.4, 1.5
+ * Reusable glassmorphism card component with browser compatibility fallbacks
+ * Implements Requirements 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 28.5
  */
 const GlassCard = ({ 
   children, 
@@ -14,6 +15,8 @@ const GlassCard = ({
   interactive = false,
   ...props 
 }) => {
+  const { shouldUseGlassmorphism, getFallbackStyles } = useCompatibility();
+
   // Blur intensity mapping
   const blurClasses = {
     sm: 'backdrop-blur-sm',
@@ -27,23 +30,39 @@ const GlassCard = ({
   // Validate opacity prop (0-1 range)
   const validOpacity = Math.max(0, Math.min(1, opacity));
 
+  // Get fallback styles for unsupported browsers
+  const fallbackStyles = getFallbackStyles();
+
   // Base glass styles - core glassmorphism properties
-  const baseClasses = `
-    ${blurClasses[validBlur]}
-    border border-white/20 
-    rounded-glass 
-    shadow-glass
-    transition-all 
-    duration-300
-  `;
+  const baseClasses = shouldUseGlassmorphism 
+    ? `
+      ${blurClasses[validBlur]}
+      border border-white/20 
+      rounded-glass 
+      shadow-glass
+      transition-all 
+      duration-300
+    `
+    : `
+      border border-gray-200
+      rounded-lg
+      shadow-lg
+      transition-all
+      duration-300
+      bg-white
+    `;
 
   // Background opacity style
-  const backgroundStyle = {
-    backgroundColor: `rgba(255, 255, 255, ${validOpacity})`
-  };
+  const backgroundStyle = shouldUseGlassmorphism 
+    ? { backgroundColor: `rgba(255, 255, 255, ${validOpacity})` }
+    : fallbackStyles;
 
   // Hover classes
-  const hoverClasses = hover ? 'hover:shadow-glass-hover hover:bg-white/15 cursor-pointer' : '';
+  const hoverClasses = hover 
+    ? shouldUseGlassmorphism 
+      ? 'hover:shadow-glass-hover hover:bg-white/15 cursor-pointer'
+      : 'hover:shadow-xl hover:bg-gray-50 cursor-pointer'
+    : '';
 
   // Interactive classes
   const interactiveClasses = (onClick || interactive) ? 'cursor-pointer' : '';

@@ -97,6 +97,17 @@ const mockDb = {
 // Mock the db module
 jest.mock("../config/db", () => mockDb);
 
+// Mock the logger module
+jest.mock("../utils/logger", () => ({
+  logger: {
+    warn: jest.fn(),
+    error: jest.fn(),
+    audit: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn()
+  }
+}));
+
 const {
   getAllProducts,
   getProductById,
