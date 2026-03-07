@@ -121,7 +121,7 @@ The implementation follows a bottom-up approach: database setup → backend API 
     - Apply JWT middleware to protected routes
     - _Requirements: 5.2, 6.1, 7.1_
 
-- [ ] 5. Implement email notification system
+- [x] 5. Implement email notification system
   - [x] 5.1 Configure Nodemailer with SMTP settings
     - Set up email transporter with environment variables
     - Create email templates for orders and appointments
@@ -141,160 +141,160 @@ The implementation follows a bottom-up approach: database setup → backend API 
     - Test that order creation succeeds even if email fails
     - _Requirements: 14.9, 14.10_
 
-- [ ] 6. Implement appointment management backend
-  - [ ] 6.1 Create appointment controller
+- [x] 6. Implement appointment management backend
+  - [x] 6.1 Create appointment controller
     - Implement createAppointment endpoint with validation
     - Validate date is in the future
     - Generate unique token for appointment tracking
     - Insert appointment in database
     - _Requirements: 8.6, 8.7, 8.8, 8.9_
   
-  - [ ] 6.2 Add email notifications to appointment controller
+  - [x] 6.2 Add email notifications to appointment controller
     - Send confirmation email to customer on appointment creation
     - Send notification email to admin on appointment creation
     - Send confirmation update when status changes to 'confirmed'
     - _Requirements: 8.10, 8.11, 14.4, 14.5, 14.6, 9.6_
   
-  - [ ] 6.3 Implement appointment tracking endpoint
+  - [x] 6.3 Implement appointment tracking endpoint
     - Create getAppointmentByToken endpoint
     - Query database for appointment with matching token
     - Return appointment details or 404 if not found
     - _Requirements: 9.1, 9.2, 9.3, 9.4_
   
-  - [ ] 6.4 Create appointment routes
+  - [x] 6.4 Create appointment routes
     - Set up POST /api/appointments, GET /api/appointments/:token
     - Set up GET /api/appointments (protected), PUT /api/appointments/:id/status (protected)
     - Apply JWT middleware to protected routes
     - _Requirements: 8.6, 9.1_
 
 
-- [ ] 7. Implement contact form backend
-  - [ ] 7.1 Create contact controller
+- [x] 7. Implement contact form backend
+  - [x] 7.1 Create contact controller
     - Implement submitContact endpoint with validation
     - Insert contact message in database
     - Send notification email to admin
     - _Requirements: 16.4, 16.5, 16.6_
   
-  - [ ] 7.2 Create contact routes
+  - [x] 7.2 Create contact routes
     - Set up POST /api/contact
     - _Requirements: 16.4_
 
-- [ ] 8. Checkpoint - Backend API complete
+- [x] 8. Checkpoint - Backend API complete
   - Ensure all backend tests pass
   - Test all API endpoints with Postman or similar tool
   - Verify database schema and relationships
   - Ask the user if questions arise
 
-- [ ] 9. Set up frontend React application
-  - [ ] 9.1 Initialize React app with required dependencies
+- [x] 9. Set up frontend React application
+  - [x] 9.1 Initialize React app with required dependencies
     - Install react, react-dom, react-router-dom, axios
     - Install tailwindcss, autoprefixer, postcss
     - Set up Tailwind configuration with glassmorphism utilities
     - _Requirements: 1.1_
   
-  - [ ] 9.2 Configure Tailwind CSS for glassmorphism
+  - [x] 9.2 Configure Tailwind CSS for glassmorphism
     - Add backdrop-blur utilities to Tailwind config
     - Create custom glass color palette with RGBA values
     - Add custom border and shadow utilities
     - Configure responsive breakpoints (mobile: <768px, tablet: 768-1024px, desktop: >1024px)
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3_
   
-  - [ ] 9.3 Set up React Router with route structure
+  - [x] 9.3 Set up React Router with route structure
     - Create routes for Home, Products, Appointments, Track Order, Contact, Cart
     - Create admin routes for Login, Dashboard, Products, Orders, Appointments
     - Implement protected route wrapper for admin routes
     - _Requirements: 19.1_
 
-- [ ] 10. Create core glassmorphism components
-  - [ ] 10.1 Create GlassCard component
+- [x] 10. Create core glassmorphism components
+  - [x] 10.1 Create GlassCard component
     - Implement reusable card with backdrop-blur, semi-transparent background, border
     - Support blur intensity props (sm, md, lg)
     - Support opacity customization
     - Add hover effects when interactive
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
   
-  - [ ]* 10.2 Write property test for GlassCard styling
+  - [x]* 10.2 Write property test for GlassCard styling
     - **Property 1: Glassmorphism Consistency**
     - **Validates: Requirements 1.1, 1.2, 1.3, 1.4**
     - Test that all glass components have required CSS properties
     - Test with different blur and opacity values
   
-  - [ ] 10.3 Create responsive utility functions
+  - [x] 10.3 Create responsive utility functions
     - Implement applyResponsiveBreakpoint() function
     - Implement calculateResponsiveLayout() function
     - Create custom hook useBreakpoint() for responsive behavior
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
   
-  - [ ]* 10.4 Write property test for responsive breakpoints
+  - [x]* 10.4 Write property test for responsive breakpoints
     - **Property 4: Responsive Breakpoint Coverage**
     - **Validates: Requirements 2.1, 2.2, 2.3**
     - Test that every window width maps to exactly one breakpoint
     - Test breakpoint transitions at boundary values
 
-- [ ] 11. Create layout components
-  - [ ] 11.1 Create Header component
+- [x] 11. Create layout components
+  - [x] 11.1 Create Header component
     - Implement navigation with logo and links
     - Add hamburger menu for mobile (<768px)
     - Display cart icon with item count badge
     - Apply glassmorphism styling with backdrop blur
     - _Requirements: 19.1, 19.2, 19.3, 19.4, 19.5, 19.6, 19.7, 19.8_
   
-  - [ ] 11.2 Create Footer component
+  - [x] 11.2 Create Footer component
     - Display pharmacy information and contact details
     - Add social media links
     - Apply glassmorphism styling
     - _Requirements: 1.1_
   
-  - [ ] 11.3 Create WhatsApp floating button
+  - [x] 11.3 Create WhatsApp floating button
     - Position button in bottom-right corner
     - Apply glassmorphism styling
     - Open WhatsApp with pre-filled message on click
     - _Requirements: 20.1, 20.2, 20.3, 20.4, 20.5_
 
 
-- [ ] 12. Implement shopping cart functionality
-  - [ ] 12.1 Create cart context and state management
+- [x] 12. Implement shopping cart functionality
+  - [x] 12.1 Create cart context and state management
     - Implement CartContext with add, remove, update, clear actions
     - Calculate cart total dynamically
     - Persist cart to localStorage
     - Restore cart from localStorage on app load
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8_
   
-  - [ ]* 12.2 Write property test for cart total calculation
+  - [x]* 12.2 Write property test for cart total calculation
     - **Property 3: Order Total Correctness**
     - **Validates: Requirements 4.6**
     - Test that cart total equals sum of all item subtotals
     - Test with various item combinations and quantities
   
-  - [ ]* 12.3 Write unit tests for cart operations
+  - [x]* 12.3 Write unit tests for cart operations
     - Test add to cart functionality
     - Test quantity updates
     - Test item removal
     - Test localStorage persistence
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.7, 4.8_
 
-- [ ] 13. Create product-related components
-  - [ ] 13.1 Create ProductCard component
+- [x] 13. Create product-related components
+  - [x] 13.1 Create ProductCard component
     - Display product image, name, price, description, stock status
     - Show "Add to Cart" button with glass styling
     - Support grid and list layout modes
     - Handle responsive image sizing
     - _Requirements: 3.3, 3.4, 3.5_
   
-  - [ ] 13.2 Create ProductGrid component
+  - [x] 13.2 Create ProductGrid component
     - Display products in responsive grid (1 col mobile, 2 col tablet, 3 col desktop)
     - Implement lazy loading for product images
     - _Requirements: 3.1, 2.1, 2.2, 2.3, 25.4_
   
-  - [ ] 13.3 Create product search and filter components
+  - [x] 13.3 Create product search and filter components
     - Implement search input with real-time filtering
     - Create category filter dropdown
     - Add "In Stock Only" toggle
     - Apply filters to product list
     - _Requirements: 3.6, 3.7, 18.1, 18.2, 18.3, 18.4, 18.5, 18.6, 18.7_
 
-- [ ] 14. Create form components with validation
-  - [ ] 14.1 Create form validation utilities
+- [x] 14. Create form components with validation
+  - [x] 14.1 Create form validation utilities
     - Implement validateOrderForm() function
     - Implement validateAppointmentForm() function
     - Implement validateContactForm() function
@@ -303,13 +303,13 @@ The implementation follows a bottom-up approach: database setup → backend API 
     - Add date validation (future dates only)
     - _Requirements: 15.1, 15.2, 15.3, 15.4, 15.5, 15.6, 15.7, 15.8, 15.9, 15.10_
   
-  - [ ]* 14.2 Write property test for form validation
+  - [x]* 14.2 Write property test for form validation
     - **Property 8: Form Validation Completeness**
     - **Validates: Requirements 15.1, 15.2, 15.3, 15.4**
     - Test that validation is consistent for same input
     - Test all validation rules
   
-  - [ ] 14.3 Create glass-styled form input components
+  - [x] 14.3 Create glass-styled form input components
     - Create GlassInput component with glassmorphism styling
     - Create GlassTextarea component
     - Create GlassSelect component

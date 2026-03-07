@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Glassmorphism utility classes */
+@layer components {
+  .glass-card {
+    @apply backdrop-blur-glass bg-white/10 border border-white/20 rounded-glass shadow-glass;
+  }
+  
+  .glass-card-hover {
+    @apply glass-card hover:shadow-glass-hover hover:bg-white/15 transition-all duration-300;
+  }
+  
+  .glass-input {
+    @apply backdrop-blur-glass bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-glass-blue/50 focus:border-glass-blue/50 transition-all duration-200;
+  }
+  
+  .glass-button {
+    @apply backdrop-blur-glass bg-white/20 border border-white/30 rounded-lg px-6 py-3 text-gray-800 font-medium hover:bg-white/30 hover:shadow-glass-hover focus:outline-none focus:ring-2 focus:ring-glass-blue/50 transition-all duration-200 min-h-[44px];
+  }
+  
+  .glass-button-primary {
+    @apply glass-button bg-glass-blue/30 hover:bg-glass-blue/40 text-blue-900 border-glass-blue/40;
+  }
+  
+  .glass-button-secondary {
+    @apply glass-button bg-glass-green/30 hover:bg-glass-green/40 text-green-900 border-glass-green/40;
+  }
+}
+
+/* Base styles */
+@layer base {
+  body {
+    @apply font-poppins bg-gradient-to-br from-glass-blue/20 via-glass-green/20 to-glass-white;
+    min-height: 100vh;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-poppins font-semibold;
+  }
+  
+  /* Responsive text sizes */
+  h1 {
+    @apply text-2xl md:text-4xl lg:text-5xl;
+  }
+  
+  h2 {
+    @apply text-xl md:text-3xl lg:text-4xl;
+  }
+  
+  h3 {
+    @apply text-lg md:text-2xl lg:text-3xl;
+  }
+  
+  h4 {
+    @apply text-base md:text-xl lg:text-2xl;
+  }
+  
+  /* Ensure minimum tap target size on mobile */
+  @media (max-width: 767px) {
+    button, .btn, a[role="button"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+}

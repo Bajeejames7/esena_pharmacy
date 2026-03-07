@@ -400,7 +400,7 @@ describe("Product Controller Property-Based Tests", () => {
     
     await fc.assert(
       fc.asyncProperty(
-        fc.string({ minLength: 1, maxLength: 255 }),
+        fc.string({ minLength: 1, maxLength: 255 }).filter(s => s.trim().length > 0), // Ensure non-empty after trim
         fc.constantFrom(...validCategories),
         fc.float({ min: Math.fround(0.01), max: Math.fround(9999.99) }),
         fc.integer({ min: 0, max: 10000 }),
