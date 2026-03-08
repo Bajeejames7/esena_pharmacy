@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import ThemeToggle from './ThemeToggle';
 
@@ -13,6 +13,7 @@ const Header = () => {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const { itemCount } = useCart();
   const location = useLocation();
+  const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
   // Use the pre-calculated item count
@@ -37,12 +38,23 @@ const Header = () => {
   }, [location.pathname]);
 
   const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+    setIsMobileMenuOpen(prev => !prev);
     setActiveDropdown(null);
   };
 
   const toggleDropdown = (dropdown) => {
     setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
+  };
+
+  const handleMobileNavigation = (path) => {
+    console.log('Navigating to:', path);
+    console.log('Current location:', location.pathname);
+    setIsMobileMenuOpen(false);
+    setActiveDropdown(null);
+    // Use setTimeout to ensure state updates before navigation
+    setTimeout(() => {
+      navigate(path);
+    }, 100);
   };
 
   const handleKeyDown = (event, action) => {
@@ -207,7 +219,7 @@ const Header = () => {
           </nav>
 
           {/* Right side items */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
             {/* Theme Toggle - More prominent */}
             <div className="order-2 lg:order-1">
               <ThemeToggle showLabel={true} />
@@ -217,19 +229,19 @@ const Header = () => {
             <div className="order-1 lg:order-2">
               <Link
                 to="/shop"
-                className={`relative p-3 rounded-xl hover:scale-105 transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-glass-blue/50 ${
-                  totalItems > 0 ? 'glass-button' : 'hover:bg-white/10 dark:hover:bg-slate-700/30'
-                }`}
+                className="relative inline-block p-2 rounded-lg hover:bg-white/5 dark:hover:bg-slate-700/20 hover:scale-105 transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-glass-blue/50"
                 aria-label={`Shopping cart with ${totalItems} items`}
               >
-                {/* Modern shopping bag icon */}
-                <svg className="w-6 h-6 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 10H6L5 9z" />
-                </svg>
+                {/* Modern shopping cart icon */}
+                <img 
+                  src="/cart.png" 
+                  alt="Shopping Cart" 
+                  className="w-6 h-6"
+                />
                 
                 {/* Cart count badge - only show when items exist */}
                 {totalItems > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg animate-pulse">
+                  <span className="absolute top-0 right-0 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold shadow-lg border-2 border-white dark:border-gray-800 translate-x-1 -translate-y-1">
                     {totalItems > 99 ? '99+' : totalItems}
                   </span>
                 )}
@@ -237,13 +249,18 @@ const Header = () => {
             </div>
 
             {/* Mobile menu button */}
-            <div className="lg:hidden">
+            <div className="lg:hidden order-3 relative z-50">
               <button
-                onClick={toggleMobileMenu}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleMobileMenu();
+                }}
                 onKeyDown={(e) => handleKeyDown(e, toggleMobileMenu)}
-                className="p-3 glass-button rounded-xl hover:scale-105 transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-glass-blue/50"
+                className="relative p-3 bg-white/10 dark:bg-slate-700/50 hover:bg-white/20 dark:hover:bg-slate-600/50 rounded-xl hover:scale-105 transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-glass-blue/50 active:scale-95 border border-white/20 dark:border-slate-600/30"
                 aria-expanded={isMobileMenuOpen}
                 aria-label="Toggle mobile menu"
+                type="button"
               >
                 <svg className="w-6 h-6 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {isMobileMenuOpen ? (
@@ -259,108 +276,184 @@ const Header = () => {
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden mt-4 pb-4 border-t border-white/20 dark:border-slate-600/30">
-            <nav className="mt-4 space-y-2">
-              {/* Home Section */}
-              <div>
-                <button
-                  onClick={() => toggleDropdown('mobile-home')}
-                  className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-700 dark:text-gray-200 hover:bg-white/10 dark:hover:bg-slate-700/50 rounded-lg transition-all duration-200"
+          <div 
+            className="lg:hidden py-4 space-y-2"
+          >
+            {/* Home Section */}
+            <div className="px-2">
+              <button
+                onClick={() => toggleDropdown('mobile-home')}
+                type="button"
+                className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-700 dark:text-gray-200 bg-white/10 dark:bg-slate-700/30 hover:bg-white/20 dark:hover:bg-slate-600/40 rounded-lg"
+              >
+                <span className="font-medium">Home</span>
+                <svg 
+                  className={`w-4 h-4 transition-transform ${activeDropdown === 'mobile-home' ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
                 >
-                  <span className="font-medium">Home</span>
-                  <svg 
-                    className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === 'mobile-home' ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {activeDropdown === 'mobile-home' && (
-                  <div className="ml-4 mt-2 space-y-1">
-                    <Link to="/" className={navLinkClass('/')}>
-                      Home
-                    </Link>
-                    {dropdownItems.home.map((item) => (
-                      <Link key={item.path} to={item.path} className={navLinkClass(item.path)}>
-                        {item.name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Products Section */}
-              <div>
-                <button
-                  onClick={() => toggleDropdown('mobile-products')}
-                  className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-700 dark:text-gray-200 hover:bg-white/10 dark:hover:bg-slate-700/50 rounded-lg transition-all duration-200"
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+            {activeDropdown === 'mobile-home' && (
+              <div className="px-2 ml-4 space-y-1">
+                <Link 
+                  to="/"
+                  className="block px-4 py-3 text-gray-700 dark:text-gray-200 bg-white/10 dark:bg-slate-700/30 hover:bg-white/20 dark:hover:bg-slate-600/40 rounded-lg font-medium"
+                  onClick={(e) => {
+                    console.log('Home clicked');
+                    setIsMobileMenuOpen(false);
+                    setActiveDropdown(null);
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    console.log('Home touched');
+                    navigate('/');
+                    setIsMobileMenuOpen(false);
+                    setActiveDropdown(null);
+                  }}
                 >
-                  <span className="font-medium">Products</span>
-                  <svg 
-                    className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === 'mobile-products' ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
+                  Home
+                </Link>
+                {dropdownItems.home.map((item) => (
+                  <Link 
+                    key={item.path}
+                    to={item.path}
+                    className="block px-4 py-3 text-gray-700 dark:text-gray-200 bg-white/10 dark:bg-slate-700/30 hover:bg-white/20 dark:hover:bg-slate-600/40 rounded-lg font-medium"
+                    onClick={(e) => {
+                      console.log('Clicked:', item.name);
+                      setIsMobileMenuOpen(false);
+                      setActiveDropdown(null);
+                    }}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      console.log('Touched:', item.name);
+                      navigate(item.path);
+                      setIsMobileMenuOpen(false);
+                      setActiveDropdown(null);
+                    }}
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {activeDropdown === 'mobile-products' && (
-                  <div className="ml-4 mt-2 space-y-1">
-                    {dropdownItems.products.map((item) => (
-                      <Link key={item.path} to={item.path} className={navLinkClass(item.path)}>
-                        {item.name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
+                    {item.name}
+                  </Link>
+                ))}
               </div>
+            )}
 
-              {/* Services Section */}
-              <div>
-                <button
-                  onClick={() => toggleDropdown('mobile-services')}
-                  className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-700 dark:text-gray-200 hover:bg-white/10 dark:hover:bg-slate-700/50 rounded-lg transition-all duration-200"
+            {/* Products Section */}
+            <div className="px-2">
+              <button
+                onClick={() => toggleDropdown('mobile-products')}
+                type="button"
+                className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-700 dark:text-gray-200 bg-white/10 dark:bg-slate-700/30 hover:bg-white/20 dark:hover:bg-slate-600/40 rounded-lg"
+              >
+                <span className="font-medium">Products</span>
+                <svg 
+                  className={`w-4 h-4 transition-transform ${activeDropdown === 'mobile-products' ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
                 >
-                  <span className="font-medium">Services</span>
-                  <svg 
-                    className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === 'mobile-services' ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+            {activeDropdown === 'mobile-products' && (
+              <div className="px-2 ml-4 space-y-1">
+                {dropdownItems.products.map((item) => (
+                  <Link 
+                    key={item.path}
+                    to={item.path}
+                    className="block px-4 py-3 text-gray-700 dark:text-gray-200 bg-white/10 dark:bg-slate-700/30 hover:bg-white/20 dark:hover:bg-slate-600/40 rounded-lg font-medium"
+                    onClick={(e) => {
+                      console.log('Clicked:', item.name);
+                      setIsMobileMenuOpen(false);
+                      setActiveDropdown(null);
+                    }}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      console.log('Touched:', item.name);
+                      navigate(item.path);
+                      setIsMobileMenuOpen(false);
+                      setActiveDropdown(null);
+                    }}
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {activeDropdown === 'mobile-services' && (
-                  <div className="ml-4 mt-2 space-y-1">
-                    {dropdownItems.services.map((item) => (
-                      <Link key={item.path} to={item.path} className={navLinkClass(item.path)}>
-                        {item.name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
+                    {item.name}
+                  </Link>
+                ))}
               </div>
+            )}
 
-              <Link to="/shop" className={navLinkClass('/shop')}>
+            {/* Services Section */}
+            <div className="px-2">
+              <button
+                onClick={() => toggleDropdown('mobile-services')}
+                type="button"
+                className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-700 dark:text-gray-200 bg-white/10 dark:bg-slate-700/30 hover:bg-white/20 dark:hover:bg-slate-600/40 rounded-lg"
+              >
+                <span className="font-medium">Services</span>
+                <svg 
+                  className={`w-4 h-4 transition-transform ${activeDropdown === 'mobile-services' ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+            {activeDropdown === 'mobile-services' && (
+              <div className="px-2 ml-4 space-y-1">
+                {dropdownItems.services.map((item) => (
+                  <Link 
+                    key={item.path}
+                    to={item.path}
+                    className="block px-4 py-3 text-gray-700 dark:text-gray-200 bg-white/10 dark:bg-slate-700/30 hover:bg-white/20 dark:hover:bg-slate-600/40 rounded-lg font-medium"
+                    onClick={(e) => {
+                      console.log('Clicked:', item.name);
+                      setIsMobileMenuOpen(false);
+                      setActiveDropdown(null);
+                    }}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      console.log('Touched:', item.name);
+                      navigate(item.path);
+                      setIsMobileMenuOpen(false);
+                      setActiveDropdown(null);
+                    }}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {/* Shop Link */}
+            <div className="px-2">
+              <Link 
+                to="/shop"
+                className="block px-4 py-3 text-gray-700 dark:text-gray-200 bg-white/10 dark:bg-slate-700/30 hover:bg-white/20 dark:hover:bg-slate-600/40 rounded-lg font-medium"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setActiveDropdown(null);
+                }}
+              >
                 Shop
               </Link>
+            </div>
 
-              {/* Theme Toggle in Mobile Menu */}
-              <div className="pt-4 mt-4 border-t border-white/20 dark:border-slate-600/30">
-                <div className="px-4 py-2">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-3 block">
-                    Theme Settings
-                  </span>
-                  <div className="flex justify-center">
-                    <ThemeToggle showLabel={false} />
-                  </div>
+            {/* Theme Toggle in Mobile Menu */}
+            <div className="px-2 pt-4 mt-4 border-t border-white/20 dark:border-slate-600/30">
+              <div className="px-4 py-2">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-3 block">
+                  Theme Settings
+                </span>
+                <div className="flex justify-center">
+                  <ThemeToggle showLabel={false} />
                 </div>
               </div>
-            </nav>
+            </div>
           </div>
         )}
       </div>

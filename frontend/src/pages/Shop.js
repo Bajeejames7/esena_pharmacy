@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { useBreakpoint } from '../utils/responsive';
 import GlassCard from '../components/GlassCard';
 import GlassButton from '../components/forms/GlassButton';
@@ -12,6 +13,11 @@ import GlassButton from '../components/forms/GlassButton';
 const Shop = () => {
   const { items, total, itemCount, isEmpty, updateQuantity, removeFromCart, clearCart } = useCart();
   const { breakpoint } = useBreakpoint();
+  const { isDark } = useTheme();
+  const [deliveryLocation, setDeliveryLocation] = useState('pickup');
+
+  const deliveryFee = deliveryLocation === 'nairobi' ? 200 : deliveryLocation === 'outside' ? 400 : 0;
+  const finalTotal = total + deliveryFee;
 
   const handleQuantityChange = (productId, newQuantity) => {
     if (newQuantity <= 0) {
@@ -21,21 +27,19 @@ const Shop = () => {
     }
   };
 
-  const shippingCost = total > 50 ? 0 : 5.99;
-  const tax = total * 0.08; // 8% tax
-  const finalTotal = total + shippingCost + tax;
-
   if (isEmpty) {
     return (
       <div className="pt-24 pb-16">
         <div className="max-w-4xl mx-auto px-4">
           <GlassCard className="p-8 text-center">
-            <h1 className="text-gray-800 mb-4">Shopping Cart</h1>
+            <h1 className="text-gray-800 dark:text-white mb-4">Shopping Cart</h1>
             <div className="py-12">
-              <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5M17 13v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6" />
-              </svg>
-              <p className="text-gray-600 mb-6">Your cart is empty</p>
+              <img 
+                src="/cart.png" 
+                alt="Shopping Cart" 
+                className="w-16 h-16 mx-auto mb-4"
+              />
+              <p className="text-gray-600 dark:text-gray-300 mb-6">Your cart is empty</p>
               <Link to="/products" className="glass-button-primary">
                 Continue Shopping
               </Link>
@@ -47,14 +51,14 @@ const Shop = () => {
   }
 
   return (
-    <div className="pt-24 pb-16">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className={`grid gap-8 ${breakpoint === 'desktop' ? 'grid-cols-3' : 'grid-cols-1'}`}>
+    <div className="pt-20 pb-12 lg:pt-24 lg:pb-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className={`grid gap-4 sm:gap-6 lg:gap-8 ${breakpoint === 'desktop' ? 'grid-cols-3' : breakpoint === 'tablet' ? 'grid-cols-1' : 'grid-cols-1'}`}>
           {/* Cart Items */}
           <div className={breakpoint === 'desktop' ? 'col-span-2' : ''}>
-            <GlassCard className="p-6">
+            <GlassCard className="p-4 sm:p-6">
               <div className="flex justify-between items-center mb-6">
-                <h1 className="text-gray-800">Shopping Cart ({itemCount} items)</h1>
+                <h1 className="text-gray-800 dark:text-white">Shopping Cart ({itemCount} items)</h1>
                 <button
                   onClick={clearCart}
                   className="text-red-600 hover:text-red-800 text-sm font-medium transition-colors"
@@ -63,25 +67,25 @@ const Shop = () => {
                 </button>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {items.map((item) => (
-                  <div key={item.id} className="flex items-center space-x-4 p-4 bg-white/10 rounded-lg">
+                  <div key={item.id} className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 p-3 sm:p-4 bg-white/10 rounded-lg">
                     {/* Product Image Placeholder */}
                     <div className="w-16 h-16 bg-gradient-to-br from-glass-blue/20 to-glass-green/20 rounded-lg flex items-center justify-center flex-shrink-0">
                       <span className="text-xs text-gray-500">IMG</span>
                     </div>
                     
                     {/* Product Details */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-gray-800 truncate">{item.name}</h3>
-                      <p className="text-gray-600">${item.price.toFixed(2)} each</p>
+                    <div className="flex-1 min-w-0 w-full sm:w-auto">
+                      <h3 className="font-medium text-gray-800 dark:text-white truncate text-sm sm:text-base">{item.name}</h3>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm">KSH {item.price.toFixed(2)} each</p>
                       {item.category && (
-                        <p className="text-sm text-gray-500">{item.category}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{item.category}</p>
                       )}
                     </div>
                     
                     {/* Quantity Controls */}
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center justify-center sm:justify-start space-x-2 w-full sm:w-auto">
                       <button
                         onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
                         className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-gray-700 transition-colors"
@@ -89,7 +93,7 @@ const Shop = () => {
                       >
                         -
                       </button>
-                      <span className="w-12 text-center font-medium text-gray-800">
+                      <span className="w-12 text-center font-medium text-gray-800 dark:text-white">
                         {item.quantity}
                       </span>
                       <button
@@ -102,9 +106,9 @@ const Shop = () => {
                     </div>
                     
                     {/* Item Total */}
-                    <div className="text-right min-w-0">
-                      <p className="font-semibold text-gray-800">
-                        ${(item.price * item.quantity).toFixed(2)}
+                    <div className="text-right min-w-0 w-full sm:w-auto sm:text-right">
+                      <p className="font-semibold text-gray-800 dark:text-white text-sm sm:text-base">
+                        KSH {(item.price * item.quantity).toFixed(2)}
                       </p>
                     </div>
                     
@@ -126,31 +130,40 @@ const Shop = () => {
           
           {/* Order Summary */}
           <div className={breakpoint === 'desktop' ? 'col-span-1' : ''}>
-            <GlassCard className="p-6 sticky top-24">
-              <h2 className="text-gray-800 mb-6">Order Summary</h2>
+            <GlassCard className="p-4 sm:p-6 sticky top-20 lg:top-24">
+              <h2 className="text-gray-800 dark:text-white mb-4 sm:mb-6 text-lg sm:text-xl">Order Summary</h2>
               
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal ({itemCount} items)</span>
-                  <span className="text-gray-800">${total.toFixed(2)}</span>
+                  <span className="text-gray-800 font-bold">KSH {total.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">
-                    Shipping
-                    {total > 50 && <span className="text-green-600 text-sm ml-1">(Free over $50)</span>}
-                  </span>
-                  <span className="text-gray-800">
-                    {shippingCost === 0 ? 'Free' : `$${shippingCost.toFixed(2)}`}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Tax (8%)</span>
-                  <span className="text-gray-800">${tax.toFixed(2)}</span>
+                <div className="space-y-2 p-3 bg-white/20 rounded-lg border border-white/30">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-700 font-medium">Delivery Location</span>
+                    <select
+                      value={deliveryLocation}
+                      onChange={(e) => setDeliveryLocation(e.target.value)}
+                      className={`${
+                        isDark 
+                          ? 'bg-gray-700 border-gray-600 text-white' 
+                          : 'bg-white/50 border-white/60 text-gray-800'
+                      } rounded px-3 py-2 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+                    >
+                      <option value="pickup">Pickup from Shop</option>
+                      <option value="nairobi">Around Nairobi</option>
+                      <option value="outside">Outside Nairobi</option>
+                    </select>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-700 dark:text-gray-200 font-medium text-sm sm:text-base">Delivery Fee</span>
+                    <span className="text-gray-800 dark:text-white font-semibold text-sm sm:text-base">KSH {deliveryFee.toFixed(2)}</span>
+                  </div>
                 </div>
                 <div className="border-t border-white/20 pt-4">
                   <div className="flex justify-between">
-                    <span className="text-lg font-semibold text-gray-800">Total</span>
-                    <span className="text-lg font-semibold text-gray-800">${finalTotal.toFixed(2)}</span>
+                    <span className="text-lg font-semibold text-gray-800 dark:text-white text-sm sm:text-lg">Total</span>
+                    <span className="text-lg font-semibold text-gray-800 dark:text-white text-sm sm:text-lg">KSH {finalTotal.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -164,15 +177,9 @@ const Shop = () => {
                 </Link>
               </div>
               
-              {/* Shipping Info */}
+              {/* Checkout Info */}
               <div className="mt-6 pt-6 border-t border-white/20">
                 <div className="text-sm text-gray-600 space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>Free shipping on orders over $50</span>
-                  </div>
                   <div className="flex items-center space-x-2">
                     <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
