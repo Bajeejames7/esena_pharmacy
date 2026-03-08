@@ -61,7 +61,7 @@ const ProductCard = ({
 
   return (
     <GlassCard 
-      className={`${layoutClasses[layout]} ${className} ${onProductClick ? 'cursor-pointer focus:ring-2 focus:ring-glass-blue focus:outline-none' : ''}`}
+      className={`${layoutClasses[layout]} ${className} p-4 ${onProductClick ? 'cursor-pointer focus:ring-2 focus:ring-glass-blue focus:outline-none' : ''}`}
       hover={!!onProductClick}
       onClick={onProductClick ? handleCardClick : undefined}
       onKeyDown={onProductClick ? handleKeyDown : undefined}
@@ -75,7 +75,7 @@ const ProductCard = ({
         {product.image ? (
           <LazyImage
             src={product.image}
-            alt={`${product.name} - ${product.category || 'Product'} priced at $${product.price.toFixed(2)}`}
+            alt={`${product.name} - ${product.category || 'Product'} priced at KSh ${product.price.toFixed(2)}`}
             className="w-full h-full object-cover"
             srcSet={generateSrcSet(product.image)}
             sizes={layout === 'grid' ? '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw' : '96px'}
@@ -88,6 +88,34 @@ const ProductCard = ({
             <span className="text-xs text-gray-500">No Image</span>
           </div>
         )}
+        
+        {/* Media indicators */}
+        <div className="absolute bottom-2 left-2 flex gap-1">
+          {product.images && product.images.length > 1 && (
+            <div 
+              className="bg-black/60 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"
+              role="status"
+              aria-label={`${product.images.length} images available`}
+            >
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+              </svg>
+              {product.images.length}
+            </div>
+          )}
+          {product.video_url && (
+            <div 
+              className="bg-black/60 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1"
+              role="status"
+              aria-label="Video available"
+            >
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+              </svg>
+              Video
+            </div>
+          )}
+        </div>
         
         {/* Stock status badge */}
         {isOutOfStock && (
@@ -153,12 +181,12 @@ const ProductCard = ({
         {/* Price and Actions */}
         <div className="flex justify-between items-center mt-auto">
           <div className="flex flex-col" role="group" aria-label="Product pricing">
-            <span className="text-lg font-bold text-gray-800 dark:text-white" aria-label={`Current price: $${product.price.toFixed(2)}`}>
-              ${product.price.toFixed(2)}
+            <span className="text-lg font-bold text-gray-800 dark:text-white" aria-label={`Current price: KSh ${product.price.toFixed(2)}`}>
+              KSh {product.price.toFixed(2)}
             </span>
             {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-sm text-gray-500 dark:text-gray-400 line-through" aria-label={`Original price: $${product.originalPrice.toFixed(2)}`}>
-                ${product.originalPrice.toFixed(2)}
+              <span className="text-sm text-gray-500 dark:text-gray-400 line-through" aria-label={`Original price: KSh ${product.originalPrice.toFixed(2)}`}>
+                KSh {product.originalPrice.toFixed(2)}
               </span>
             )}
           </div>
@@ -177,7 +205,7 @@ const ProductCard = ({
                   ? `${product.name} is out of stock` 
                   : inCart 
                     ? `Add another ${product.name} to cart (currently ${quantity} in cart)`
-                    : `Add ${product.name} to cart for $${product.price.toFixed(2)}`
+                    : `Add ${product.name} to cart for KSh ${product.price.toFixed(2)}`
               }
               aria-describedby={`stock-${product.id}`}
             >

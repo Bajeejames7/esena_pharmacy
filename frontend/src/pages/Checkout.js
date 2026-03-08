@@ -270,7 +270,7 @@ const Checkout = () => {
                   className="w-full"
                   size="lg"
                 >
-                  {isSubmitting ? 'Processing Order...' : `Place Order - $${finalTotal.toFixed(2)}`}
+                  {isSubmitting ? 'Processing Order...' : `Place Order - KSh ${finalTotal.toFixed(2)}`}
                 </GlassButton>
               </form>
             </GlassCard>
@@ -290,7 +290,7 @@ const Checkout = () => {
                       <p className="text-gray-600 text-xs">Qty: {item.quantity}</p>
                     </div>
                     <p className="font-semibold text-gray-800 text-sm">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      KSh {(item.price * item.quantity).toFixed(2)}
                     </p>
                   </div>
                 ))}
@@ -300,21 +300,21 @@ const Checkout = () => {
               <div className="space-y-3 border-t border-white/20 pt-4">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="text-gray-800">${total.toFixed(2)}</span>
+                  <span className="text-gray-800 dark:text-white">KSh {total.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
                   <span className="text-gray-800">
-                    {shippingCost === 0 ? 'Free' : `$${shippingCost.toFixed(2)}`}
+                    {shippingCost === 0 ? 'Free' : `KSh ${shippingCost.toFixed(2)}`}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tax</span>
-                  <span className="text-gray-800">${tax.toFixed(2)}</span>
+                  <span className="text-gray-800 dark:text-white">KSh {tax.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between font-semibold text-lg border-t border-white/20 pt-3">
                   <span className="text-gray-800">Total</span>
-                  <span className="text-gray-800">${finalTotal.toFixed(2)}</span>
+                  <span className="text-gray-800 dark:text-white">KSh {finalTotal.toFixed(2)}</span>
                 </div>
               </div>
             </GlassCard>

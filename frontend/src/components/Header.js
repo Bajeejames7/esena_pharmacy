@@ -93,12 +93,11 @@ const Header = () => {
             to="/" 
             className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-glass-blue/50 rounded-lg p-1"
           >
-            <div className="w-8 h-8 bg-gradient-to-br from-glass-blue to-glass-green rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">E</span>
-            </div>
-            <span className="text-xl font-bold text-gray-800 dark:text-white">
-              Esena Pharmacy
-            </span>
+            <img 
+              src="/full_logo.jpeg" 
+              alt="Esena Pharmacy Logo" 
+              className="h-10 w-auto object-contain"
+            />
           </Link>
 
           {/* Desktop Navigation */}

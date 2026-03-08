@@ -37,14 +37,14 @@ const GlassCard = ({
   const baseClasses = shouldUseGlassmorphism 
     ? `
       ${blurClasses[validBlur]}
-      border border-white/20 
+      border-2 border-glass-blue/30 
       rounded-glass 
       shadow-glass
       transition-all 
       duration-300
     `
     : `
-      border border-gray-200
+      border-2 border-blue-200
       rounded-lg
       shadow-lg
       transition-all
@@ -60,8 +60,8 @@ const GlassCard = ({
   // Hover classes
   const hoverClasses = hover 
     ? shouldUseGlassmorphism 
-      ? 'hover:shadow-glass-hover hover:bg-white/15 cursor-pointer'
-      : 'hover:shadow-xl hover:bg-gray-50 cursor-pointer'
+      ? 'hover:shadow-glass-hover hover:bg-white/15 hover:scale-105 hover:border-glass-blue/50 cursor-pointer transform'
+      : 'hover:shadow-xl hover:bg-gray-50 hover:scale-105 hover:border-blue-300 cursor-pointer transform'
     : '';
 
   // Interactive classes

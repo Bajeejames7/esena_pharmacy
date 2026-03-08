@@ -86,7 +86,7 @@ const OrderSuccess = () => {
                     <p className="text-gray-600 text-sm">Quantity: {item.quantity}</p>
                   </div>
                   <p className="font-semibold text-gray-800">
-                    ${(item.price * item.quantity).toFixed(2)}
+                    KSh {(item.price * item.quantity).toFixed(2)}
                   </p>
                 </div>
               ))}
@@ -95,21 +95,21 @@ const OrderSuccess = () => {
             <div className="space-y-2 border-t border-white/20 pt-4">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal</span>
-                <span className="text-gray-800">${orderData.subtotal.toFixed(2)}</span>
+                <span className="text-gray-800 dark:text-white">KSh {orderData.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Shipping</span>
                 <span className="text-gray-800">
-                  {orderData.shipping === 0 ? 'Free' : `$${orderData.shipping.toFixed(2)}`}
+                  {orderData.shipping === 0 ? 'Free' : `KSh ${orderData.shipping.toFixed(2)}`}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Tax</span>
-                <span className="text-gray-800">${orderData.tax.toFixed(2)}</span>
+                <span className="text-gray-800 dark:text-white">KSh {orderData.tax.toFixed(2)}</span>
               </div>
               <div className="flex justify-between font-semibold text-lg border-t border-white/20 pt-2">
                 <span className="text-gray-800">Total</span>
-                <span className="text-gray-800">${orderData.total.toFixed(2)}</span>
+                <span className="text-gray-800 dark:text-white">KSh {orderData.total.toFixed(2)}</span>
               </div>
             </div>
           </GlassCard>

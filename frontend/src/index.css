@@ -42,7 +42,7 @@
   }
   
   .glass-button {
-    @apply backdrop-blur-glass border rounded-lg px-6 py-3 font-medium hover:shadow-glass-hover focus:outline-none focus:ring-2 focus:ring-glass-blue/50 transition-all duration-200 min-h-[44px];
+    @apply backdrop-blur-glass border rounded-lg px-6 py-3 font-medium hover:shadow-glass-hover hover:scale-105 focus:outline-none focus:ring-2 focus:ring-glass-blue/50 transition-all duration-200 min-h-[44px] transform;
     background: rgba(255, 255, 255, 0.2);
     border-color: rgba(255, 255, 255, 0.3);
     color: #374151;

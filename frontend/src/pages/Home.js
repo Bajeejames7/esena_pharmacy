@@ -44,7 +44,7 @@ const Home = () => {
     { name: 'Prescription Medications', link: '/products', icon: '💊' },
     { name: 'Health Supplements', link: '/supplements', icon: '🌿' },
     { name: 'Personal Care', link: '/personal-care', icon: '🧴' },
-    { name: 'Health Consultations', link: '/book-appointment', icon: '👩‍⚕️' }
+    { name: 'Health Consultations', link: '/book-appointment', icon: '👨🏾‍⚕️' }
   ];
 
   return (

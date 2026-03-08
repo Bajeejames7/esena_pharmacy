@@ -266,7 +266,7 @@ const BookAppointment = () => {
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
                   <div className="w-8 h-8 bg-gradient-to-br from-glass-blue to-glass-green rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-sm">👩‍⚕️</span>
+                    <span className="text-white text-sm">👩🏾‍⚕️</span>
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-800 dark:text-white">Dermatology Consultation</h3>

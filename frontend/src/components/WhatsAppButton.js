@@ -6,7 +6,7 @@ import GlassCard from './GlassCard';
  * Implements Requirements 20.1, 20.2, 20.3, 20.4, 20.5
  */
 const WhatsAppButton = ({ 
-  phoneNumber = '+1234567890', 
+  phoneNumber = '254768103599', 
   message = 'Hello! I need help with my pharmacy needs.',
   className = ''
 }) => {
