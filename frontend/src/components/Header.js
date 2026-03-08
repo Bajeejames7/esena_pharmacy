@@ -107,7 +107,7 @@ const Header = () => {
           >
             <img 
               src="/full_logo.jpeg" 
-              alt="Esena Pharmacy Logo" 
+              alt="Esena Pharmacy logo Ruaraka Nairobi pharmacy" 
               className="h-10 w-auto object-contain"
             />
           </Link>

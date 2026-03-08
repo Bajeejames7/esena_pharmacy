@@ -54,11 +54,10 @@ const Home = () => {
         <div className="max-w-6xl mx-auto">
           <GlassCard className="p-8 md:p-12 text-center">
             <h1 className="mb-6 text-gray-800 dark:text-white">
-              Welcome to Esena Pharmacy
+              Esena Pharmacy – Trusted Pharmacy in Ruaraka, Nairobi
             </h1>
             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-              Your trusted healthcare partner providing quality medications, 
-              professional consultations, and personalized care for your wellness journey.
+              Esena Pharmacy is a trusted local pharmacy in Ruaraka, Nairobi dedicated to providing high-quality medicines, professional pharmacist consultations, and reliable healthcare services. We offer a wide range of prescription medications, health supplements, personal care products, and wellness solutions to support your health.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -81,6 +80,14 @@ const Home = () => {
       {/* Features Section */}
       <section className="px-4 mb-16">
         <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4">
+              Quality Medicines and Healthcare Products
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              Our experienced pharmacists are committed to helping patients manage their medications safely while offering guidance on treatment options and general health concerns.
+            </p>
+          </div>
           <div className={`grid gap-6 ${
             breakpoint === 'mobile' ? 'grid-cols-1' :
             breakpoint === 'tablet' ? 'grid-cols-2' : 'grid-cols-3'
@@ -102,9 +109,9 @@ const Home = () => {
       <section className="px-4 mb-16">
         <div className="max-w-6xl mx-auto">
           <GlassCard className="p-8 mb-8 text-center">
-            <h2 className="text-gray-800 dark:text-white mb-4">Our Services</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4">Our Pharmacy Services</h2>
             <p className="text-gray-600 dark:text-gray-300">
-              Comprehensive healthcare solutions tailored to your needs
+              Comprehensive healthcare solutions tailored to your needs in Nairobi
             </p>
           </GlassCard>
           
@@ -121,6 +128,39 @@ const Home = () => {
               </Link>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us Section */}
+      <section className="px-4 mb-16">
+        <div className="max-w-6xl mx-auto">
+          <GlassCard className="p-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-6 text-center">
+              Why Choose Esena Pharmacy
+            </h2>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">Trusted Local Pharmacy</h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  As a trusted pharmacy in Ruaraka, Nairobi, we've been serving the community for over 20 years with reliable healthcare services and quality medications.
+                </p>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">Professional Pharmacist Consultations</h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  Our experienced pharmacists provide personalized medication guidance, health consultations, and ensure safe medication management for all patients.
+                </p>
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">Fast Medicine Delivery in Nairobi</h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  We offer convenient home delivery services throughout Nairobi, ensuring you receive your medications quickly and safely at your doorstep.
+                </p>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">Quality Health Supplements</h3>
+                <p className="text-gray-600 dark:text-gray-300">
+                  Wide range of authentic health supplements, vitamins, and wellness products to support your overall health and wellness journey.
+                </p>
+              </div>
+            </div>
+          </GlassCard>
         </div>
       </section>
 
@@ -157,8 +197,8 @@ const Home = () => {
       <section className="px-4">
         <div className="max-w-4xl mx-auto">
           <GlassCard className="p-8 text-center">
-            <h2 className="text-gray-800 dark:text-white mb-4">
-              Need Help with Your Health?
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4">
+              Contact Esena Pharmacy
             </h2>
             <p className="text-gray-600 dark:text-gray-300 mb-6">
               Our experienced pharmacists are here to help you with medication questions, 
