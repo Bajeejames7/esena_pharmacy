@@ -144,10 +144,17 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  logger.info(`Server started on port ${PORT}`, {
-    port: PORT,
-    environment: process.env.NODE_ENV || 'development',
-    nodeVersion: process.version
+
+// Only start server if not being required as a module (for cPanel compatibility)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    logger.info(`Server started on port ${PORT}`, {
+      port: PORT,
+      environment: process.env.NODE_ENV || 'development',
+      nodeVersion: process.version
+    });
   });
-});
+}
+
+// Export app for cPanel Node.js setup
+module.exports = app;
