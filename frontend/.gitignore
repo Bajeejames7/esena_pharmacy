@@ -9,7 +9,7 @@ node_modules/
 /coverage
 
 # Production build
-/build
+# /build  # Commented out - including build for cPanel deployment
 /dist
 
 # Environment variables
