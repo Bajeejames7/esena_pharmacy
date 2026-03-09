@@ -1,8 +1,0 @@
----
-deployment:
-  tasks:
-    - export DEPLOYPATH=/home/ohnokmqf/public_html/
-    - /bin/cp -R frontend/build/* $DEPLOYPATH
-    - /bin/mkdir -p $DEPLOYPATH/api
-    - /bin/cp -R backend/* $DEPLOYPATH/api/
-    - /bin/chmod -R 755 $DEPLOYPATH
