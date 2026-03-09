@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useBreakpoint } from '../utils/responsive';
+import AdminSidebar from '../components/AdminSidebar';
+import AdminHeader from '../components/AdminHeader';
 import { blogsAPI } from '../services/api';
 import GlassCard from '../components/GlassCard';
 import DataTable from '../components/DataTable';
@@ -6,8 +9,11 @@ import GlassButton from '../components/forms/GlassButton';
 import GlassInput from '../components/forms/GlassInput';
 import GlassTextarea from '../components/forms/GlassTextarea';
 import GlassSelect from '../components/forms/GlassSelect';
+import ThemeToggle from '../components/ThemeToggle';
 
 const ManageBlogs = () => {
+  const { breakpoint } = useBreakpoint();
+  const [sidebarOpen, setSidebarOpen] = useState(breakpoint !== 'mobile');
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -21,6 +27,17 @@ const ManageBlogs = () => {
     status: 'draft'
   });
   const [errors, setErrors] = useState({});
+
+  const isMobile = breakpoint === 'mobile';
+
+  useEffect(() => {
+    // Auto-collapse sidebar on mobile
+    if (isMobile) {
+      setSidebarOpen(false);
+    } else {
+      setSidebarOpen(true);
+    }
+  }, [isMobile]);
 
   useEffect(() => {
     fetchBlogs();
@@ -130,8 +147,8 @@ const ManageBlogs = () => {
       label: 'Title',
       render: (blog) => (
         <div>
-          <div className="font-medium text-gray-800">{blog.title}</div>
-          <div className="text-sm text-gray-500">{blog.slug}</div>
+          <div className="font-medium text-gray-800 dark:text-gray-100">{blog.title}</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">{blog.slug}</div>
         </div>
       )
     },
@@ -146,8 +163,8 @@ const ManageBlogs = () => {
       render: (blog) => (
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
           blog.status === 'published' 
-            ? 'bg-green-100 text-green-800' 
-            : 'bg-yellow-100 text-yellow-800'
+            ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' 
+            : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
         }`}>
           {blog.status}
         </span>
@@ -165,19 +182,19 @@ const ManageBlogs = () => {
         <div className="flex space-x-2">
           <button
             onClick={() => handleEdit(blog)}
-            className="text-blue-600 hover:text-blue-800 text-sm"
+            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm"
           >
             Edit
           </button>
           <button
             onClick={() => handleToggleStatus(blog.id)}
-            className="text-green-600 hover:text-green-800 text-sm"
+            className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 text-sm"
           >
             {blog.status === 'published' ? 'Unpublish' : 'Publish'}
           </button>
           <button
             onClick={() => handleDelete(blog.id)}
-            className="text-red-600 hover:text-red-800 text-sm"
+            className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm"
           >
             Delete
           </button>
@@ -195,26 +212,59 @@ const ManageBlogs = () => {
   }
 
   return (
+    <div className="min-h-screen bg-gradient-to-br from-glass-blue/20 via-glass-green/20 to-glass-white dark:from-slate-900/50 dark:via-slate-800/50 dark:to-slate-900 flex flex-col">
+      <AdminHeader 
+        onMenuToggle={() => setSidebarOpen(true)}
+        showMenuButton={isMobile}
+      />
+      
+      <div className="flex flex-1">
+        <AdminSidebar 
+          isOpen={sidebarOpen} 
+          onToggle={() => setSidebarOpen(!sidebarOpen)} 
+        />
+        
+        <div className={`flex-1 transition-all duration-300 ${
+          !isMobile && sidebarOpen ? 'ml-64' : !isMobile ? 'ml-16' : ''
+        }`}>
+          <div className="p-6">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center space-x-4">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 lg:block hidden">Manage Blogs</h1>
+                  <p className="text-gray-600 dark:text-gray-300">Create and manage blog posts for your pharmacy.</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <div className="hidden lg:block">
+                  <ThemeToggle showLabel={true} />
+                </div>
+                
+                <GlassButton
+                  onClick={() => setShowForm(true)}
+                  className="bg-glass-blue text-white"
+                >
+                  Add New Blog
+                </GlassButton>
+              </div>
+            </div>
+
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">Manage Blogs</h1>
-        <GlassButton
-          onClick={() => setShowForm(true)}
-          className="bg-glass-blue text-white"
-        >
-          Add New Blog
-        </GlassButton>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">All Blog Posts</h2>
       </div>
 
       {showForm && (
         <GlassCard className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-800">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
               {editingBlog ? 'Edit Blog Post' : 'Create New Blog Post'}
             </h2>
             <button
               onClick={resetForm}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             >
               ✕
             </button>
@@ -273,25 +323,25 @@ const ManageBlogs = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Content *
               </label>
               <textarea
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                className="w-full px-4 py-3 bg-white/70 backdrop-blur-sm border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-glass-blue/50 focus:border-transparent resize-vertical"
+                className="w-full px-4 py-3 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border border-white/30 dark:border-slate-600/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-glass-blue/50 focus:border-transparent resize-vertical text-gray-900 dark:text-gray-100"
                 rows={12}
                 placeholder="Write your blog content here... You can use HTML tags for formatting."
                 required
               />
               {errors.content && (
-                <p className="mt-1 text-sm text-red-600">{errors.content}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.content}</p>
               )}
             </div>
 
             {errors.submit && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-red-600 text-sm">{errors.submit}</p>
+              <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/50 rounded-lg p-3">
+                <p className="text-red-600 dark:text-red-400 text-sm">{errors.submit}</p>
               </div>
             )}
 
@@ -315,13 +365,17 @@ const ManageBlogs = () => {
       )}
 
       <GlassCard className="p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">All Blog Posts</h2>
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">All Blog Posts</h2>
         <DataTable
           data={blogs}
           columns={columns}
           emptyMessage="No blog posts found"
         />
       </GlassCard>
+    </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
