@@ -86,6 +86,13 @@ export const browserDetection = {
       browserVersion = match ? match[1] : 'unknown';
       isSupported = parseInt(browserVersion) >= 90;
     }
+    // Chrome on iOS (uses CriOS instead of Chrome)
+    else if (userAgent.includes('CriOS')) {
+      browserName = 'Chrome';
+      const match = userAgent.match(/CriOS\/(\d+)/);
+      browserVersion = match ? match[1] : 'unknown';
+      isSupported = parseInt(browserVersion) >= 90;
+    }
     // Chrome (check before Safari as Chrome contains Safari in user agent)
     else if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
       browserName = 'Chrome';
@@ -101,7 +108,7 @@ export const browserDetection = {
       isSupported = parseInt(browserVersion) >= 88;
     }
     // Safari (check after Chrome since Chrome also contains Safari)
-    else if (userAgent.includes('Safari') && !userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
+    else if (userAgent.includes('Safari') && !userAgent.includes('Chrome') && !userAgent.includes('Edg') && !userAgent.includes('CriOS')) {
       browserName = 'Safari';
       const match = userAgent.match(/Version\/(\d+)/);
       browserVersion = match ? match[1] : 'unknown';
@@ -164,7 +171,8 @@ export class CompatibilityManager {
     if (process.env.NODE_ENV === 'development') {
       console.log('Browser Compatibility Info:', {
         browser: this.browserInfo,
-        features: this.features
+        features: this.features,
+        userAgent: navigator.userAgent
       });
     }
   }
@@ -227,10 +235,16 @@ export class CompatibilityManager {
     if (this.browserInfo.isSupported) return;
 
     // Don't show warning for modern browsers that are actually supported
-    if (this.browserInfo.name === 'Chrome' && parseInt(this.browserInfo.version) >= 80) return;
+    if (this.browserInfo.name === 'Chrome' && parseInt(this.browserInfo.version) >= 70) return;
     if (this.browserInfo.name === 'Safari' && parseInt(this.browserInfo.version) >= 12) return;
-    if (this.browserInfo.name === 'Firefox' && parseInt(this.browserInfo.version) >= 80) return;
-    if (this.browserInfo.name === 'Edge' && parseInt(this.browserInfo.version) >= 80) return;
+    if (this.browserInfo.name === 'Firefox' && parseInt(this.browserInfo.version) >= 70) return;
+    if (this.browserInfo.name === 'Edge' && parseInt(this.browserInfo.version) >= 79) return;
+
+    // Special handling for iOS devices - Chrome on iOS is essentially Safari
+    if (browserDetection.isIOS() && this.browserInfo.name === 'Chrome') {
+      // Chrome on iOS uses Safari's engine, so it should work fine
+      return;
+    }
 
     const warningDiv = document.createElement('div');
     warningDiv.id = 'browser-compatibility-warning';
