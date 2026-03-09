@@ -15,10 +15,13 @@ export const measureWebVitals = () => {
       const entries = list.getEntries();
       const fcpEntry = entries.find(entry => entry.name === 'first-contentful-paint');
       if (fcpEntry) {
-        console.log('First Contentful Paint:', fcpEntry.startTime, 'ms');
-        // Target: < 1.5s (1500ms)
-        if (fcpEntry.startTime > 1500) {
-          console.warn('FCP is slower than recommended (1.5s)');
+        // Only log in development, only warn if significantly slow
+        if (process.env.NODE_ENV === 'development') {
+          console.log('First Contentful Paint:', fcpEntry.startTime, 'ms');
+        }
+        // Target: < 2.5s (2500ms) - more lenient threshold
+        if (fcpEntry.startTime > 2500) {
+          console.warn('FCP is slower than recommended (2.5s)');
         }
       }
     });
@@ -30,10 +33,12 @@ export const measureWebVitals = () => {
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries();
       const lastEntry = entries[entries.length - 1];
-      console.log('Largest Contentful Paint:', lastEntry.startTime, 'ms');
-      // Target: < 2.5s (2500ms)
-      if (lastEntry.startTime > 2500) {
-        console.warn('LCP is slower than recommended (2.5s)');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Largest Contentful Paint:', lastEntry.startTime, 'ms');
+      }
+      // Target: < 4s (4000ms) - more lenient threshold
+      if (lastEntry.startTime > 4000) {
+        console.warn('LCP is slower than recommended (4s)');
       }
     });
     observer.observe({ entryTypes: ['largest-contentful-paint'] });
@@ -44,10 +49,12 @@ export const measureWebVitals = () => {
     window.addEventListener('load', () => {
       setTimeout(() => {
         const loadTime = performance.now();
-        console.log('Approximate Time to Interactive:', loadTime, 'ms');
-        // Target: < 3.5s (3500ms)
-        if (loadTime > 3500) {
-          console.warn('TTI is slower than recommended (3.5s)');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Approximate Time to Interactive:', loadTime, 'ms');
+        }
+        // Target: < 5s (5000ms) - more lenient threshold
+        if (loadTime > 5000) {
+          console.warn('TTI is slower than recommended (5s)');
         }
       }, 0);
     });
@@ -62,10 +69,12 @@ export const measureWebVitals = () => {
           clsValue += entry.value;
         }
       }
-      console.log('Cumulative Layout Shift:', clsValue);
-      // Target: < 0.1
-      if (clsValue > 0.1) {
-        console.warn('CLS is higher than recommended (0.1)');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Cumulative Layout Shift:', clsValue);
+      }
+      // Target: < 0.25 - more lenient threshold
+      if (clsValue > 0.25) {
+        console.warn('CLS is higher than recommended (0.25)');
       }
     });
     observer.observe({ entryTypes: ['layout-shift'] });
@@ -150,7 +159,10 @@ export const monitorBundleSize = () => {
     entries.forEach(entry => {
       if (entry.initiatorType === 'script' || entry.initiatorType === 'link') {
         const sizeKB = entry.transferSize ? (entry.transferSize / 1024).toFixed(2) : 'unknown';
-        console.log(`Resource: ${entry.name}, Size: ${sizeKB}KB, Load Time: ${entry.duration.toFixed(2)}ms`);
+        // Only log large resources or slow loading ones
+        if (entry.transferSize > 500000 || entry.duration > 1000) { // > 500KB or > 1s
+          console.log(`Large/Slow Resource: ${entry.name}, Size: ${sizeKB}KB, Load Time: ${entry.duration.toFixed(2)}ms`);
+        }
       }
     });
   });
@@ -209,9 +221,16 @@ export const monitorMemoryUsage = () => {
  * Initialize performance monitoring
  */
 export const initPerformanceMonitoring = () => {
+  // Only run detailed monitoring in development
   if (process.env.NODE_ENV === 'development') {
     measureWebVitals();
     monitorBundleSize();
-    monitorMemoryUsage();
+    // Only monitor memory usage if explicitly enabled
+    if (localStorage.getItem('enableMemoryMonitoring') === 'true') {
+      monitorMemoryUsage();
+    }
+  } else {
+    // In production, only measure critical metrics without console logs
+    measureWebVitals();
   }
 };

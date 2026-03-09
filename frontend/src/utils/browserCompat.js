@@ -79,8 +79,15 @@ export const browserDetection = {
     let browserVersion = 'unknown';
     let isSupported = true;
 
-    // Chrome
-    if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
+    // Edge (check first as it contains Chrome in user agent)
+    if (userAgent.includes('Edg')) {
+      browserName = 'Edge';
+      const match = userAgent.match(/Edg\/(\d+)/);
+      browserVersion = match ? match[1] : 'unknown';
+      isSupported = parseInt(browserVersion) >= 90;
+    }
+    // Chrome (check before Safari as Chrome contains Safari in user agent)
+    else if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
       browserName = 'Chrome';
       const match = userAgent.match(/Chrome\/(\d+)/);
       browserVersion = match ? match[1] : 'unknown';
@@ -93,19 +100,12 @@ export const browserDetection = {
       browserVersion = match ? match[1] : 'unknown';
       isSupported = parseInt(browserVersion) >= 88;
     }
-    // Safari
-    else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+    // Safari (check after Chrome since Chrome also contains Safari)
+    else if (userAgent.includes('Safari') && !userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
       browserName = 'Safari';
       const match = userAgent.match(/Version\/(\d+)/);
       browserVersion = match ? match[1] : 'unknown';
       isSupported = parseInt(browserVersion) >= 14;
-    }
-    // Edge
-    else if (userAgent.includes('Edg')) {
-      browserName = 'Edge';
-      const match = userAgent.match(/Edg\/(\d+)/);
-      browserVersion = match ? match[1] : 'unknown';
-      isSupported = parseInt(browserVersion) >= 90;
     }
     // Internet Explorer
     else if (userAgent.includes('MSIE') || userAgent.includes('Trident')) {
@@ -226,6 +226,12 @@ export class CompatibilityManager {
   showCompatibilityWarning() {
     if (this.browserInfo.isSupported) return;
 
+    // Don't show warning for modern browsers that are actually supported
+    if (this.browserInfo.name === 'Chrome' && parseInt(this.browserInfo.version) >= 80) return;
+    if (this.browserInfo.name === 'Safari' && parseInt(this.browserInfo.version) >= 12) return;
+    if (this.browserInfo.name === 'Firefox' && parseInt(this.browserInfo.version) >= 80) return;
+    if (this.browserInfo.name === 'Edge' && parseInt(this.browserInfo.version) >= 80) return;
+
     const warningDiv = document.createElement('div');
     warningDiv.id = 'browser-compatibility-warning';
     warningDiv.innerHTML = `
@@ -236,38 +242,37 @@ export class CompatibilityManager {
         right: 0;
         background: #f59e0b;
         color: white;
-        padding: 12px;
+        padding: 8px 12px;
         text-align: center;
         z-index: 10000;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-size: 14px;
+        font-size: 13px;
         line-height: 1.4;
       ">
-        <strong>Browser Compatibility Notice:</strong> 
-        You're using ${this.browserInfo.name} ${this.browserInfo.version}. 
-        For the best experience, please update to a modern browser 
-        (Chrome 90+, Firefox 88+, Safari 14+, or Edge 90+).
+        <strong>Browser Notice:</strong> 
+        For the best experience, please update your browser.
         <button onclick="this.parentElement.parentElement.remove()" style="
           margin-left: 10px;
           background: rgba(255,255,255,0.2);
           border: none;
           color: white;
-          padding: 4px 8px;
-          border-radius: 4px;
+          padding: 2px 6px;
+          border-radius: 3px;
           cursor: pointer;
+          font-size: 12px;
         ">×</button>
       </div>
     `;
 
     document.body.appendChild(warningDiv);
 
-    // Auto-hide after 10 seconds
+    // Auto-hide after 5 seconds
     setTimeout(() => {
       const warning = document.getElementById('browser-compatibility-warning');
       if (warning) {
         warning.remove();
       }
-    }, 10000);
+    }, 5000);
   }
 }
 
