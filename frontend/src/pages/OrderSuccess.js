@@ -98,14 +98,8 @@ const OrderSuccess = () => {
                 <span className="text-gray-800 dark:text-white">KSh {orderData.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Shipping</span>
-                <span className="text-gray-800">
-                  {orderData.shipping === 0 ? 'Free' : `KSh ${orderData.shipping.toFixed(2)}`}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Tax</span>
-                <span className="text-gray-800 dark:text-white">KSh {orderData.tax.toFixed(2)}</span>
+                <span className="text-gray-600">Shipping (Nairobi)</span>
+                <span className="text-gray-800">KSh {orderData.shipping.toFixed(2)}</span>
               </div>
               <div className="flex justify-between font-semibold text-lg border-t border-white/20 pt-2">
                 <span className="text-gray-800">Total</span>

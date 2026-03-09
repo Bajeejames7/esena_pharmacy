@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useBreakpoint } from '../utils/responsive';
 import AdminSidebar from '../components/AdminSidebar';
+import AdminHeader from '../components/AdminHeader';
 import DataTable from '../components/DataTable';
 import GlassCard from '../components/GlassCard';
 import GlassButton from '../components/forms/GlassButton';
 import GlassInput from '../components/forms/GlassInput';
 import GlassSelect from '../components/forms/GlassSelect';
+import ThemeToggle from '../components/ThemeToggle';
 
 /**
  * Admin orders management page
@@ -68,34 +70,9 @@ const ManageOrders = () => {
       // TODO: Replace with actual API call
       // const response = await ordersAPI.getAll({ page: currentPage, search: searchTerm, status: statusFilter });
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Generate demo data
-      const allOrders = generateDemoOrders();
-      let filteredOrders = allOrders;
-      
-      // Apply filters
-      if (searchTerm) {
-        filteredOrders = filteredOrders.filter(order =>
-          order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
-      
-      if (statusFilter) {
-        filteredOrders = filteredOrders.filter(order => order.status === statusFilter);
-      }
-      
-      // Pagination
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
-      
-      setOrders(paginatedOrders);
-      setTotalItems(filteredOrders.length);
-      setTotalPages(Math.ceil(filteredOrders.length / itemsPerPage));
+      setOrders([]);
+      setTotalItems(0);
+      setTotalPages(1);
     } catch (err) {
       setError('Failed to load orders. Please try again.');
       console.error('Load orders error:', err);
@@ -104,63 +81,17 @@ const ManageOrders = () => {
     }
   };
 
-  const generateDemoOrders = () => {
-    const demoOrders = [];
-    const customers = [
-      { name: 'John Doe', email: 'john.doe@example.com', phone: '(555) 123-4567' },
-      { name: 'Jane Smith', email: 'jane.smith@example.com', phone: '(555) 234-5678' },
-      { name: 'Bob Johnson', email: 'bob.johnson@example.com', phone: '(555) 345-6789' },
-      { name: 'Alice Brown', email: 'alice.brown@example.com', phone: '(555) 456-7890' },
-      { name: 'Charlie Wilson', email: 'charlie.wilson@example.com', phone: '(555) 567-8901' }
-    ];
-    
-    const statuses = ['pending', 'processing', 'payment_requested', 'dispatched', 'delivered', 'cancelled'];
-    const items = [
-      { name: 'Vitamin D3 Supplement', price: 15.99, quantity: 2 },
-      { name: 'Pain Relief Tablets', price: 8.50, quantity: 1 },
-      { name: 'Hand Sanitizer', price: 4.99, quantity: 3 },
-      { name: 'Omega-3 Fish Oil', price: 22.75, quantity: 1 },
-      { name: 'First Aid Kit', price: 35.00, quantity: 1 }
-    ];
-    
-    for (let i = 0; i < 100; i++) {
-      const customer = customers[i % customers.length];
-      const orderItems = items.slice(0, Math.floor(Math.random() * 3) + 1);
-      const subtotal = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      const shipping = subtotal > 50 ? 0 : 5.99;
-      const tax = subtotal * 0.08;
-      const total = subtotal + shipping + tax;
-      
-      demoOrders.push({
-        id: `ORD-${(i + 1).toString().padStart(5, '0')}`,
-        token: `TOKEN-${Math.random().toString(36).substr(2, 10).toUpperCase()}`,
-        customerName: customer.name,
-        customerEmail: customer.email,
-        customerPhone: customer.phone,
-        customerAddress: `${Math.floor(Math.random() * 9999) + 1} Main St, City, State ${Math.floor(Math.random() * 90000) + 10000}`,
-        items: orderItems,
-        subtotal,
-        shipping,
-        tax,
-        total,
-        status: statuses[Math.floor(Math.random() * statuses.length)],
-        createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
-      });
-    }
-    
-    return demoOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  };
+
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'processing': return 'bg-blue-100 text-blue-800';
-      case 'payment_requested': return 'bg-purple-100 text-purple-800';
-      case 'dispatched': return 'bg-green-100 text-green-800';
-      case 'delivered': return 'bg-green-200 text-green-900';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pending': return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300';
+      case 'processing': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300';
+      case 'payment_requested': return 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300';
+      case 'dispatched': return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
+      case 'delivered': return 'bg-green-200 dark:bg-green-800/30 text-green-900 dark:text-green-200';
+      case 'cancelled': return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
+      default: return 'bg-gray-100 dark:bg-gray-800/30 text-gray-800 dark:text-gray-300';
     }
   };
 
@@ -170,7 +101,7 @@ const ManageOrders = () => {
       label: 'Order ID',
       sortable: true,
       render: (value) => (
-        <span className="font-mono text-sm font-medium text-gray-800">{value}</span>
+        <span className="font-mono text-sm font-medium text-gray-800 dark:text-gray-100">{value}</span>
       )
     },
     {
@@ -179,8 +110,8 @@ const ManageOrders = () => {
       sortable: true,
       render: (value, row) => (
         <div>
-          <p className="font-medium text-gray-800">{value}</p>
-          <p className="text-sm text-gray-600">{row.customerEmail}</p>
+          <p className="font-medium text-gray-800 dark:text-gray-100">{value}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">{row.customerEmail}</p>
         </div>
       )
     },
@@ -268,7 +199,13 @@ const ManageOrders = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-glass-blue/20 via-glass-green/20 to-glass-white flex">
+    <div className="min-h-screen bg-gradient-to-br from-glass-blue/20 via-glass-green/20 to-glass-white dark:from-slate-900/50 dark:via-slate-800/50 dark:to-slate-900 flex flex-col">
+      <AdminHeader 
+        onMenuToggle={() => setSidebarOpen(true)}
+        showMenuButton={isMobile}
+      />
+      
+      <div className="flex flex-1">
       <AdminSidebar 
         isOpen={sidebarOpen} 
         onToggle={() => setSidebarOpen(!sidebarOpen)} 
@@ -281,30 +218,26 @@ const ManageOrders = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-4">
-              {isMobile && (
-                <button
-                  onClick={() => setSidebarOpen(true)}
-                  className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
-                  aria-label="Open menu"
-                >
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                </button>
-              )}
+              {/* Remove mobile menu button since it's now in AdminHeader */}
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">Manage Orders</h1>
-                <p className="text-gray-600">View and update customer orders</p>
+                <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 lg:block hidden">Manage Orders</h1>
+                <p className="text-gray-600 dark:text-gray-300">View and update customer orders</p>
               </div>
             </div>
             
-            <GlassButton
-              variant="secondary"
-              onClick={loadOrders}
-              disabled={loading}
-            >
-              {loading ? 'Refreshing...' : 'Refresh'}
-            </GlassButton>
+            <div className="flex items-center space-x-3">
+              <div className="hidden lg:block">
+                <ThemeToggle showLabel={true} />
+              </div>
+              
+              <GlassButton
+                variant="secondary"
+                onClick={loadOrders}
+                disabled={loading}
+              >
+                {loading ? 'Refreshing...' : 'Refresh'}
+              </GlassButton>
+            </div>
           </div>
 
           {/* Search and Filters */}
@@ -520,6 +453,7 @@ const ManageOrders = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

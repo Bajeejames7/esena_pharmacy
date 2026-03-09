@@ -181,7 +181,7 @@ describe("Email Service Unit Tests", () => {
         token: "ABC123XYZ456"
       };
       
-      const template = orderConfirmationTemplate(order);
+      const template = orderConfirmationTemplate(order, []);
       
       expect(template).toHaveProperty("subject");
       expect(template).toHaveProperty("html");
@@ -333,7 +333,7 @@ describe("Email Service Unit Tests", () => {
         // notes is missing (optional)
       };
       
-      const template = orderConfirmationTemplate(order);
+      const template = orderConfirmationTemplate(order, []);
       
       expect(template).toHaveProperty("subject");
       expect(template).toHaveProperty("html");
@@ -354,7 +354,7 @@ describe("Email Service Unit Tests", () => {
         token: "SAFE123"
       };
       
-      const template = orderConfirmationTemplate(order);
+      const template = orderConfirmationTemplate(order, []);
       
       // Template should include the name (even with special characters)
       expect(template.html).toContain("User");
@@ -468,7 +468,7 @@ describe("Email Service Unit Tests", () => {
       };
       
       const templates = [
-        orderConfirmationTemplate(order),
+        orderConfirmationTemplate(order, []),
         orderAdminNotificationTemplate(order, items),
         paymentRequestTemplate(order),
         dispatchNotificationTemplate(order),
@@ -500,7 +500,7 @@ describe("Email Service Unit Tests", () => {
       };
       
       const templates = [
-        orderConfirmationTemplate(order),
+        orderConfirmationTemplate(order, []),
         paymentRequestTemplate(order),
         dispatchNotificationTemplate(order)
       ];

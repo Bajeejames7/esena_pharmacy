@@ -1,5 +1,11 @@
 const db = require("../config/db");
-const transporter = require("../config/mail");
+const { 
+  sendEmail, 
+  appointmentConfirmationTemplate, 
+  appointmentAdminNotificationTemplate,
+  appointmentConfirmationUpdateTemplate,
+  appointmentCompletionTemplate
+} = require("../config/mail");
 const { generateUniqueToken } = require("../utils/tokenGenerator");
 
 // Valid appointment services
@@ -85,41 +91,35 @@ exports.createAppointment = async (req, res) => {
     let emailWarning = false;
     
     try {
+      // Prepare appointment object for email templates
+      const appointmentForEmail = {
+        name,
+        email,
+        phone,
+        service,
+        date,
+        message,
+        token
+      };
+      
       // Send confirmation email to customer (Requirement 8.10)
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
+      const customerTemplate = appointmentConfirmationTemplate(appointmentForEmail);
+      const customerEmailSent = await sendEmail({
         to: email,
-        subject: "Appointment Confirmation - Esena Pharmacy",
-        html: `
-          <h2>Appointment Confirmation</h2>
-          <p>Dear ${name},</p>
-          <p>Your appointment has been successfully booked!</p>
-          <p><strong>Service:</strong> ${service}</p>
-          <p><strong>Date:</strong> ${new Date(date).toLocaleDateString()}</p>
-          <p><strong>Appointment Token:</strong> ${token}</p>
-          ${message ? `<p><strong>Your Message:</strong> ${message}</p>` : ''}
-          <p>We will contact you to confirm the exact time. Please keep your appointment token for reference.</p>
-          <p>Thank you for choosing Esena Pharmacy!</p>
-        `
+        subject: customerTemplate.subject,
+        html: customerTemplate.html
       });
       
       // Send notification email to admin (Requirement 8.11)
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
+      const adminTemplate = appointmentAdminNotificationTemplate(appointmentForEmail);
+      const adminEmailSent = await sendEmail({
         to: process.env.EMAIL_USER,
-        subject: `New Appointment: ${service} - ${name}`,
-        html: `
-          <h2>New Appointment Booking</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Phone:</strong> ${phone}</p>
-          <p><strong>Service:</strong> ${service}</p>
-          <p><strong>Date:</strong> ${new Date(date).toLocaleDateString()}</p>
-          <p><strong>Token:</strong> ${token}</p>
-          ${message ? `<p><strong>Message:</strong> ${message}</p>` : ''}
-          <p>Please confirm this appointment with the customer.</p>
-        `
+        subject: adminTemplate.subject,
+        html: adminTemplate.html
       });
+      
+      // Set warning if either email failed
+      emailWarning = !customerEmailSent || !adminEmailSent;
     } catch (emailError) {
       console.error("Email sending failed:", emailError);
       emailWarning = true;
@@ -199,39 +199,22 @@ exports.updateAppointmentStatus = async (req, res) => {
     try {
       if (status === 'confirmed') {
         // Send confirmation update email (Requirement 9.6)
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
+        const template = appointmentConfirmationUpdateTemplate(appointment);
+        const emailSent = await sendEmail({
           to: appointment.email,
-          subject: "Appointment Confirmed - Esena Pharmacy",
-          html: `
-            <h2>Your Appointment Has Been Confirmed</h2>
-            <p>Dear ${appointment.name},</p>
-            <p>We are pleased to confirm your appointment:</p>
-            <p><strong>Service:</strong> ${appointment.service}</p>
-            <p><strong>Date:</strong> ${new Date(appointment.date).toLocaleDateString()}</p>
-            <p><strong>Appointment Token:</strong> ${appointment.token}</p>
-            <p>Please arrive 15 minutes early for your appointment.</p>
-            <p>If you need to reschedule, please contact us as soon as possible.</p>
-            <p>Thank you for choosing Esena Pharmacy!</p>
-          `
+          subject: template.subject,
+          html: template.html
         });
+        emailWarning = !emailSent;
       } else if (status === 'completed') {
         // Send completion notification email (Requirement 9.7)
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
+        const template = appointmentCompletionTemplate(appointment);
+        const emailSent = await sendEmail({
           to: appointment.email,
-          subject: "Appointment Completed - Esena Pharmacy",
-          html: `
-            <h2>Thank You for Your Visit</h2>
-            <p>Dear ${appointment.name},</p>
-            <p>Your appointment has been completed successfully.</p>
-            <p><strong>Service:</strong> ${appointment.service}</p>
-            <p><strong>Date:</strong> ${new Date(appointment.date).toLocaleDateString()}</p>
-            <p>We hope you had a positive experience with our services.</p>
-            <p>If you have any questions or need follow-up care, please don't hesitate to contact us.</p>
-            <p>Thank you for choosing Esena Pharmacy!</p>
-          `
+          subject: template.subject,
+          html: template.html
         });
+        emailWarning = !emailSent;
       }
     } catch (emailError) {
       console.error("Email sending failed:", emailError);

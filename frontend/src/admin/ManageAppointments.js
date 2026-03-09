@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useBreakpoint } from '../utils/responsive';
 import AdminSidebar from '../components/AdminSidebar';
+import AdminHeader from '../components/AdminHeader';
 import DataTable from '../components/DataTable';
 import GlassCard from '../components/GlassCard';
 import GlassButton from '../components/forms/GlassButton';
 import GlassInput from '../components/forms/GlassInput';
 import GlassSelect from '../components/forms/GlassSelect';
+import ThemeToggle from '../components/ThemeToggle';
 
 /**
  * Admin appointments management page
@@ -76,38 +78,9 @@ const ManageAppointments = () => {
       // TODO: Replace with actual API call
       // const response = await appointmentsAPI.getAll({ page: currentPage, search: searchTerm, status: statusFilter, service: serviceFilter });
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Generate demo data
-      const allAppointments = generateDemoAppointments();
-      let filteredAppointments = allAppointments;
-      
-      // Apply filters
-      if (searchTerm) {
-        filteredAppointments = filteredAppointments.filter(appointment =>
-          appointment.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          appointment.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          appointment.customerEmail.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
-      
-      if (statusFilter) {
-        filteredAppointments = filteredAppointments.filter(appointment => appointment.status === statusFilter);
-      }
-      
-      if (serviceFilter) {
-        filteredAppointments = filteredAppointments.filter(appointment => appointment.service === serviceFilter);
-      }
-      
-      // Pagination
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const paginatedAppointments = filteredAppointments.slice(startIndex, endIndex);
-      
-      setAppointments(paginatedAppointments);
-      setTotalItems(filteredAppointments.length);
-      setTotalPages(Math.ceil(filteredAppointments.length / itemsPerPage));
+      setAppointments([]);
+      setTotalItems(0);
+      setTotalPages(1);
     } catch (err) {
       setError('Failed to load appointments. Please try again.');
       console.error('Load appointments error:', err);
@@ -116,62 +89,16 @@ const ManageAppointments = () => {
     }
   };
 
-  const generateDemoAppointments = () => {
-    const demoAppointments = [];
-    const customers = [
-      { name: 'Alice Brown', email: 'alice.brown@example.com', phone: '(555) 123-4567' },
-      { name: 'Charlie Wilson', email: 'charlie.wilson@example.com', phone: '(555) 234-5678' },
-      { name: 'Diana Davis', email: 'diana.davis@example.com', phone: '(555) 345-6789' },
-      { name: 'Eva Martinez', email: 'eva.martinez@example.com', phone: '(555) 456-7890' },
-      { name: 'Frank Johnson', email: 'frank.johnson@example.com', phone: '(555) 567-8901' }
-    ];
-    
-    const services = ['dermatology', 'labtest', 'pharmacist', 'vaccination', 'health-screening'];
-    const serviceLabels = {
-      dermatology: 'Dermatology Consultation',
-      labtest: 'Lab Test',
-      pharmacist: 'Pharmacist Consultation',
-      vaccination: 'Vaccination',
-      'health-screening': 'Health Screening'
-    };
-    
-    const statuses = ['pending', 'confirmed', 'completed', 'cancelled', 'no_show'];
-    const timeSlots = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'];
-    
-    for (let i = 0; i < 80; i++) {
-      const customer = customers[i % customers.length];
-      const service = services[i % services.length];
-      const appointmentDate = new Date();
-      appointmentDate.setDate(appointmentDate.getDate() + Math.floor(Math.random() * 30) - 15); // ±15 days from today
-      
-      demoAppointments.push({
-        id: `APT-${(i + 1).toString().padStart(4, '0')}`,
-        token: `TOKEN-${Math.random().toString(36).substr(2, 10).toUpperCase()}`,
-        customerName: customer.name,
-        customerEmail: customer.email,
-        customerPhone: customer.phone,
-        service,
-        serviceLabel: serviceLabels[service],
-        date: appointmentDate.toISOString().split('T')[0],
-        time: timeSlots[Math.floor(Math.random() * timeSlots.length)],
-        status: statuses[Math.floor(Math.random() * statuses.length)],
-        message: `Appointment request for ${serviceLabels[service].toLowerCase()}. Please confirm availability.`,
-        createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
-      });
-    }
-    
-    return demoAppointments.sort((a, b) => new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time));
-  };
+
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'confirmed': return 'bg-green-100 text-green-800';
-      case 'completed': return 'bg-blue-100 text-blue-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      case 'no_show': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pending': return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300';
+      case 'confirmed': return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
+      case 'completed': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300';
+      case 'cancelled': return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
+      case 'no_show': return 'bg-gray-100 dark:bg-gray-800/30 text-gray-800 dark:text-gray-300';
+      default: return 'bg-gray-100 dark:bg-gray-800/30 text-gray-800 dark:text-gray-300';
     }
   };
 
@@ -198,7 +125,7 @@ const ManageAppointments = () => {
       label: 'Appointment ID',
       sortable: true,
       render: (value) => (
-        <span className="font-mono text-sm font-medium text-gray-800">{value}</span>
+        <span className="font-mono text-sm font-medium text-gray-800 dark:text-gray-100">{value}</span>
       )
     },
     {
@@ -207,8 +134,8 @@ const ManageAppointments = () => {
       sortable: true,
       render: (value, row) => (
         <div>
-          <p className="font-medium text-gray-800">{value}</p>
-          <p className="text-sm text-gray-600">{row.customerEmail}</p>
+          <p className="font-medium text-gray-800 dark:text-gray-100">{value}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">{row.customerEmail}</p>
         </div>
       )
     },
@@ -219,7 +146,7 @@ const ManageAppointments = () => {
       render: (value, row) => (
         <div className="flex items-center space-x-2">
           <span className="text-lg">{getServiceIcon(value)}</span>
-          <span className="text-gray-800">{row.serviceLabel}</span>
+          <span className="text-gray-800 dark:text-gray-100">{row.serviceLabel}</span>
         </div>
       )
     },
@@ -229,8 +156,8 @@ const ManageAppointments = () => {
       sortable: true,
       render: (value, row) => (
         <div>
-          <p className="font-medium text-gray-800">{new Date(value).toLocaleDateString()}</p>
-          <p className="text-sm text-gray-600">{row.time}</p>
+          <p className="font-medium text-gray-800 dark:text-gray-100">{new Date(value).toLocaleDateString()}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">{row.time}</p>
         </div>
       )
     },
@@ -307,7 +234,13 @@ const ManageAppointments = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-glass-blue/20 via-glass-green/20 to-glass-white flex">
+    <div className="min-h-screen bg-gradient-to-br from-glass-blue/20 via-glass-green/20 to-glass-white dark:from-slate-900/50 dark:via-slate-800/50 dark:to-slate-900 flex flex-col">
+      <AdminHeader 
+        onMenuToggle={() => setSidebarOpen(true)}
+        showMenuButton={isMobile}
+      />
+      
+      <div className="flex flex-1">
       <AdminSidebar 
         isOpen={sidebarOpen} 
         onToggle={() => setSidebarOpen(!sidebarOpen)} 
@@ -332,18 +265,24 @@ const ManageAppointments = () => {
                 </button>
               )}
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">Manage Appointments</h1>
-                <p className="text-gray-600">View and manage customer appointments</p>
+                <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Manage Appointments</h1>
+                <p className="text-gray-600 dark:text-gray-300">View and manage customer appointments</p>
               </div>
             </div>
             
-            <GlassButton
-              variant="secondary"
-              onClick={loadAppointments}
-              disabled={loading}
-            >
-              {loading ? 'Refreshing...' : 'Refresh'}
-            </GlassButton>
+            <div className="flex items-center space-x-3">
+              <div className="hidden lg:block">
+                <ThemeToggle showLabel={true} />
+              </div>
+              
+              <GlassButton
+                variant="secondary"
+                onClick={loadAppointments}
+                disabled={loading}
+              >
+                {loading ? 'Refreshing...' : 'Refresh'}
+              </GlassButton>
+            </div>
           </div>
 
           {/* Search and Filters */}
@@ -543,6 +482,7 @@ const ManageAppointments = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

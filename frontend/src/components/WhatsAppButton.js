@@ -17,9 +17,27 @@ const WhatsAppButton = ({
   };
 
   return (
-    <div className={`fixed bottom-6 right-6 z-50 ${className}`}>
+    <>
+      <style>
+        {`
+          @keyframes gentle-pulse {
+            0%, 100% {
+              transform: scale(1);
+              opacity: 1;
+            }
+            50% {
+              transform: scale(1.05);
+              opacity: 0.9;
+            }
+          }
+        `}
+      </style>
+      <div className={`fixed bottom-6 right-6 z-50 ${className}`}>
       <GlassCard
         className="p-4 hover:scale-110 transform transition-all duration-300"
+        style={{
+          animation: 'gentle-pulse 3s ease-in-out infinite'
+        }}
         blur="lg"
         opacity={0.15}
         hover
@@ -47,6 +65,7 @@ const WhatsAppButton = ({
         </div>
       </GlassCard>
     </div>
+    </>
   );
 };
 

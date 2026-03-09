@@ -1,5 +1,5 @@
 const db = require("../config/db");
-const transporter = require("../config/mail");
+const { sendEmail } = require("../config/mail");
 
 // Validation helper
 const validateContactData = (data) => {
@@ -60,8 +60,8 @@ exports.createContact = async (req, res) => {
     let emailWarning = false;
     
     try {
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
+      // Send notification to admin
+      await sendEmail({
         to: process.env.EMAIL_USER,
         subject: `New Contact Message from ${name}`,
         html: `
@@ -78,8 +78,7 @@ exports.createContact = async (req, res) => {
       });
       
       // Send confirmation email to customer
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
+      await sendEmail({
         to: email,
         subject: "Thank you for contacting Esena Pharmacy",
         html: `

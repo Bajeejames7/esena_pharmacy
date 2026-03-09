@@ -103,13 +103,13 @@ const Footer = () => {
                   <span className="text-sm">0768103599</span>
                 </a>
                 <a 
-                  href="mailto:info@esena.co.ke" 
+                  href="mailto:esenapharmacy@gmail.com" 
                   className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-glass-blue dark:hover:text-blue-400 transition-colors duration-200 group"
                 >
                   <svg className="w-4 h-4 text-gray-500 dark:text-gray-400 group-hover:text-glass-blue dark:group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-sm">info@esena.co.ke</span>
+                  <span className="text-sm">esenapharmacy@gmail.com</span>
                 </a>
                 <a 
                   href="https://maps.app.goo.gl/eePC6915PAvPcp2w5" 
@@ -134,7 +134,7 @@ const Footer = () => {
                 © 2026 Esena Pharmacy. All rights reserved.
               </p>
               <div className="flex space-x-6 mt-4 md:mt-0">
-                <Link to="/privacy" className="text-gray-600 dark:text-gray-300 hover:text-glass-blue dark:hover:text-blue-400 transition-colors duration-200 text-sm">
+                <Link to="/privacy-policy" className="text-gray-600 dark:text-gray-300 hover:text-glass-blue dark:hover:text-blue-400 transition-colors duration-200 text-sm">
                   Privacy Policy
                 </Link>
                 <Link to="/terms" className="text-gray-600 dark:text-gray-300 hover:text-glass-blue dark:hover:text-blue-400 transition-colors duration-200 text-sm">

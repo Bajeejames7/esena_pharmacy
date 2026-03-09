@@ -41,18 +41,18 @@ const DataTable = ({
   const getSortIcon = (key) => {
     if (sortConfig.key !== key) {
       return (
-        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
         </svg>
       );
     }
     
     return sortConfig.direction === 'asc' ? (
-      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
       </svg>
     ) : (
-      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" />
       </svg>
     );
@@ -78,7 +78,7 @@ const DataTable = ({
 
     return (
       <div className="flex items-center justify-between mt-6">
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-gray-600 dark:text-gray-300">
           Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} results
         </div>
         
@@ -86,7 +86,7 @@ const DataTable = ({
           <button
             onClick={() => onPageChange && onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-3 py-1 rounded-lg bg-white/20 text-gray-600 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-3 py-1 rounded-lg bg-white/20 dark:bg-slate-700/50 text-gray-600 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-slate-600/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Previous
           </button>
@@ -95,11 +95,11 @@ const DataTable = ({
             <>
               <button
                 onClick={() => onPageChange && onPageChange(1)}
-                className="px-3 py-1 rounded-lg bg-white/20 text-gray-600 hover:bg-white/30 transition-colors"
+                className="px-3 py-1 rounded-lg bg-white/20 dark:bg-slate-700/50 text-gray-600 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-slate-600/50 transition-colors"
               >
                 1
               </button>
-              {startPage > 2 && <span className="text-gray-400">...</span>}
+              {startPage > 2 && <span className="text-gray-400 dark:text-gray-500">...</span>}
             </>
           )}
           
@@ -109,8 +109,8 @@ const DataTable = ({
               onClick={() => onPageChange && onPageChange(page)}
               className={`px-3 py-1 rounded-lg transition-colors ${
                 page === currentPage
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-white/20 text-gray-600 hover:bg-white/30'
+                  ? 'bg-blue-500 dark:bg-blue-600 text-white'
+                  : 'bg-white/20 dark:bg-slate-700/50 text-gray-600 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-slate-600/50'
               }`}
             >
               {page}
@@ -119,10 +119,10 @@ const DataTable = ({
           
           {!isMobile && endPage < totalPages && (
             <>
-              {endPage < totalPages - 1 && <span className="text-gray-400">...</span>}
+              {endPage < totalPages - 1 && <span className="text-gray-400 dark:text-gray-500">...</span>}
               <button
                 onClick={() => onPageChange && onPageChange(totalPages)}
-                className="px-3 py-1 rounded-lg bg-white/20 text-gray-600 hover:bg-white/30 transition-colors"
+                className="px-3 py-1 rounded-lg bg-white/20 dark:bg-slate-700/50 text-gray-600 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-slate-600/50 transition-colors"
               >
                 {totalPages}
               </button>
@@ -132,7 +132,7 @@ const DataTable = ({
           <button
             onClick={() => onPageChange && onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-3 py-1 rounded-lg bg-white/20 text-gray-600 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-3 py-1 rounded-lg bg-white/20 dark:bg-slate-700/50 text-gray-600 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-slate-600/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Next
           </button>
@@ -146,7 +146,7 @@ const DataTable = ({
       <GlassCard className="p-8">
         <div className="flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="ml-3 text-gray-600">Loading...</span>
+          <span className="ml-3 text-gray-600 dark:text-gray-300">Loading...</span>
         </div>
       </GlassCard>
     );
@@ -159,8 +159,8 @@ const DataTable = ({
           <svg className="w-12 h-12 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <p className="text-red-700 font-medium mb-2">Error Loading Data</p>
-          <p className="text-gray-600">{error}</p>
+          <p className="text-red-700 dark:text-red-400 font-medium mb-2">Error Loading Data</p>
+          <p className="text-gray-600 dark:text-gray-300">{error}</p>
         </div>
       </GlassCard>
     );
@@ -170,10 +170,10 @@ const DataTable = ({
     return (
       <GlassCard className="p-8">
         <div className="text-center">
-          <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <p className="text-gray-600">{emptyMessage}</p>
+          <p className="text-gray-600 dark:text-gray-300">{emptyMessage}</p>
         </div>
       </GlassCard>
     );
@@ -188,8 +188,8 @@ const DataTable = ({
             <div className="space-y-3">
               {columns.map((column) => (
                 <div key={column.key} className="flex justify-between items-start">
-                  <span className="text-sm font-medium text-gray-600">{column.label}:</span>
-                  <span className="text-sm text-gray-800 text-right">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{column.label}:</span>
+                  <span className="text-sm text-gray-800 dark:text-gray-100 text-right">
                     {column.render ? column.render(row[column.key], row) : row[column.key]}
                   </span>
                 </div>
@@ -225,12 +225,12 @@ const DataTable = ({
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-white/20">
+            <tr className="border-b border-white/20 dark:border-slate-600/30">
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className={`px-6 py-4 text-left text-sm font-medium text-gray-700 ${
-                    column.sortable ? 'cursor-pointer hover:text-gray-900' : ''
+                  className={`px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-200 ${
+                    column.sortable ? 'cursor-pointer hover:text-gray-900 dark:hover:text-gray-100' : ''
                   }`}
                   onClick={column.sortable ? () => handleSort(column.key) : undefined}
                 >
@@ -241,7 +241,7 @@ const DataTable = ({
                 </th>
               ))}
               {actions.length > 0 && (
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-700">
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-200">
                   Actions
                 </th>
               )}
@@ -251,10 +251,10 @@ const DataTable = ({
             {data.map((row, index) => (
               <tr
                 key={index}
-                className="border-b border-white/10 hover:bg-white/5 transition-colors"
+                className="border-b border-white/10 dark:border-slate-600/20 hover:bg-white/5 dark:hover:bg-slate-700/20 transition-colors"
               >
                 {columns.map((column) => (
-                  <td key={column.key} className="px-6 py-4 text-sm text-gray-800">
+                  <td key={column.key} className="px-6 py-4 text-sm text-gray-800 dark:text-gray-100">
                     {column.render ? column.render(row[column.key], row) : row[column.key]}
                   </td>
                 ))}

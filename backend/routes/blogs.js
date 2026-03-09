@@ -1,0 +1,18 @@
+const express = require("express");
+const router = express.Router();
+const blogController = require("../controllers/blogController");
+const auth = require("../middleware/auth");
+
+// Public routes
+router.get("/published", blogController.getPublishedBlogs);
+router.get("/slug/:slug", blogController.getBlogBySlug);
+
+// Admin routes (protected)
+router.get("/", auth, blogController.getAllBlogs);
+router.get("/:id", auth, blogController.getBlogById);
+router.post("/", auth, blogController.createBlog);
+router.put("/:id", auth, blogController.updateBlog);
+router.delete("/:id", auth, blogController.deleteBlog);
+router.patch("/:id/toggle-status", auth, blogController.toggleBlogStatus);
+
+module.exports = router;

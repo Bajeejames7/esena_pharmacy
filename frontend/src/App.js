@@ -20,12 +20,16 @@ import Shop from './pages/Shop';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
 import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
 import TrackOrder from './pages/TrackOrder';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfUse from './pages/TermsOfUse';
 import AdminLogin from './admin/Login';
 import AdminDashboard from './admin/Dashboard';
 import ManageProducts from './admin/ManageProducts';
 import ManageOrders from './admin/ManageOrders';
 import ManageAppointments from './admin/ManageAppointments';
+import ManageBlogs from './admin/ManageBlogs';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Component to handle focus management on route changes
@@ -41,6 +45,32 @@ const FocusManager = ({ children }) => {
   }, [location.pathname]);
 
   return children;
+};
+
+// Component to conditionally render Header based on route
+const ConditionalHeader = () => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  
+  // Don't render Header on admin routes
+  if (isAdminRoute) {
+    return null;
+  }
+  
+  return <Header />;
+};
+
+// Component to conditionally render Footer based on route
+const ConditionalFooter = () => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  
+  // Don't render Footer on admin routes
+  if (isAdminRoute) {
+    return null;
+  }
+  
+  return <Footer />;
 };
 
 function App() {
@@ -81,7 +111,7 @@ function App() {
 
           <FocusManager>
           <div className="min-h-screen flex flex-col">
-            <Header />
+            <ConditionalHeader />
             <main 
               id="main-content" 
               className="flex-1" 
@@ -103,8 +133,11 @@ function App() {
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order-success" element={<OrderSuccess />} />
               <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/track/:token" element={<TrackOrder />} />
               <Route path="/track-order" element={<TrackOrder />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfUse />} />
               
               {/* Admin Routes */}
               <Route path="/admin/login" element={<AdminLogin />} />
@@ -128,9 +161,14 @@ function App() {
                   <ManageAppointments />
                 </ProtectedRoute>
               } />
+              <Route path="/admin/blogs" element={
+                <ProtectedRoute>
+                  <ManageBlogs />
+                </ProtectedRoute>
+              } />
             </Routes>
             </main>
-            <Footer />
+            <ConditionalFooter />
             
             {/* WhatsApp floating button - only show on public pages */}
             <Routes>

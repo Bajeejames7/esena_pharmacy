@@ -85,10 +85,9 @@ const TrackOrder = () => {
         id: `ORD-${tokenToTrack.slice(0, 8).toUpperCase()}`,
         token: tokenToTrack,
         status: randomStatus,
-        total: 89.99,
+        total: 232.99,
         subtotal: 82.99,
-        shipping: 0,
-        tax: 7.00,
+        shipping: 150,
         items: [
           { id: 1, name: 'Vitamin D3 Supplement', quantity: 2, price: 15.99, category: 'Supplement' },
           { id: 2, name: 'Pain Relief Tablets', quantity: 3, price: 8.50, category: 'Medication' },
@@ -324,10 +323,10 @@ const TrackOrder = () => {
                       </div>
                       <div className="text-right">
                         <p className="font-semibold text-gray-800 dark:text-white">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          KSh {(item.price * item.quantity).toFixed(2)}
                         </p>
                         <p className="text-gray-600 dark:text-gray-300 text-sm">
-                          ${item.price.toFixed(2)} each
+                          KSh {item.price.toFixed(2)} each
                         </p>
                       </div>
                     </div>
@@ -344,22 +343,16 @@ const TrackOrder = () => {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="text-gray-800">${orderData.subtotal.toFixed(2)}</span>
+                    <span className="text-gray-800">KSh {orderData.subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Shipping</span>
-                    <span className="text-gray-800">
-                      {orderData.shipping === 0 ? 'Free' : `$${orderData.shipping.toFixed(2)}`}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Tax</span>
-                    <span className="text-gray-800">${orderData.tax.toFixed(2)}</span>
+                    <span className="text-gray-600">Shipping (Nairobi)</span>
+                    <span className="text-gray-800">KSh {orderData.shipping.toFixed(2)}</span>
                   </div>
                   <div className="border-t border-white/20 pt-3">
                     <div className="flex justify-between">
                       <span className="font-semibold text-gray-800">Total</span>
-                      <span className="font-semibold text-gray-800">${orderData.total.toFixed(2)}</span>
+                      <span className="font-semibold text-gray-800">KSh {orderData.total.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

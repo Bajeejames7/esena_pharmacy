@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { validateOrderForm, validateField } from '../utils/validation';
+import { ordersAPI } from '../services/api';
 import GlassCard from '../components/GlassCard';
 import GlassInput from '../components/forms/GlassInput';
 import GlassSelect from '../components/forms/GlassSelect';
@@ -45,9 +46,8 @@ const Checkout = () => {
     { value: 'cod', label: 'Cash on Delivery' }
   ];
 
-  const shippingCost = total > 50 ? 0 : 5.99;
-  const tax = total * 0.08;
-  const finalTotal = total + shippingCost + tax;
+  const shippingCost = 150; // Fixed shipping cost for Nairobi
+  const finalTotal = total + shippingCost;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -89,36 +89,42 @@ const Checkout = () => {
     }
 
     try {
-      // TODO: Implement actual order submission API call
-      const orderData = {
-        ...formData,
-        items,
-        subtotal: total,
-        shipping: shippingCost,
-        tax,
-        total: finalTotal,
-        timestamp: new Date().toISOString()
+      // Prepare order data for API
+      const orderPayload = {
+        customer_name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        delivery_address: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
+        notes: formData.paymentMethod,
+        items: items.map(item => ({
+          product_id: item.id,
+          quantity: item.quantity,
+          price: item.price
+        }))
       };
 
-      console.log('Order submission:', orderData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Submit order to API
+      const response = await ordersAPI.create(orderPayload);
       
       // Clear cart and redirect to success page
       clearCart();
       navigate('/order-success', { 
         state: { 
           orderData: {
-            ...orderData,
-            orderId: 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-            trackingToken: Math.random().toString(36).substr(2, 12).toUpperCase()
+            ...formData,
+            items,
+            subtotal: total,
+            shipping: shippingCost,
+            total: finalTotal,
+            orderId: response.orderId,
+            trackingToken: response.token,
+            timestamp: new Date().toISOString()
           }
         }
       });
     } catch (error) {
       console.error('Order submission error:', error);
-      setErrors({ submit: 'Failed to process order. Please try again.' });
+      setErrors({ submit: error.response?.data?.message || 'Failed to process order. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
@@ -303,14 +309,8 @@ const Checkout = () => {
                   <span className="text-gray-800 dark:text-white">KSh {total.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Shipping</span>
-                  <span className="text-gray-800">
-                    {shippingCost === 0 ? 'Free' : `KSh ${shippingCost.toFixed(2)}`}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Tax</span>
-                  <span className="text-gray-800 dark:text-white">KSh {tax.toFixed(2)}</span>
+                  <span className="text-gray-600">Shipping (Nairobi)</span>
+                  <span className="text-gray-800">KSh {shippingCost.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between font-semibold text-lg border-t border-white/20 pt-3">
                   <span className="text-gray-800">Total</span>

@@ -105,7 +105,7 @@ exports.createOrder = async (req, res) => {
     
     try {
       // Send confirmation email to customer (Req 5.8, 14.1, 14.2)
-      const customerTemplate = orderConfirmationTemplate(orderForEmail);
+      const customerTemplate = orderConfirmationTemplate(orderForEmail, orderItems);
       const customerEmailSent = await sendEmail({
         to: email,
         subject: customerTemplate.subject,

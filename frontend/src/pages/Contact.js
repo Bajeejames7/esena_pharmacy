@@ -234,7 +234,7 @@ const Contact = () => {
                 </a>
                 
                 <a 
-                  href="mailto:info@esena.co.ke"
+                  href="mailto:esenapharmacy@gmail.com"
                   className="flex items-start space-x-4 hover:bg-white/10 dark:hover:bg-slate-700/30 p-2 rounded-lg transition-colors duration-200 group -ml-2"
                 >
                   <div className="w-8 h-8 bg-gradient-to-br from-glass-blue to-glass-green rounded-lg flex items-center justify-center flex-shrink-0">
@@ -244,7 +244,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-800 dark:text-white group-hover:text-glass-blue dark:group-hover:text-blue-400 transition-colors">Email</h3>
-                    <p className="text-gray-600 dark:text-gray-300">info@esena.co.ke</p>
+                    <p className="text-gray-600 dark:text-gray-300">esenapharmacy@gmail.com</p>
                   </div>
                 </a>
               </div>

@@ -83,6 +83,7 @@ export const productsAPI = {
 
 // Orders API methods
 export const ordersAPI = {
+  create: (data) => api.post('/orders', data),
   getAll: () => api.get('/orders'),
   getById: (id) => api.get(`/orders/${id}`),
   updateStatus: (id, status) => api.put(`/orders/${id}/status`, { status }),
@@ -100,6 +101,21 @@ export const appointmentsAPI = {
 // Statistics API methods
 export const statsAPI = {
   getDashboard: () => api.get('/stats/dashboard'),
+};
+
+// Blogs API methods
+export const blogsAPI = {
+  // Public methods
+  getPublished: () => api.get('/blogs/published'),
+  getBySlug: (slug) => api.get(`/blogs/slug/${slug}`),
+  
+  // Admin methods
+  getAll: () => api.get('/blogs'),
+  getById: (id) => api.get(`/blogs/${id}`),
+  create: (data) => api.post('/blogs', data),
+  update: (id, data) => api.put(`/blogs/${id}`, data),
+  delete: (id) => api.delete(`/blogs/${id}`),
+  toggleStatus: (id) => api.patch(`/blogs/${id}/toggle-status`),
 };
 
 export default api;

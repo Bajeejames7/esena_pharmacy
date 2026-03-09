@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useBreakpoint } from '../utils/responsive';
 import AdminSidebar from '../components/AdminSidebar';
+import AdminHeader from '../components/AdminHeader';
 import DataTable from '../components/DataTable';
 import GlassCard from '../components/GlassCard';
 import GlassButton from '../components/forms/GlassButton';
 import GlassInput from '../components/forms/GlassInput';
 import GlassSelect from '../components/forms/GlassSelect';
 import GlassTextarea from '../components/forms/GlassTextarea';
+import ThemeToggle from '../components/ThemeToggle';
 import { validateField } from '../utils/validation';
 
 /**
@@ -73,33 +75,9 @@ const ManageProducts = () => {
       // TODO: Replace with actual API call
       // const response = await productsAPI.getAll({ page: currentPage, search: searchTerm, category: categoryFilter });
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Generate demo data
-      const allProducts = generateDemoProducts();
-      let filteredProducts = allProducts;
-      
-      // Apply filters
-      if (searchTerm) {
-        filteredProducts = filteredProducts.filter(product =>
-          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.description.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
-      
-      if (categoryFilter) {
-        filteredProducts = filteredProducts.filter(product => product.category === categoryFilter);
-      }
-      
-      // Pagination
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
-      
-      setProducts(paginatedProducts);
-      setTotalItems(filteredProducts.length);
-      setTotalPages(Math.ceil(filteredProducts.length / itemsPerPage));
+      setProducts([]);
+      setTotalItems(0);
+      setTotalPages(1);
     } catch (err) {
       setError('Failed to load products. Please try again.');
       console.error('Load products error:', err);
@@ -108,34 +86,7 @@ const ManageProducts = () => {
     }
   };
 
-  const generateDemoProducts = () => {
-    const demoProducts = [];
-    const names = [
-      'Vitamin D3 Supplement', 'Pain Relief Tablets', 'Hand Sanitizer', 'Omega-3 Fish Oil',
-      'First Aid Kit', 'Multivitamin Complex', 'Cough Syrup', 'Moisturizing Lotion',
-      'Blood Pressure Monitor', 'Calcium Tablets', 'Thermometer', 'Sunscreen SPF 50',
-      'Antihistamine Tablets', 'Probiotic Capsules', 'Face Mask', 'Antiseptic Cream',
-      'Glucose Test Strips', 'Protein Powder', 'Eye Drops', 'Bandages'
-    ];
-    
-    const categories = ['Medication', 'Supplement', 'Personal Care', 'Medical Supplies', 'Vitamins'];
-    
-    for (let i = 0; i < 50; i++) {
-      demoProducts.push({
-        id: i + 1,
-        name: names[i % names.length] + (i > 19 ? ` ${Math.floor(i / 20) + 1}` : ''),
-        category: categories[i % categories.length],
-        price: (Math.random() * 100 + 5).toFixed(2),
-        stock: Math.floor(Math.random() * 200),
-        description: `High-quality ${names[i % names.length].toLowerCase()} for your health needs.`,
-        image: null,
-        video: null,
-        createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
-      });
-    }
-    
-    return demoProducts;
-  };
+
 
   const columns = [
     {
@@ -150,8 +101,8 @@ const ManageProducts = () => {
       sortable: true,
       render: (value, row) => (
         <div>
-          <p className="font-medium text-gray-800">{value}</p>
-          <p className="text-sm text-gray-600">{row.category}</p>
+          <p className="font-medium text-gray-800 dark:text-gray-100">{value}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">{row.category}</p>
         </div>
       )
     },
@@ -167,10 +118,10 @@ const ManageProducts = () => {
       sortable: true,
       render: (value) => (
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          value > 50 ? 'bg-green-100 text-green-800' :
-          value > 10 ? 'bg-yellow-100 text-yellow-800' :
-          value > 0 ? 'bg-orange-100 text-orange-800' :
-          'bg-red-100 text-red-800'
+          value > 50 ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
+          value > 10 ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
+          value > 0 ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300' :
+          'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
         }`}>
           {value} units
         </span>
@@ -348,54 +299,56 @@ const ManageProducts = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-glass-blue/20 via-glass-green/20 to-glass-white flex">
-      <AdminSidebar 
-        isOpen={sidebarOpen} 
-        onToggle={() => setSidebarOpen(!sidebarOpen)} 
+    <div className="min-h-screen bg-gradient-to-br from-glass-blue/20 via-glass-green/20 to-glass-white dark:from-slate-900/50 dark:via-slate-800/50 dark:to-slate-900 flex flex-col">
+      <AdminHeader 
+        onMenuToggle={() => setSidebarOpen(true)}
+        showMenuButton={isMobile}
       />
       
-      <div className={`flex-1 transition-all duration-300 ${
-        !isMobile && sidebarOpen ? 'ml-64' : !isMobile ? 'ml-16' : ''
-      }`}>
-        <div className="p-6">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-4">
-              {isMobile && (
-                <button
-                  onClick={() => setSidebarOpen(true)}
-                  className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
-                  aria-label="Open menu"
-                >
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                </button>
-              )}
-              <div>
-                <h1 className="text-3xl font-bold text-gray-800">Manage Products</h1>
-                <p className="text-gray-600">Add, edit, and manage your product inventory</p>
+      <div className="flex flex-1">
+        <AdminSidebar 
+          isOpen={sidebarOpen} 
+          onToggle={() => setSidebarOpen(!sidebarOpen)} 
+        />
+        
+        <div className={`flex-1 transition-all duration-300 ${
+          !isMobile && sidebarOpen ? 'ml-64' : !isMobile ? 'ml-16' : ''
+        }`}>
+          <div className="p-6">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center space-x-4">
+                {/* Remove mobile menu button since it's now in AdminHeader */}
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 lg:block hidden">Manage Products</h1>
+                  <p className="text-gray-600 dark:text-gray-300">Add, edit, and manage your product inventory</p>
+                </div>
               </div>
-            </div>
             
-            <GlassButton
-              onClick={() => {
-                setEditingProduct(null);
-                setFormData({
-                  name: '',
-                  category: '',
-                  price: '',
-                  stock: '',
-                  description: '',
-                  image: null,
-                  video: null
-                });
-                setFormErrors({});
-                setShowProductForm(true);
-              }}
-            >
-              Add Product
-            </GlassButton>
+            <div className="flex items-center space-x-3">
+              <div className="hidden lg:block">
+                <ThemeToggle showLabel={true} />
+              </div>
+              
+              <GlassButton
+                onClick={() => {
+                  setEditingProduct(null);
+                  setFormData({
+                    name: '',
+                    category: '',
+                    price: '',
+                    stock: '',
+                    description: '',
+                    image: null,
+                    video: null
+                  });
+                  setFormErrors({});
+                  setShowProductForm(true);
+                }}
+              >
+                Add Product
+              </GlassButton>
+            </div>
           </div>
 
           {/* Search and Filters */}
@@ -430,16 +383,15 @@ const ManageProducts = () => {
             onPageChange={setCurrentPage}
             emptyMessage="No products found. Add your first product to get started."
           />
-        </div>
-      </div>
+          </div>
 
-      {/* Product Form Modal */}
-      {showProductForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        {/* Product Form Modal */}
+        {showProductForm && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <GlassCard className="p-8">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
                   {editingProduct ? 'Edit Product' : 'Add New Product'}
                 </h2>
                 <button
@@ -591,8 +543,8 @@ const ManageProducts = () => {
                 </svg>
               </div>
               
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Delete Product</h3>
-              <p className="text-gray-600 mb-6">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Delete Product</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Are you sure you want to delete "{deleteConfirm.name}"? This action cannot be undone.
               </p>
               
@@ -616,6 +568,8 @@ const ManageProducts = () => {
           </GlassCard>
         </div>
       )}
+        </div>
+      </div>
     </div>
   );
 };

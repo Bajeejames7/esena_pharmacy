@@ -51,6 +51,15 @@ const AdminSidebar = ({ isOpen, onToggle }) => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0h6m-6 0l-2 2m8-2l2 2m-2-2v6a2 2 0 01-2 2H10a2 2 0 01-2-2v-6" />
         </svg>
       )
+    },
+    {
+      path: '/admin/blogs',
+      label: 'Blogs',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+        </svg>
+      )
     }
   ];
 
@@ -139,25 +148,15 @@ const SidebarContent = ({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        {(!isCollapsed || isMobile) && (
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-glass-blue to-glass-green rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">E</span>
-            </div>
-            <div>
-              <h2 className="font-semibold text-gray-800">Esena Admin</h2>
-            </div>
-          </div>
-        )}
-        
+      <div className="relative mb-8">
+        {/* Toggle button positioned absolutely */}
         {!isMobile && (
           <button
             onClick={onToggle}
-            className="p-1 rounded-lg hover:bg-white/20 transition-colors"
+            className="absolute top-0 right-0 p-1 rounded-lg hover:bg-white/20 dark:hover:bg-slate-700/50 transition-colors z-10"
             aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
@@ -166,14 +165,33 @@ const SidebarContent = ({
         {isMobile && (
           <button
             onClick={onToggle}
-            className="p-1 rounded-lg hover:bg-white/20 transition-colors"
+            className="absolute top-0 right-0 p-1 rounded-lg hover:bg-white/20 dark:hover:bg-slate-700/50 transition-colors z-10"
             aria-label="Close sidebar"
           >
-            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         )}
+
+        {/* Logo centered with proper spacing */}
+        <div className="flex justify-center pt-2 pr-8">
+          {(!isCollapsed || isMobile) && (
+            <img 
+              src="/full_logo.jpeg" 
+              alt="Esena Pharmacy" 
+              className="h-12 w-auto object-contain max-w-[180px]"
+            />
+          )}
+          
+          {isCollapsed && !isMobile && (
+            <img 
+              src="/full_logo.jpeg" 
+              alt="Esena Pharmacy" 
+              className="h-8 w-auto object-contain max-w-[32px]"
+            />
+          )}
+        </div>
       </div>
 
       {/* Navigation */}
@@ -188,12 +206,12 @@ const SidebarContent = ({
                   onClick={isMobile ? onToggle : undefined}
                   className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-gradient-to-r from-glass-blue/20 to-glass-green/20 text-blue-700'
-                      : 'text-gray-600 hover:bg-white/20 hover:text-gray-800'
+                      ? 'bg-gradient-to-r from-glass-blue/20 to-glass-green/20 text-blue-700 dark:text-blue-300'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-slate-700/50 hover:text-gray-800 dark:hover:text-gray-100'
                   }`}
                   title={isCollapsed ? item.label : undefined}
                 >
-                  <span className={isActive ? 'text-blue-600' : 'text-gray-500'}>
+                  <span className={isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}>
                     {item.icon}
                   </span>
                   {(!isCollapsed || isMobile) && (
@@ -217,8 +235,8 @@ const SidebarContent = ({
                 </span>
               </div>
               <div>
-                <p className="font-medium text-gray-800 text-sm">{userInfo.username}</p>
-                <p className="text-gray-600 text-xs capitalize">{userInfo.role}</p>
+                <p className="font-medium text-gray-800 dark:text-gray-100 text-sm">{userInfo.username}</p>
+                <p className="text-gray-600 dark:text-gray-300 text-xs capitalize">{userInfo.role}</p>
               </div>
             </div>
           </div>
@@ -227,18 +245,18 @@ const SidebarContent = ({
         {showLogoutConfirm ? (
           <div className="space-y-2">
             {(!isCollapsed || isMobile) && (
-              <p className="text-sm text-gray-600 px-3">Are you sure?</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300 px-3">Are you sure?</p>
             )}
             <div className="flex space-x-2">
               <button
                 onClick={handleLogout}
-                className="flex-1 px-3 py-2 bg-red-500/20 text-red-700 rounded-lg text-sm font-medium hover:bg-red-500/30 transition-colors"
+                className="flex-1 px-3 py-2 bg-red-500/20 text-red-700 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-500/30 transition-colors"
               >
                 {isCollapsed && !isMobile ? '✓' : 'Yes'}
               </button>
               <button
                 onClick={() => setShowLogoutConfirm(false)}
-                className="flex-1 px-3 py-2 bg-gray-500/20 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-500/30 transition-colors"
+                className="flex-1 px-3 py-2 bg-gray-500/20 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-500/30 transition-colors"
               >
                 {isCollapsed && !isMobile ? '✗' : 'No'}
               </button>
@@ -247,7 +265,7 @@ const SidebarContent = ({
         ) : (
           <button
             onClick={() => setShowLogoutConfirm(true)}
-            className="w-full flex items-center space-x-3 px-3 py-2 text-gray-600 hover:bg-red-500/20 hover:text-red-700 rounded-lg transition-colors"
+            className="w-full flex items-center space-x-3 px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-red-500/20 hover:text-red-700 dark:hover:text-red-400 rounded-lg transition-colors"
             title={isCollapsed ? 'Logout' : undefined}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
