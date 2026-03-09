@@ -11,12 +11,5 @@ deployment:
     - /bin/mkdir -p $DEPLOYPATH/api
     - /bin/cp -R backend/* $DEPLOYPATH/api/
     
-    # Install backend dependencies (production only)
-    - cd $DEPLOYPATH/api && npm ci --production
-    
-    # Copy environment file if it exists
-    - /bin/cp backend/.env $DEPLOYPATH/api/.env 2>/dev/null || echo "No .env file found"
-    
     # Set proper permissions
     - /bin/chmod -R 755 $DEPLOYPATH
-    - /bin/chmod 600 $DEPLOYPATH/api/.env 2>/dev/null || echo "No .env to secure"
