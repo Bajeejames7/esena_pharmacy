@@ -71,8 +71,8 @@ const Header = () => {
   const navLinkClass = (path) => `
     block px-4 py-2 rounded-lg transition-all duration-200
     ${isActivePage(path) 
-      ? 'bg-glass-blue/20 text-blue-700 dark:text-blue-300 font-medium' 
-      : 'text-gray-700 dark:text-gray-200 hover:bg-white/10 dark:hover:bg-slate-700/50'
+      ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300 font-medium' 
+      : 'text-gray-800 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-gray-700/70 hover:text-blue-600 dark:hover:text-blue-300'
     }
   `;
 
@@ -143,7 +143,7 @@ const Header = () => {
               </button>
               
               {activeDropdown === 'home' && (
-                <div className="absolute top-full left-0 mt-1 w-48 glass-card border border-white/20 dark:border-slate-600/30 rounded-lg shadow-lg py-2">
+                <div className="absolute top-full left-0 mt-1 w-48 bg-white/85 dark:bg-gray-800/85 backdrop-blur-md border border-white/30 dark:border-gray-600/50 rounded-lg shadow-xl py-2 z-50">
                   <Link to="/" className={navLinkClass('/')}>
                     Home
                   </Link>
@@ -178,7 +178,7 @@ const Header = () => {
               </button>
               
               {activeDropdown === 'products' && (
-                <div className="absolute top-full left-0 mt-1 w-48 glass-card border border-white/20 dark:border-slate-600/30 rounded-lg shadow-lg py-2">
+                <div className="absolute top-full left-0 mt-1 w-48 bg-white/85 dark:bg-gray-800/85 backdrop-blur-md border border-white/30 dark:border-gray-600/50 rounded-lg shadow-xl py-2 z-50">
                   {dropdownItems.products.map((item) => (
                     <Link key={item.path} to={item.path} className={navLinkClass(item.path)}>
                       {item.name}
@@ -210,7 +210,7 @@ const Header = () => {
               </button>
               
               {activeDropdown === 'services' && (
-                <div className="absolute top-full left-0 mt-1 w-48 glass-card border border-white/20 dark:border-slate-600/30 rounded-lg shadow-lg py-2">
+                <div className="absolute top-full left-0 mt-1 w-48 bg-white/85 dark:bg-gray-800/85 backdrop-blur-md border border-white/30 dark:border-gray-600/50 rounded-lg shadow-xl py-2 z-50">
                   {dropdownItems.services.map((item) => (
                     <Link key={item.path} to={item.path} className={navLinkClass(item.path)}>
                       {item.name}
@@ -220,7 +220,7 @@ const Header = () => {
               )}
             </div>
 
-            <Link to="/shop" className={navLinkClass('/shop')}>
+            <Link to="/shop" className="block px-4 py-2 rounded-lg transition-all duration-200 text-gray-800 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-gray-700/70 hover:text-blue-600 dark:hover:text-blue-300">
               Shop
             </Link>
           </nav>

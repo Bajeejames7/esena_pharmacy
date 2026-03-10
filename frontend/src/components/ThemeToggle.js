@@ -113,12 +113,12 @@ const ThemeToggle = ({ className = '', showLabel = false }) => {
 
         {/* Dropdown Menu */}
         {showDropdown && (
-          <div className="absolute top-full right-0 mt-2 w-48 glass-card border border-white/20 dark:border-slate-600/30 rounded-lg shadow-lg py-2 z-50">
+          <div className="absolute top-full right-0 mt-2 w-48 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border border-white/30 dark:border-gray-600/50 rounded-lg shadow-xl py-2 z-50">
             <button
               onClick={() => handleThemeSelect('light')}
               className={`
-                w-full flex items-center space-x-3 px-4 py-2 text-left hover:bg-white/10 dark:hover:bg-slate-700/50 transition-colors
-                ${theme === 'light' && !isUsingSystemPreference ? 'bg-glass-blue/20 text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-200'}
+                w-full flex items-center space-x-3 px-4 py-2 text-left rounded-lg mx-2 transition-colors
+                ${theme === 'light' && !isUsingSystemPreference ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300 font-medium' : 'text-gray-800 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-gray-700/70 hover:text-blue-600 dark:hover:text-blue-300'}
               `}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,8 +130,8 @@ const ThemeToggle = ({ className = '', showLabel = false }) => {
             <button
               onClick={() => handleThemeSelect('dark')}
               className={`
-                w-full flex items-center space-x-3 px-4 py-2 text-left hover:bg-white/10 dark:hover:bg-slate-700/50 transition-colors
-                ${theme === 'dark' && !isUsingSystemPreference ? 'bg-glass-blue/20 text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-200'}
+                w-full flex items-center space-x-3 px-4 py-2 text-left rounded-lg mx-2 transition-colors
+                ${theme === 'dark' && !isUsingSystemPreference ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300 font-medium' : 'text-gray-800 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-gray-700/70 hover:text-blue-600 dark:hover:text-blue-300'}
               `}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,8 +143,8 @@ const ThemeToggle = ({ className = '', showLabel = false }) => {
             <button
               onClick={() => handleThemeSelect('system')}
               className={`
-                w-full flex items-center space-x-3 px-4 py-2 text-left hover:bg-white/10 dark:hover:bg-slate-700/50 transition-colors
-                ${isUsingSystemPreference ? 'bg-glass-blue/20 text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-gray-200'}
+                w-full flex items-center space-x-3 px-4 py-2 text-left rounded-lg mx-2 transition-colors
+                ${isUsingSystemPreference ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300 font-medium' : 'text-gray-800 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-gray-700/70 hover:text-blue-600 dark:hover:text-blue-300'}
               `}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
