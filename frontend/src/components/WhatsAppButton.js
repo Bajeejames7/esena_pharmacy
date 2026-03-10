@@ -47,7 +47,7 @@ const WhatsAppButton = ({
       >
         <div className="flex items-center justify-center">
           <svg
-            className="w-8 h-8 text-green-600 dark:text-green-400"
+            className="w-8 h-8 text-glass-green dark:text-glass-green-light"
             fill="currentColor"
             viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"

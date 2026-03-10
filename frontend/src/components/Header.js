@@ -88,7 +88,9 @@ const Header = () => {
       { name: 'Personal Care', path: '/personal-care' }
     ],
     services: [
+      { name: 'Upload Prescription', path: '/upload-prescription' },
       { name: 'Book Appointment', path: '/book-appointment' },
+      { name: 'Delivery Info', path: '/delivery' },
       { name: 'Track Order', path: '/track-order' }
     ]
   };

@@ -24,6 +24,8 @@ import BlogPost from './pages/BlogPost';
 import TrackOrder from './pages/TrackOrder';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfUse from './pages/TermsOfUse';
+import UploadPrescription from './pages/UploadPrescription';
+import Delivery from './pages/Delivery';
 import AdminLogin from './admin/Login';
 import AdminDashboard from './admin/Dashboard';
 import ManageProducts from './admin/ManageProducts';
@@ -136,6 +138,8 @@ function App() {
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/track/:token" element={<TrackOrder />} />
               <Route path="/track-order" element={<TrackOrder />} />
+              <Route path="/delivery" element={<Delivery />} />
+              <Route path="/upload-prescription" element={<UploadPrescription />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfUse />} />
               

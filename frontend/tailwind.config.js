@@ -7,9 +7,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'glass-blue': '#A0D8F1',
-        'glass-green': '#B4E7C1',
-        'glass-white': '#FFFFFF',
+        'glass-blue': '#3B82F6',      // Primary blue
+        'glass-blue-light': '#60A5FA', // Lighter blue
+        'glass-blue-dark': '#1E40AF',   // Darker blue
+        'glass-green': '#10B981',       // Primary green
+        'glass-green-light': '#34D399', // Lighter green
+        'glass-green-dark': '#047857',  // Darker green
+        'glass-white': '#FFFFFF',       // Pure white
+        'glass-gray': '#F8FAFC',        // Light gray for backgrounds
+        'glass-gray-dark': '#1E293B',   // Dark gray for dark mode
       },
       fontFamily: {
         'poppins': ['Poppins', 'sans-serif'],

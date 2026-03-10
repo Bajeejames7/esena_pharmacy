@@ -1,7 +1,7 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { useBreakpoint } from '../utils/responsive';
 import GlassCard from '../components/GlassCard';
+import CategoryImage from '../components/CategoryImage';
 
 /**
  * Home page with hero section and glassmorphism styling
@@ -40,40 +40,115 @@ const Home = () => {
     }
   ];
 
-  const services = [
-    { name: 'Prescription Medications', link: '/products', icon: '💊' },
-    { name: 'Health Supplements', link: '/supplements', icon: '🌿' },
-    { name: 'Personal Care', link: '/personal-care', icon: '🧴' },
-    { name: 'Health Consultations', link: '/book-appointment', icon: '👨🏾‍⚕️' }
-  ];
-
   return (
     <div className="pt-24 pb-16">
       {/* Hero Section */}
       <section className="px-4 mb-16">
         <div className="max-w-6xl mx-auto">
           <GlassCard className="p-8 md:p-12 text-center">
-            <h1 className="mb-6 text-gray-800 dark:text-white">
-              Esena Pharmacy – Trusted Pharmacy in Ruaraka, Nairobi
+            <h1 className="text-3xl md:text-5xl font-bold mb-4 text-gray-800 dark:text-white">
+              Order Medicines Online in Kenya
             </h1>
-            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-              Esena Pharmacy is a trusted local pharmacy in Ruaraka, Nairobi dedicated to providing high-quality medicines, professional pharmacist consultations, and reliable healthcare services. We offer a wide range of prescription medications, health supplements, personal care products, and wellness solutions to support your health.
+            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8">
+              Fast Delivery • Genuine Medicines • Licensed Pharmacy
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Link
                 to="/products"
-                className="glass-button-primary inline-flex items-center justify-center"
+                className="glass-button-primary inline-flex items-center justify-center px-8 py-4 text-lg"
               >
-                Browse Products
+                🛒 Shop Medicines
               </Link>
               <Link
-                to="/book-appointment"
-                className="glass-button-secondary inline-flex items-center justify-center"
+                to="/upload-prescription"
+                className="glass-button-secondary inline-flex items-center justify-center px-8 py-4 text-lg"
               >
-                Book Appointment
+                📋 Upload Prescription
               </Link>
             </div>
+            
+            {/* Trust Signals */}
+            <div className={`grid gap-6 mt-8 ${
+              breakpoint === 'mobile' ? 'grid-cols-2' : 'grid-cols-4'
+            }`}>
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 bg-glass-green rounded-full flex items-center justify-center mb-2">
+                  <span className="text-white text-xl">🚚</span>
+                </div>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Same Day Delivery</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 bg-glass-blue rounded-full flex items-center justify-center mb-2">
+                  <span className="text-white text-xl">💊</span>
+                </div>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">100% Genuine Medicines</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 bg-glass-blue-dark rounded-full flex items-center justify-center mb-2">
+                  <span className="text-white text-xl">📞</span>
+                </div>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Pharmacist Support</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 bg-glass-green-dark rounded-full flex items-center justify-center mb-2">
+                  <span className="text-white text-xl">💳</span>
+                </div>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Pay via Mpesa / Card</span>
+              </div>
+            </div>
           </GlassCard>
+        </div>
+      </section>
+
+      {/* Shop by Category Section */}
+      <section className="px-4 mb-16">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4">
+              Shop by Category
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300">
+              Find the right medicine for your health needs
+            </p>
+          </div>
+          <div className={`grid gap-6 ${
+            breakpoint === 'mobile' ? 'grid-cols-2' :
+            breakpoint === 'tablet' ? 'grid-cols-3' : 'grid-cols-4'
+          }`}>
+            {[
+              { name: 'Pain Relief', image: '/pain_relief.png', link: '/products?category=pain-relief', fallback: '🩹' },
+              { name: 'Cough & Flu', image: '/cough_&_flu.png', link: '/products?category=cough-flu', fallback: '🤧' },
+              { name: 'Vitamins & Supplements', image: '/vitamins_&_supplements.png', link: '/supplements', fallback: '💊' },
+              { name: 'Skin Care', image: '/skin_care.png', link: '/personal-care?category=skin-care', fallback: '🧴' },
+              { name: 'Baby Care', image: '/baby_care.png', link: '/products?category=baby-care', fallback: '👶' },
+              { name: 'Women\'s Health', image: '/womens_health.png', link: '/products?category=womens-health', fallback: '👩' },
+              { name: 'Diabetes', image: '/diabetis.png', link: '/products?category=diabetes', fallback: '🩺' },
+              { name: 'Digestive Health', image: '/digestive_health.png', link: '/products?category=digestive', fallback: '🫁' }
+            ].map((category, index) => (
+              <Link key={index} to={category.link}>
+                <div className="text-center hover:scale-105 transition-all duration-300 group">
+                  {/* Image with Glass Card */}
+                  <GlassCard className="p-1 mb-2 mx-6 hover:shadow-lg transition-all duration-300" hover>
+                    <div className="relative h-40 md:h-44">
+                      <CategoryImage
+                        src={category.image}
+                        alt={`${category.name} medicines and products`}
+                        className="w-full h-full object-cover rounded-lg filter group-hover:scale-105 transition-transform duration-300"
+                        fallbackIcon={category.fallback}
+                      />
+                    </div>
+                  </GlassCard>
+                  
+                  {/* Category Name - No Card Background */}
+                  <div className="px-2">
+                    <h3 className="text-sm font-bold text-gray-800 dark:text-white group-hover:text-glass-blue dark:group-hover:text-glass-blue-light transition-colors duration-300 text-center leading-tight">
+                      {category.name}
+                    </h3>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -105,13 +180,66 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Trust & Legitimacy Section */}
+      <section className="px-4 mb-16">
+        <div className="max-w-6xl mx-auto">
+          <GlassCard className="p-8">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4">
+                Licensed & Trusted Pharmacy
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300">
+                Your health and safety are our top priorities
+              </p>
+            </div>
+            
+            <div className={`grid gap-6 ${
+              breakpoint === 'mobile' ? 'grid-cols-1' : 'grid-cols-3'
+            }`}>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-glass-green rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white text-2xl">🏥</span>
+                </div>
+                <h3 className="font-semibold text-gray-800 dark:text-white mb-2">Licensed by PPB</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Pharmacy & Poisons Board Licensed<br/>
+                  License No: PPB/PH/01/2024/001
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 bg-glass-blue rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white text-2xl">🔒</span>
+                </div>
+                <h3 className="font-semibold text-gray-800 dark:text-white mb-2">Secure Payments</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  SSL Encrypted Transactions<br/>
+                  Mpesa, Visa, Mastercard
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 bg-glass-blue-dark rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white text-2xl">📍</span>
+                </div>
+                <h3 className="font-semibold text-gray-800 dark:text-white mb-2">Physical Location</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Ruaraka, Nairobi<br/>
+                  Phone: +254 700 123 456
+                </p>
+              </div>
+            </div>
+          </GlassCard>
+        </div>
+      </section>
+
       {/* Services Section */}
       <section className="px-4 mb-16">
         <div className="max-w-6xl mx-auto">
           <GlassCard className="p-8 mb-8 text-center">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4">Our Pharmacy Services</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4">Our Health Services</h2>
             <p className="text-gray-600 dark:text-gray-300">
-              Comprehensive healthcare solutions tailored to your needs in Nairobi
+              Professional healthcare services delivered with care
             </p>
           </GlassCard>
           
@@ -119,14 +247,84 @@ const Home = () => {
             breakpoint === 'mobile' ? 'grid-cols-1' :
             breakpoint === 'tablet' ? 'grid-cols-2' : 'grid-cols-4'
           }`}>
-            {services.map((service, index) => (
+            {[
+              { name: 'Pharmacist Consultation', link: '/book-appointment', icon: '👨🏾‍⚕️', desc: 'Expert medication advice' },
+              { name: 'Prescription Refills', link: '/upload-prescription', icon: '📋', desc: 'Easy prescription uploads' },
+              { name: 'Medicine Delivery', link: '/products', icon: '🚚', desc: 'Same day delivery in Nairobi' },
+              { name: 'Health Advice', link: '/contact', icon: '💬', desc: 'Professional health guidance' }
+            ].map((service, index) => (
               <Link key={index} to={service.link}>
                 <GlassCard className="p-6 text-center h-full" hover>
                   <div className="text-4xl mb-4">{service.icon}</div>
-                  <h3 className="text-gray-800 dark:text-white font-medium">{service.name}</h3>
+                  <h3 className="text-gray-800 dark:text-white font-medium mb-2">{service.name}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{service.desc}</p>
                 </GlassCard>
               </Link>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Delivery Information Section */}
+      <section className="px-4 mb-16">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8">
+            <GlassCard className="p-8">
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+                🚚 Fast Delivery Across Kenya
+              </h2>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700 dark:text-gray-300">Nairobi (Same Day)</span>
+                  <span className="font-semibold text-gray-800 dark:text-white">KSh 200</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700 dark:text-gray-300">Other Towns (1-3 Days)</span>
+                  <span className="font-semibold text-gray-800 dark:text-white">KSh 350</span>
+                </div>
+                <div className="border-t pt-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-green-600 dark:text-green-400 font-medium">Free Delivery</span>
+                    <span className="text-gray-600 dark:text-gray-400">Orders above KSh 3,000</span>
+                  </div>
+                </div>
+              </div>
+            </GlassCard>
+            
+            <GlassCard className="p-8">
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+                📱 Order via WhatsApp
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Quick and easy ordering through WhatsApp. Upload your prescription and get instant quotes.
+              </p>
+              <div className="space-y-3">
+                <div className="flex items-center text-gray-700 dark:text-gray-300">
+                  <span className="mr-3">1️⃣</span>
+                  <span>Send prescription photo</span>
+                </div>
+                <div className="flex items-center text-gray-700 dark:text-gray-300">
+                  <span className="mr-3">2️⃣</span>
+                  <span>Get instant quote</span>
+                </div>
+                <div className="flex items-center text-gray-700 dark:text-gray-300">
+                  <span className="mr-3">3️⃣</span>
+                  <span>Pay via Mpesa</span>
+                </div>
+                <div className="flex items-center text-gray-700 dark:text-gray-300">
+                  <span className="mr-3">4️⃣</span>
+                  <span>Receive delivery</span>
+                </div>
+              </div>
+              <a 
+                href="https://wa.me/254700123456" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="glass-button-primary inline-flex items-center justify-center w-full mt-6"
+              >
+                📱 Order via WhatsApp
+              </a>
+            </GlassCard>
           </div>
         </div>
       </section>

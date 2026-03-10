@@ -242,7 +242,7 @@ const AdminDashboard = () => {
               title="Pending Orders"
               value={stats.loading ? '...' : stats.pendingOrders}
               loading={stats.loading}
-              color="from-yellow-400 to-orange-500"
+              color="from-glass-blue to-glass-blue-light"
               trend={stats.trends?.orders?.trend}
               trendValue={stats.trends?.orders?.value}
             />
@@ -256,7 +256,7 @@ const AdminDashboard = () => {
               title="Pending Appointments"
               value={stats.loading ? '...' : stats.pendingAppointments}
               loading={stats.loading}
-              color="from-blue-400 to-purple-500"
+              color="from-glass-blue-dark to-glass-blue"
               trend={stats.trends?.appointments?.trend}
               trendValue={stats.trends?.appointments?.value}
             />
@@ -270,7 +270,7 @@ const AdminDashboard = () => {
               title="Products in Stock"
               value={stats.loading ? '...' : stats.productsInStock}
               loading={stats.loading}
-              color="from-green-400 to-teal-500"
+              color="from-glass-green to-glass-green-light"
               trend={stats.trends?.products?.trend}
               trendValue={stats.trends?.products?.value}
             />
@@ -284,7 +284,7 @@ const AdminDashboard = () => {
               title="Total Revenue"
               value={stats.loading ? '...' : `KSH ${stats.totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
               loading={stats.loading}
-              color="from-emerald-400 to-green-600"
+              color="from-glass-green-dark to-glass-green"
               trend={stats.trends?.revenue?.trend}
               trendValue={stats.trends?.revenue?.value}
             />
