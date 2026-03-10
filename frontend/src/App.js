@@ -26,6 +26,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfUse from './pages/TermsOfUse';
 import UploadPrescription from './pages/UploadPrescription';
 import Delivery from './pages/Delivery';
+import WhatsAppOrder from './pages/WhatsAppOrder';
 import AdminLogin from './admin/Login';
 import AdminDashboard from './admin/Dashboard';
 import ManageProducts from './admin/ManageProducts';
@@ -75,6 +76,21 @@ const ConditionalFooter = () => {
   return <Footer />;
 };
 
+// Main content wrapper
+const MainContentWrapper = ({ children }) => {
+  return (
+    <main 
+      id="main-content" 
+      className="flex-1"
+      tabIndex="-1"
+      role="main"
+      aria-label="Main content"
+    >
+      {children}
+    </main>
+  );
+};
+
 function App() {
   useEffect(() => {
     // Initialize performance monitoring
@@ -114,13 +130,7 @@ function App() {
           <FocusManager>
           <div className="min-h-screen flex flex-col">
             <ConditionalHeader />
-            <main 
-              id="main-content" 
-              className="flex-1" 
-              tabIndex="-1"
-              role="main"
-              aria-label="Main content"
-            >
+            <MainContentWrapper>
               <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Home />} />
@@ -140,6 +150,7 @@ function App() {
               <Route path="/track-order" element={<TrackOrder />} />
               <Route path="/delivery" element={<Delivery />} />
               <Route path="/upload-prescription" element={<UploadPrescription />} />
+              <Route path="/whatsapp-order" element={<WhatsAppOrder />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfUse />} />
               
@@ -171,7 +182,7 @@ function App() {
                 </ProtectedRoute>
               } />
             </Routes>
-            </main>
+            </MainContentWrapper>
             <ConditionalFooter />
             
             {/* WhatsApp floating button - only show on public pages */}

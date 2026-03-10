@@ -107,11 +107,16 @@ const Header = () => {
             to="/" 
             className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-glass-blue/50 rounded-lg p-1"
           >
-            <img 
-              src="/full_logo.jpeg" 
-              alt="Esena Pharmacy logo Ruaraka Nairobi pharmacy" 
-              className="h-10 w-auto object-contain"
-            />
+            <div className="flex flex-col items-center">
+              <img 
+                src="/full_logo.jpeg" 
+                alt="Esena Pharmacy logo Ruaraka Nairobi pharmacy" 
+                className="h-10 w-auto object-contain"
+              />
+              <span className="text-xs text-gray-600 dark:text-gray-400 font-medium mt-1">
+                Trusted Care, Every day
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
