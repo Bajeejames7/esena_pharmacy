@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useBreakpoint } from '../utils/responsive';
+import { productsAPI } from '../services/api';
 import AdminSidebar from '../components/AdminSidebar';
 import AdminHeader from '../components/AdminHeader';
 import DataTable from '../components/DataTable';
@@ -72,12 +73,34 @@ const ManageProducts = () => {
     setError(null);
     
     try {
-      // TODO: Replace with actual API call
-      // const response = await productsAPI.getAll({ page: currentPage, search: searchTerm, category: categoryFilter });
+      const response = await productsAPI.getAll();
+      const allProducts = response.data || [];
       
-      setProducts([]);
-      setTotalItems(0);
-      setTotalPages(1);
+      // Apply client-side filtering for now (can be moved to backend later)
+      let filteredProducts = allProducts;
+      
+      if (categoryFilter) {
+        filteredProducts = filteredProducts.filter(product => 
+          product.category === categoryFilter
+        );
+      }
+      
+      if (searchTerm) {
+        filteredProducts = filteredProducts.filter(product =>
+          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          product.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+      
+      // Apply pagination
+      const itemsPerPage = 10;
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+      
+      setProducts(paginatedProducts);
+      setTotalItems(filteredProducts.length);
+      setTotalPages(Math.ceil(filteredProducts.length / itemsPerPage));
     } catch (err) {
       setError('Failed to load products. Please try again.');
       console.error('Load products error:', err);
@@ -165,14 +188,8 @@ const ManageProducts = () => {
 
   const handleDeleteProduct = async (productId) => {
     try {
-      // TODO: Replace with actual API call
-      // await productsAPI.delete(productId);
+      await productsAPI.delete(productId);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Remove from local state
-      setProducts(prev => prev.filter(p => p.id !== productId));
       setDeleteConfirm(null);
       
       // Reload if current page becomes empty
@@ -255,17 +272,12 @@ const ManageProducts = () => {
       };
       
       if (editingProduct) {
-        // TODO: Replace with actual API call
-        // await productsAPI.update(editingProduct.id, productData);
-        console.log('Updating product:', editingProduct.id, productData);
+        await productsAPI.update(editingProduct.id, productData);
+        console.log('Updated product:', editingProduct.id, productData);
       } else {
-        // TODO: Replace with actual API call
-        // await productsAPI.create(productData);
-        console.log('Creating product:', productData);
+        await productsAPI.create(productData);
+        console.log('Created product:', productData);
       }
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
       
       setShowProductForm(false);
       setEditingProduct(null);
