@@ -21,6 +21,26 @@ app.get("/", (req, res) => {
   });
 });
 
+app.get("/api", (req, res) => {
+  res.json({ 
+    message: "Esena Pharmacy API is running",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    path: req.path,
+    url: req.url
+  });
+});
+
+app.get("/api/", (req, res) => {
+  res.json({ 
+    message: "Esena Pharmacy API is running",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    path: req.path,
+    url: req.url
+  });
+});
+
 app.get("/test", (req, res) => {
   res.json({ 
     status: "API working", 
