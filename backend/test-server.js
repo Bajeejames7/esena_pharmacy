@@ -19,6 +19,14 @@ app.get("/", (req, res) => {
   });
 });
 
+app.get("/api", (req, res) => {
+  res.json({ 
+    message: "Esena Pharmacy API is running",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 app.get("/test", (req, res) => {
   res.json({ 
     status: "API working", 
@@ -27,7 +35,25 @@ app.get("/test", (req, res) => {
   });
 });
 
+app.get("/api/test", (req, res) => {
+  res.json({ 
+    status: "API working", 
+    timestamp: new Date().toISOString(),
+    port: process.env.PORT || 'not set'
+  });
+});
+
 app.get("/env-test", (req, res) => {
+  res.json({
+    status: "Environment test",
+    db_host: process.env.DB_HOST || 'not set',
+    db_name: process.env.DB_NAME || 'not set',
+    node_env: process.env.NODE_ENV || 'not set',
+    port: process.env.PORT || 'not set'
+  });
+});
+
+app.get("/api/env-test", (req, res) => {
   res.json({
     status: "Environment test",
     db_host: process.env.DB_HOST || 'not set',
