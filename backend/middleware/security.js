@@ -95,8 +95,10 @@ const corsOptions = {
       'http://localhost:3000', // React development server
       'http://localhost:3001', // Alternative development port
       'http://127.0.0.1:3000',
-      'https://esena-pharmacy.com', // Production domain (example)
-      'https://www.esena-pharmacy.com' // Production www domain (example)
+      'https://esena.co.ke', // Production domain
+      'https://www.esena.co.ke', // Production www domain
+      'https://esena-pharmacy.com', // Alternative production domain
+      'https://www.esena-pharmacy.com' // Alternative production www domain
     ];
     
     if (allowedOrigins.indexOf(origin) !== -1) {
