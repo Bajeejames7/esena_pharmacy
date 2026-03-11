@@ -10,20 +10,14 @@ const app = express();
 // Basic middleware
 app.use(express.json());
 
-// Test routes that won't crash
+// Test routes that handle both root and /api paths
 app.get("/", (req, res) => {
   res.json({ 
     message: "Esena Pharmacy API is running",
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
-  });
-});
-
-app.get("/api", (req, res) => {
-  res.json({ 
-    message: "Esena Pharmacy API is running",
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    path: req.path,
+    url: req.url
   });
 });
 
@@ -31,15 +25,9 @@ app.get("/test", (req, res) => {
   res.json({ 
     status: "API working", 
     timestamp: new Date().toISOString(),
-    port: process.env.PORT || 'not set'
-  });
-});
-
-app.get("/api/test", (req, res) => {
-  res.json({ 
-    status: "API working", 
-    timestamp: new Date().toISOString(),
-    port: process.env.PORT || 'not set'
+    port: process.env.PORT || 'not set',
+    path: req.path,
+    url: req.url
   });
 });
 
@@ -49,17 +37,21 @@ app.get("/env-test", (req, res) => {
     db_host: process.env.DB_HOST || 'not set',
     db_name: process.env.DB_NAME || 'not set',
     node_env: process.env.NODE_ENV || 'not set',
-    port: process.env.PORT || 'not set'
+    port: process.env.PORT || 'not set',
+    path: req.path,
+    url: req.url
   });
 });
 
-app.get("/api/env-test", (req, res) => {
+// Add a catch-all route to see what requests are coming in
+app.get("*", (req, res) => {
   res.json({
-    status: "Environment test",
-    db_host: process.env.DB_HOST || 'not set',
-    db_name: process.env.DB_NAME || 'not set',
-    node_env: process.env.NODE_ENV || 'not set',
-    port: process.env.PORT || 'not set'
+    message: "Catch-all route",
+    path: req.path,
+    url: req.url,
+    method: req.method,
+    headers: req.headers,
+    timestamp: new Date().toISOString()
   });
 });
 
