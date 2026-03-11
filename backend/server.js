@@ -32,8 +32,8 @@ app.use(requestLogger);
 app.use(cors(corsOptions));
 
 // Rate limiting
-app.use('/api/auth', authLimiter); // Strict rate limiting for auth
-app.use('/api', apiLimiter); // API rate limiting
+app.use('/auth', authLimiter); // Strict rate limiting for auth
+app.use('/', apiLimiter); // API rate limiting
 app.use(generalLimiter); // General rate limiting
 
 // Body parsing middleware
@@ -49,17 +49,22 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads"), {
 }));
 
 // Routes
-app.use("/api/auth", require("./routes/auth"));
-app.use("/api/products", require("./routes/products"));
-app.use("/api/orders", require("./routes/orders"));
-app.use("/api/appointments", require("./routes/appointments"));
-app.use("/api/contact", require("./routes/contact"));
-app.use("/api/blogs", require("./routes/blogs"));
-app.use("/api/admin/dashboard", require("./routes/dashboard"));
+app.use("/auth", require("./routes/auth"));
+app.use("/products", require("./routes/products"));
+app.use("/orders", require("./routes/orders"));
+app.use("/appointments", require("./routes/appointments"));
+app.use("/contact", require("./routes/contact"));
+app.use("/blogs", require("./routes/blogs"));
+app.use("/admin/dashboard", require("./routes/dashboard"));
 
 // Health check
 app.get("/", (req, res) => {
   res.json({ message: "Esena Pharmacy API is running" });
+});
+
+// Test route for debugging
+app.get("/test", (req, res) => {
+  res.json({ status: "API working", timestamp: new Date().toISOString() });
 });
 
 // Test database connection and initialize optimizations
