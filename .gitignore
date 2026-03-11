@@ -110,7 +110,7 @@ public
 .pnp.*
 
 # Build directories
-build/
+# build/ - commented out to allow frontend build folder
 dist/
 
 # Logs
