@@ -69,7 +69,14 @@ exports.getAllProducts = async (req, res) => {
     res.json(products);
   } catch (error) {
     console.error("Error fetching products:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    logger.error("Database error in getAllProducts", error);
+    
+    // Don't crash the server, return a proper error response
+    res.status(500).json({ 
+      message: "Database connection error", 
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+      timestamp: new Date().toISOString()
+    });
   }
 };
 

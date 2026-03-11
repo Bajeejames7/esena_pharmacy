@@ -67,6 +67,24 @@ app.get("/test", (req, res) => {
   res.json({ status: "API working", timestamp: new Date().toISOString() });
 });
 
+// Database test route
+app.get("/db-test", async (req, res) => {
+  try {
+    const [result] = await db.query("SELECT 1 as test");
+    res.json({ 
+      status: "Database connected", 
+      result: result[0],
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: "Database connection failed", 
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Test database connection and initialize optimizations
 db.query("SELECT 1")
   .then(async () => {
