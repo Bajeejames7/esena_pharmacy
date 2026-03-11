@@ -41,6 +41,15 @@ app.get("/api/", (req, res) => {
   });
 });
 
+app.get("/products", (req, res) => {
+  res.json({
+    message: "Products endpoint working",
+    products: [],
+    timestamp: new Date().toISOString(),
+    note: "This is a test response - database not connected yet"
+  });
+});
+
 app.get("/test", (req, res) => {
   res.json({ 
     status: "API working", 
