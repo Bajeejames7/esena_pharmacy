@@ -47,7 +47,7 @@ const AdminDashboard = () => {
 
   const loadDashboardStats = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard/stats`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/admin/dashboard/stats`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
           'Content-Type': 'application/json'
@@ -109,7 +109,7 @@ const AdminDashboard = () => {
   const loadRecentData = async () => {
     try {
       // Load recent orders
-      const ordersResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/orders?limit=5&sort=createdAt&order=desc`, {
+      const ordersResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/admin/orders?limit=5&sort=createdAt&order=desc`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
           'Content-Type': 'application/json'
@@ -122,7 +122,7 @@ const AdminDashboard = () => {
       }
 
       // Load recent appointments
-      const appointmentsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/appointments?limit=4&sort=createdAt&order=desc`, {
+      const appointmentsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/admin/appointments?limit=4&sort=createdAt&order=desc`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
           'Content-Type': 'application/json'
