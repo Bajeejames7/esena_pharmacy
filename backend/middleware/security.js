@@ -1,6 +1,6 @@
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const { body, validationResult, sanitizeBody } = require('express-validator');
+const { body, validationResult } = require('express-validator');
 
 /**
  * Security middleware configuration
