@@ -5,59 +5,60 @@ const path = require("path");
 const db = require("./config/db");
 const { logger, requestLogger } = require("./utils/logger");
 const { initializeDatabase } = require("./utils/database");
+const { createAuditTable } = require("./middleware/audit");
 const { 
   generalLimiter, 
   authLimiter, 
   apiLimiter, 
-  helmetConfig, 
   corsOptions, 
-  requestSizeLimit, 
-  securityHeaders,
-  logSecurityEvent 
+  requestSizeLimit 
 } = require("./middleware/security");
 
+// Load environment variables
 dotenv.config();
 
 const app = express();
 
-// Security middleware (applied first)
-app.use(helmetConfig);
-app.use(securityHeaders);
+// --- STARTUP LOGS ---
+console.log('--- Esena Backend Starting ---');
+console.log('NODE_ENV:', process.env.NODE_ENV || 'production');
+
+// 1. GLOBAL MIDDLEWARE
 app.use(requestSizeLimit);
-
-// Request logging
 app.use(requestLogger);
-
-// CORS with whitelist
 app.use(cors(corsOptions));
-
-// Rate limiting
-app.use('/auth', authLimiter); // Strict rate limiting for auth
-app.use('/', apiLimiter); // API rate limiting
-app.use(generalLimiter); // General rate limiting
-
-// Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Handle trailing slashes - redirect /path/ to /path (except for root)
+// 2. TRAILING SLASH HANDLER
 app.use((req, res, next) => {
-  if (req.path !== '/' && req.path.endsWith('/')) {
+  if (req.path !== '/' && req.path !== '' && req.path.endsWith('/')) {
     const newPath = req.path.slice(0, -1);
-    return res.redirect(301, newPath + (req.url.includes('?') ? req.url.substring(req.path.length) : ''));
+    const query = req.url.includes('?') ? req.url.substring(req.path.length) : '';
+    return res.redirect(301, newPath + query);
   }
   next();
 });
 
-// Static file serving with security headers
-app.use("/uploads", express.static(path.join(__dirname, "uploads"), {
-  setHeaders: (res, path) => {
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Cache-Control', 'public, max-age=31536000');
-  }
-}));
+// 3. ROOT API STATUS ROUTE
+app.get(["/", "/api"], (req, res) => {
+  res.status(200).json({
+    success: true,
+    project: "Esena Pharmacy API",
+    status: "Online",
+    timestamp: new Date().toISOString()
+  });
+});
 
-// Routes
+// 4. RATE LIMITING
+app.use('/auth', authLimiter);
+app.use('/', apiLimiter);
+app.use(generalLimiter);
+
+// 5. STATIC FILES
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// 6. ROUTES
 app.use("/auth", require("./routes/auth"));
 app.use("/products", require("./routes/products"));
 app.use("/orders", require("./routes/orders"));
@@ -66,163 +67,69 @@ app.use("/contact", require("./routes/contact"));
 app.use("/blogs", require("./routes/blogs"));
 app.use("/admin/dashboard", require("./routes/dashboard"));
 
-// Debug route to test admin access
-app.get("/admin/test", (req, res) => {
-  res.json({ 
-    message: "Admin route working", 
-    timestamp: new Date().toISOString(),
-    path: req.path,
-    url: req.url
-  });
-});
-
-// API Status - Professional root route (responds to https://esena.co.ke/api/)
-app.get("/", (req, res) => {
-  res.status(200).json({
-    success: true,
-    project: "Esena Pharmacy API",
-    version: "1.0.0",
-    environment: process.env.NODE_ENV || 'development',
-    status: "Online",
-    timestamp: new Date().toISOString(),
-    endpoints: {
-      auth: "/auth",
-      products: "/products",
-      orders: "/orders",
-      appointments: "/appointments",
-      contact: "/contact",
-      blogs: "/blogs",
-      admin: "/admin/dashboard"
-    }
-  });
-});
-
-// Test route for debugging
-app.get("/test", (req, res) => {
-  res.json({ status: "API working", timestamp: new Date().toISOString() });
-});
-
-// Database test route
+// 7. DB TEST ROUTE
 app.get("/db-test", async (req, res) => {
   try {
     const [result] = await db.query("SELECT 1 as test");
-    res.json({ 
-      status: "Database connected", 
-      result: result[0],
-      timestamp: new Date().toISOString()
-    });
+    res.json({ status: "Database connected", result: result[0] });
   } catch (error) {
-    res.status(500).json({ 
-      status: "Database connection failed", 
-      error: error.message,
-      timestamp: new Date().toISOString()
-    });
+    res.status(500).json({ status: "Database connection failed", error: error.message });
   }
 });
 
-// Test database connection and initialize optimizations
+// 8. BACKGROUND TASKS (Lazy Loading)
+const startBackgroundTasks = async () => {
+  try {
+    logger.info("Starting background database maintenance...");
+    await createAuditTable();
+    await initializeDatabase();
+    logger.info("Background tasks completed successfully");
+  } catch (error) {
+    logger.error("Background task error:", error.message);
+  }
+};
+
+// Verify DB and Start Tasks
 db.query("SELECT 1")
-  .then(async () => {
-    logger.info("Database connection established successfully");
-    
-    // Initialize database optimizations
-    try {
-      await initializeDatabase();
-      logger.info("Database optimizations initialized successfully");
-    } catch (error) {
-      logger.error("Failed to initialize database optimizations", error);
-    }
+  .then(() => {
+    logger.info("Database connection verified.");
+    setTimeout(startBackgroundTasks, 5000); // 5s delay to let server settle
   })
   .catch((err) => {
-    logger.error("Database connection failed", err);
+    logger.error("Initial Database connection failed", err);
   });
 
-// Catch-all for undefined routes (must be after all other routes)
+// 9. ERROR HANDLING
 app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: "Route not found",
-    requested_path: req.originalUrl,
-    timestamp: new Date().toISOString()
-  });
+  res.status(404).json({ success: false, message: "Route not found" });
 });
 
-// Global error handler with security logging
 app.use((err, req, res, next) => {
-  // Log security-related errors
-  if (err.status === 401 || err.status === 403 || err.name === "UnauthorizedError") {
-    logger.security('AUTHENTICATION_FAILURE', {
-      error: err.message,
-      path: req.path,
-      method: req.method
-    }, req);
-  }
-  
-  // Log all errors with comprehensive details
-  logger.error('Application error occurred', err, {
-    ip: req.ip,
-    userAgent: req.get('User-Agent'),
-    path: req.path,
-    method: req.method,
-    body: req.method !== 'GET' ? req.body : undefined,
-    userId: req.user ? req.user.id : null
-  });
-  
-  // Handle specific error types
-  if (err.name === "ValidationError") {
-    return res.status(400).json({ 
-      error: "Invalid input data", 
-      message: "Please check your input and try again"
-    });
-  }
-  
-  if (err.name === "UnauthorizedError" || err.status === 401) {
-    return res.status(401).json({ 
-      error: "Authentication required",
-      message: "Please log in to access this resource"
-    });
-  }
-  
-  if (err.status === 403) {
-    return res.status(403).json({ 
-      error: "Access forbidden",
-      message: "You don't have permission to access this resource"
-    });
-  }
-  
-  if (err.code === 'LIMIT_FILE_SIZE') {
-    return res.status(413).json({
-      error: "File too large",
-      message: "The uploaded file exceeds the maximum allowed size"
-    });
-  }
-  
-  if (err.type === 'entity.too.large') {
-    return res.status(413).json({
-      error: "Request too large",
-      message: "The request payload is too large"
-    });
-  }
-  
-  // Default error response (don't expose internal details)
+  logger.error('Application error', err);
   res.status(err.status || 500).json({ 
     error: "Internal server error",
-    message: "Something went wrong. Please try again later."
+    message: process.env.NODE_ENV === 'production' ? "Something went wrong." : err.message
   });
 });
 
+// 10. DYNAMIC LISTEN LOGIC (The "Anti-Lock" Fix)
 const PORT = process.env.PORT || 5000;
 
-// Only start server if not being required as a module (for cPanel compatibility)
-if (require.main === module) {
-  app.listen(PORT, () => {
-    logger.info(`Server started on port ${PORT}`, {
-      port: PORT,
-      environment: process.env.NODE_ENV || 'development',
-      nodeVersion: process.version
-    });
-  });
-}
+const server = app.listen(PORT, () => {
+  const addr = server.address();
+  const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
+  console.log(`Server listening on ${bind}`);
+});
 
-// Export app for cPanel Node.js setup
+// Catch the EADDRINUSE error so the app doesn't crash the selector
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is busy. Retrying on a dynamic port...`);
+    setTimeout(() => {
+      server.close();
+      app.listen(0); // This tells the OS to pick ANY free port
+    }, 1000);
+  }
+});
+
 module.exports = app;
