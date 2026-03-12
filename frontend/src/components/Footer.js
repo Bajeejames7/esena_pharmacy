@@ -112,7 +112,7 @@ const Footer = () => {
                   <span className="text-sm">esenapharmacy@gmail.com</span>
                 </a>
                 <a 
-                  href="https://maps.app.goo.gl/eePC6915PAvPcp2w5" 
+                  href="https://maps.app.goo.gl/aNLgSwfv4Nzw9Aj5A" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="flex items-start space-x-2 text-gray-600 dark:text-gray-300 hover:text-glass-blue dark:hover:text-blue-400 transition-colors duration-200 group"
@@ -121,7 +121,7 @@ const Footer = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  <span className="text-sm">Behind Eastmatt Supermarket, Ruaraka, Nairobi</span>
+                  <span className="text-sm">OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</span>
                 </a>
               </div>
             </div>

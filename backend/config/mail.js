@@ -105,11 +105,11 @@ const orderConfirmationTemplate = (order, items = []) => {
             
             <a href="${process.env.FRONTEND_URL}/track/${order.token}" class="button">Track Your Order</a>
             
-            <p>If you have any questions, please don't hesitate to contact us at <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a> or call 0768103599.</p>
+            <p>For assistance, contact us at <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a> or call 0768103599.</p>
           </div>
           <div class="footer">
             <p>Esena Pharmacy - Your Trusted Healthcare Partner</p>
-            <p>Behind Eastmatt Supermarket, Ruaraka, Nairobi</p>
+            <p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p>
           </div>
         </div>
       </body>
@@ -231,7 +231,7 @@ const paymentRequestTemplate = (order) => {
           </div>
           <div class="footer">
             <p>Esena Pharmacy - Your Trusted Healthcare Partner</p>
-            <p>Behind Eastmatt Supermarket, Ruaraka, Nairobi</p>
+            <p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p>
           </div>
         </div>
       </body>
@@ -278,7 +278,7 @@ const dispatchNotificationTemplate = (order) => {
           </div>
           <div class="footer">
             <p>Esena Pharmacy - Your Trusted Healthcare Partner</p>
-            <p>Behind Eastmatt Supermarket, Ruaraka, Nairobi</p>
+            <p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p>
           </div>
         </div>
       </body>
@@ -450,7 +450,7 @@ const appointmentConfirmationUpdateTemplate = (appointment) => {
           </div>
           <div class="footer">
             <p>Esena Pharmacy - Your Trusted Healthcare Partner</p>
-            <p>Behind Eastmatt Supermarket, Ruaraka, Nairobi</p>
+            <p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p>
           </div>
         </div>
       </body>
@@ -499,7 +499,7 @@ const appointmentCompletionTemplate = (appointment) => {
           </div>
           <div class="footer">
             <p>Esena Pharmacy - Your Trusted Healthcare Partner</p>
-            <p>Behind Eastmatt Supermarket, Ruaraka, Nairobi</p>
+            <p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p>
           </div>
         </div>
       </body>

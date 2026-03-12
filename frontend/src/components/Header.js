@@ -110,7 +110,7 @@ const Header = () => {
             <div className="flex flex-col items-center">
               <img 
                 src="/full_logo.jpeg" 
-                alt="Esena Pharmacy logo Ruaraka Nairobi pharmacy" 
+                alt="Esena Pharmacy logo OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA NAIROBI pharmacy" 
                 className="h-10 w-auto object-contain"
               />
               <span className="text-xs text-gray-600 dark:text-gray-400 font-medium mt-1">

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRecaptcha } from '../hooks/useRecaptcha';
 import { validateContactForm, validateField } from '../utils/validation';
 import GlassCard from '../components/GlassCard';
 import GlassInput from '../components/forms/GlassInput';
@@ -10,6 +11,7 @@ import GlassButton from '../components/forms/GlassButton';
  * Implements Requirements 16.1, 16.2, 16.3, 16.7, 16.8
  */
 const Contact = () => {
+  const { verifyRecaptcha } = useRecaptcha();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -61,21 +63,39 @@ const Contact = () => {
     }
 
     try {
-      // TODO: Implement actual API call
-      console.log('Contact form submission:', formData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setSubmitSuccess(true);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: ''
+      // Verify reCAPTCHA
+      const recaptchaToken = await verifyRecaptcha('contact_form');
+      if (!recaptchaToken) {
+        setErrors({ submit: 'reCAPTCHA verification failed. Please try again.' });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // TODO: Implement actual API call with reCAPTCHA token
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          recaptchaToken
+        })
       });
-      setErrors({});
+
+      if (response.ok) {
+        setSubmitSuccess(true);
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: ''
+        });
+        setErrors({});
+      } else {
+        throw new Error('Failed to send message');
+      }
     } catch (error) {
       console.error('Contact form error:', error);
       setErrors({ submit: 'Failed to send message. Please try again.' });
@@ -201,7 +221,7 @@ const Contact = () => {
               
               <div className="space-y-4">
                 <a 
-                  href="https://maps.app.goo.gl/eePC6915PAvPcp2w5" 
+                  href="https://maps.app.goo.gl/aNLgSwfv4Nzw9Aj5A" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="flex items-start space-x-4 hover:bg-white/10 dark:hover:bg-slate-700/30 p-2 rounded-lg transition-colors duration-200 group -ml-2"
@@ -209,12 +229,12 @@ const Contact = () => {
                   <div className="w-8 h-8 bg-gradient-to-br from-glass-blue to-glass-green rounded-lg flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 616 0z" />
                     </svg>
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-800 dark:text-white group-hover:text-glass-blue dark:group-hover:text-blue-400 transition-colors">Address</h3>
-                    <p className="text-gray-600 dark:text-gray-300">Behind Eastmatt Supermarket<br />Ruaraka, Nairobi</p>
+                    <p className="text-gray-600 dark:text-gray-300">OUTERING ROAD BEHIND EASTMART SUPERMARKET<br />RUARAKA, NAIROBI</p>
                   </div>
                 </a>
                 

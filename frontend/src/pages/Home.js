@@ -264,7 +264,8 @@ const Home = () => {
                 </div>
                 <h3 className="font-semibold text-gray-800 dark:text-white mb-2">Physical Location</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Ruaraka, Nairobi<br/>
+                  OUTERING ROAD BEHIND EASTMART SUPERMARKET<br/>
+                  RUARAKA, NAIROBI<br/>
                   Phone: +254 700 123 456
                 </p>
               </div>

@@ -402,11 +402,11 @@ const TermsOfUse = () => {
               <div className="bg-white/20 dark:bg-slate-700/30 p-6 rounded-lg">
                 <p className="font-semibold mb-2">Esena Pharmacy</p>
                 <p className="mb-1"><strong>Phone:</strong> 0768103599</p>
-                <p className="mb-1"><strong>Physical Location:</strong> Ruaraka, behind Eastmatt Supermarket</p>
-                <p className="mb-1">Nairobi, Kenya</p>
+                <p className="mb-1"><strong>Physical Location:</strong> OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p>
+                <p className="mb-1">Kenya</p>
                 <p className="mt-3">
                   <a 
-                    href="https://maps.app.goo.gl/UFhEtCFQ2SgKzcXK6" 
+                    href="https://maps.app.goo.gl/aNLgSwfv4Nzw9Aj5A" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-blue-600 dark:text-blue-400 hover:underline"

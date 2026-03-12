@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { CartProvider } from './contexts/CartContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { initPerformanceMonitoring } from './utils/performance';
@@ -104,8 +105,9 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <ThemeProvider>
-        <CartProvider>
+      <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || ''}>
+        <ThemeProvider>
+          <CartProvider>
           <Router>
           {/* Skip Links for keyboard navigation */}
           <div className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 z-50">
@@ -195,6 +197,7 @@ function App() {
       </Router>
     </CartProvider>
   </ThemeProvider>
+  </GoogleReCaptchaProvider>
   </ErrorBoundary>
   );
 }

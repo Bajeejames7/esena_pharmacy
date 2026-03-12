@@ -4,7 +4,7 @@ const nodemailer = require("nodemailer");
  * Email transporter configuration with SMTP settings
  * Implements Requirements 14.9, 14.10
  */
-const transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransporter({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
@@ -109,7 +109,7 @@ const orderConfirmationTemplate = (order, items = []) => {
           </div>
           <div class="footer">
             <p>Esena Pharmacy - Your Trusted Healthcare Partner</p>
-            <p>Behind Eastmatt Supermarket, Ruaraka, Nairobi</p>
+            <p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p>
           </div>
         </div>
       </body>
@@ -174,6 +174,10 @@ const orderAdminNotificationTemplate = (order, items) => {
               <li>Prepare order for dispatch</li>
             </ol>
           </div>
+          <div class="footer">
+            <p>Esena Pharmacy - Your Trusted Healthcare Partner</p>
+            <p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p>
+          </div>
         </div>
       </body>
       </html>
@@ -233,7 +237,7 @@ const paymentRequestTemplate = (order) => {
           </div>
           <div class="footer">
             <p>Esena Pharmacy - Your Trusted Healthcare Partner</p>
-            <p>Behind Eastmatt Supermarket, Ruaraka, Nairobi</p>
+            <p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p>
           </div>
         </div>
       </body>
@@ -280,7 +284,7 @@ const dispatchNotificationTemplate = (order) => {
           </div>
           <div class="footer">
             <p>Esena Pharmacy - Your Trusted Healthcare Partner</p>
-            <p>Behind Eastmatt Supermarket, Ruaraka, Nairobi</p>
+            <p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p>
           </div>
         </div>
       </body>
@@ -454,7 +458,7 @@ const appointmentConfirmationUpdateTemplate = (appointment) => {
           </div>
           <div class="footer">
             <p>Esena Pharmacy - Your Trusted Healthcare Partner</p>
-            <p>Behind Eastmatt Supermarket, Ruaraka, Nairobi</p>
+            <p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p>
           </div>
         </div>
       </body>
@@ -503,7 +507,7 @@ const appointmentCompletionTemplate = (appointment) => {
           </div>
           <div class="footer">
             <p>Esena Pharmacy - Your Trusted Healthcare Partner</p>
-            <p>Behind Eastmatt Supermarket, Ruaraka, Nairobi</p>
+            <p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p>
           </div>
         </div>
       </body>
