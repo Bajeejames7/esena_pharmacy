@@ -76,9 +76,25 @@ app.get("/admin/test", (req, res) => {
   });
 });
 
-// Health check
+// API Status - Professional root route (responds to https://esena.co.ke/api/)
 app.get("/", (req, res) => {
-  res.json({ message: "Esena Pharmacy API is running" });
+  res.status(200).json({
+    success: true,
+    project: "Esena Pharmacy API",
+    version: "1.0.0",
+    environment: process.env.NODE_ENV || 'development',
+    status: "Online",
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      auth: "/auth",
+      products: "/products",
+      orders: "/orders",
+      appointments: "/appointments",
+      contact: "/contact",
+      blogs: "/blogs",
+      admin: "/admin/dashboard"
+    }
+  });
 });
 
 // Test route for debugging
@@ -120,6 +136,16 @@ db.query("SELECT 1")
   .catch((err) => {
     logger.error("Database connection failed", err);
   });
+
+// Catch-all for undefined routes (must be after all other routes)
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+    requested_path: req.originalUrl,
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Global error handler with security logging
 app.use((err, req, res, next) => {
