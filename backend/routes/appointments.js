@@ -10,10 +10,12 @@ const {
 
 // Public routes
 router.post("/", createAppointment); // POST /api/appointments (Req 8.6)
-router.get("/:token", getAppointmentByToken); // GET /api/appointments/:token (Req 9.1)
 
 // Protected routes (require JWT authentication)
 router.get("/", auth, getAllAppointments); // GET /api/appointments (admin only)
 router.put("/:id/status", auth, updateAppointmentStatus); // PUT /api/appointments/:id/status (admin only)
+
+// Public routes (must come after protected routes to avoid conflicts)
+router.get("/:token", getAppointmentByToken); // GET /api/appointments/:token (Req 9.1)
 
 module.exports = router;

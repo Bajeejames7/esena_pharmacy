@@ -57,6 +57,16 @@ app.use("/contact", require("./routes/contact"));
 app.use("/blogs", require("./routes/blogs"));
 app.use("/admin/dashboard", require("./routes/dashboard"));
 
+// Debug route to test admin access
+app.get("/admin/test", (req, res) => {
+  res.json({ 
+    message: "Admin route working", 
+    timestamp: new Date().toISOString(),
+    path: req.path,
+    url: req.url
+  });
+});
+
 // Health check
 app.get("/", (req, res) => {
   res.json({ message: "Esena Pharmacy API is running" });
