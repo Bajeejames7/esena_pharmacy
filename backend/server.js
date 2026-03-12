@@ -40,6 +40,15 @@ app.use(generalLimiter); // General rate limiting
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Handle trailing slashes - redirect /path/ to /path (except for root)
+app.use((req, res, next) => {
+  if (req.path !== '/' && req.path.endsWith('/')) {
+    const newPath = req.path.slice(0, -1);
+    return res.redirect(301, newPath + (req.url.includes('?') ? req.url.substring(req.path.length) : ''));
+  }
+  next();
+});
+
 // Static file serving with security headers
 app.use("/uploads", express.static(path.join(__dirname, "uploads"), {
   setHeaders: (res, path) => {

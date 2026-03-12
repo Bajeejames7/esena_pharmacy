@@ -72,6 +72,46 @@ app.get("/env-test", (req, res) => {
   });
 });
 
+// Temporary admin routes for testing
+app.get("/admin/test", (req, res) => {
+  res.json({ 
+    message: "Admin test route working from test-server.js", 
+    timestamp: new Date().toISOString(),
+    path: req.path,
+    url: req.url
+  });
+});
+
+app.get("/admin/dashboard/stats", (req, res) => {
+  res.json({
+    message: "Dashboard stats endpoint (temporary mock)",
+    pendingOrders: 5,
+    pendingAppointments: 3,
+    productsInStock: 25,
+    totalRevenue: 1500.00,
+    note: "This is a temporary mock response from test-server.js",
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get("/admin/orders", (req, res) => {
+  res.json({
+    message: "Orders endpoint (temporary mock)",
+    orders: [],
+    note: "This is a temporary mock response from test-server.js",
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get("/admin/appointments", (req, res) => {
+  res.json({
+    message: "Appointments endpoint (temporary mock)",
+    appointments: [],
+    note: "This is a temporary mock response from test-server.js",
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Add a catch-all route to see what requests are coming in
 app.get("*", (req, res) => {
   res.json({
@@ -80,7 +120,8 @@ app.get("*", (req, res) => {
     url: req.url,
     method: req.method,
     headers: req.headers,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    note: "STILL USING test-server.js - Need to update .htaccess to use server.js"
   });
 });
 
