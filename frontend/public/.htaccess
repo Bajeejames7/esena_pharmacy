@@ -21,7 +21,8 @@ RewriteRule ^(.*)$ - [L]
 RewriteRule ^api(/.*)?$ - [L,NC]
 
 # C. REACT ROUTER (FRONTEND)
-# If the requested URL isn't a physical file or folder, send it to index.html
+# Handle both main frontend and admin routes - all go to the same index.html
+# since this is a single React app with client-side routing
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_URI} !\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ [NC]
