@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esena Pharmacy - API Tester</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .success { color: #155724; background: #d4edda; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #28a745; }
+        .error { color: #721c24; background: #f8d7da; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #dc3545; }
+        .info { color: #0c5460; background: #d1ecf1; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #17a2b8; }
+        .step { background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 10px; border-left: 5px solid #007bff; }
+        button { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; margin: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        button:disabled { background: #6c757d; cursor: not-allowed; transform: none; }
+        .log { background: #f1f3f4; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; white-space: pre-wrap; max-height: 400px; overflow-y: auto; font-size: 13px; border: 1px solid #dee2e6; }
+        .credentials { background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%); color: #2d3436; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        h1 { color: #2d3436; margin-bottom: 10px; }
+        h3 { color: #2d3436; margin-bottom: 15px; }
+        .status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
+        .status-success { background: #28a745; }
+        .status-error { background: #dc3545; }
+        .status-warning { background: #ffc107; }
+        .status-info { background: #17a2b8; }
+        input[type="text"], input[type="password"] { width: 200px; padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Esena Pharmacy - API Tester</h1>
+        <p>Test your admin authentication API directly from the browser.</p>
+
+        <div class="step">
+            <h3>🔍 API Endpoint Tests</h3>
+            
+            <button onclick="testApiRoot()">Test API Root</button>
+            <button onclick="testDbConnection()">Test Database</button>
+            <button onclick="testRoutes()">List Routes</button>
+            
+            <div id="basicResults"></div>
+        </div>
+
+        <div class="step">
+            <h3>🔐 Authentication Test</h3>
+            
+            <div>
+                <label>Username: <input type="text" id="username" value="admin"></label>
+                <label>Password: <input type="password" id="password" value="password"></label>
+            </div>
+            
+            <button onclick="testLogin()">Test Login</button>
+            <button onclick="testDashboard()" id="dashboardBtn" disabled>Test Dashboard (Login First)</button>
+            
+            <div id="authResults"></div>
+        </div>
+
+        <div class="credentials">
+            <h3>🔑 Default Credentials</h3>
+            <p><strong>Username:</strong> admin</p>
+            <p><strong>Password:</strong> password</p>
+            <p><strong>Admin URL:</strong> <a href="https://esena.co.ke/admin/login" target="_blank">https://esena.co.ke/admin/login</a></p>
+        </div>
+
+        <div class="info">
+            <h3>📋 How to Use</h3>
+            <ol>
+                <li>First, test the basic API endpoints to ensure the backend is running</li>
+                <li>Test the login with the default credentials</li>
+                <li>If login succeeds, test the dashboard API</li>
+                <li>If any test fails, use the PHP fixer tool first</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let authToken = null;
+
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    method: options.method || 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    body: options.body ? JSON.stringify(options.body) : undefined
+                });
+
+                const data = await response.text();
+                let jsonData;
+                try {
+                    jsonData = JSON.parse(data);
+                } catch (e) {
+                    jsonData = { rawResponse: data };
+                }
+
+                return {
+                    status: response.status,
+                    ok: response.ok,
+                    data: jsonData,
+                    rawData: data
+                };
+            } catch (error) {
+                return {
+                    status: 0,
+                    ok: false,
+                    error: error.message
+                };
+            }
+        }
+
+        function displayResult(containerId, title, result) {
+            const container = document.getElementById(containerId);
+            const timestamp = new Date().toLocaleTimeString();
+            
+            let statusClass = 'error';
+            let statusIcon = '❌';
+            let statusIndicator = 'status-error';
+            
+            if (result.ok) {
+                statusClass = 'success';
+                statusIcon = '✅';
+                statusIndicator = 'status-success';
+            } else if (result.status === 0) {
+                statusClass = 'error';
+                statusIcon = '🔌';
+                statusIndicator = 'status-error';
+            }
+
+            const html = `
+                <div class="${statusClass}">
+                    <h4><span class="status-indicator ${statusIndicator}"></span>${statusIcon} ${title}</h4>
+                    <p><strong>Status:</strong> ${result.status} ${result.ok ? '(Success)' : '(Failed)'}</p>
+                    <p><strong>Time:</strong> ${timestamp}</p>
+                    ${result.error ? `<p><strong>Error:</strong> ${result.error}</p>` : ''}
+                    <div class="log">${JSON.stringify(result.data || result.rawData, null, 2)}</div>
+                </div>
+            `;
+            
+            container.innerHTML = html + container.innerHTML;
+        }
+
+        async function testApiRoot() {
+            const result = await makeRequest('https://esena.co.ke/api');
+            displayResult('basicResults', 'API Root Test', result);
+        }
+
+        async function testDbConnection() {
+            const result = await makeRequest('https://esena.co.ke/db-test');
+            displayResult('basicResults', 'Database Connection Test', result);
+        }
+
+        async function testRoutes() {
+            const result = await makeRequest('https://esena.co.ke/debug/routes');
+            displayResult('basicResults', 'Available Routes', result);
+        }
+
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            const result = await makeRequest('https://esena.co.ke/api/auth/login', {
+                method: 'POST',
+                body: { username, password }
+            });
+            
+            if (result.ok && result.data.token) {
+                authToken = result.data.token;
+                document.getElementById('dashboardBtn').disabled = false;
+                displayResult('authResults', 'Login Test', {
+                    ...result,
+                    data: { ...result.data, token: result.data.token.substring(0, 50) + '...' }
+                });
+            } else {
+                displayResult('authResults', 'Login Test', result);
+            }
+        }
+
+        async function testDashboard() {
+            if (!authToken) {
+                displayResult('authResults', 'Dashboard Test', {
+                    status: 0,
+                    ok: false,
+                    error: 'No auth token available. Login first.'
+                });
+                return;
+            }
+
+            const result = await makeRequest('https://esena.co.ke/api/admin/dashboard/stats', {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+            
+            displayResult('authResults', 'Dashboard API Test', result);
+        }
+
+        // Auto-test API root on page load
+        window.addEventListener('load', () => {
+            setTimeout(testApiRoot, 1000);
+        });
+    </script>
+</body>
+</html>
