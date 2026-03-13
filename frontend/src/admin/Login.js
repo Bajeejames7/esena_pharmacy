@@ -92,32 +92,64 @@ const AdminLogin = () => {
     setError('');
 
     try {
-      // TODO: Replace with actual API call to backend auth endpoint
       console.log('Admin login attempt:', { username: credentials.username });
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Demo authentication logic
-      if (credentials.username === 'admin' && credentials.password === 'password') {
-        // Generate mock JWT token with expiration
-        const mockToken = generateMockJWT();
-        localStorage.setItem('adminToken', mockToken);
-        
-        // Store user info
-        localStorage.setItem('adminUser', JSON.stringify({
+      // Call the actual backend login API
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://esena.co.ke/api'}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           username: credentials.username,
-          role: 'admin',
-          loginTime: new Date().toISOString()
-        }));
-        
-        navigate('/admin/dashboard');
-      } else {
-        setError('Invalid username or password. Use admin/password for demo.');
+          password: credentials.password
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
       }
+
+      // Store the real JWT token from backend
+      localStorage.setItem('adminToken', data.token);
+      
+      // Store user info from backend response
+      localStorage.setItem('adminUser', JSON.stringify({
+        id: data.user.id,
+        username: data.user.username,
+        role: data.user.role,
+        loginTime: new Date().toISOString()
+      }));
+      
+      navigate('/admin/dashboard');
     } catch (err) {
       console.error('Login error:', err);
-      setError('Login failed. Please check your connection and try again.');
+      
+      // Fallback to demo authentication if backend is not available
+      if (err.message.includes('fetch') || err.message.includes('NetworkError')) {
+        console.log('Backend not available, using demo authentication');
+        
+        if (credentials.username === 'admin' && credentials.password === 'password') {
+          // Generate mock JWT token with expiration
+          const mockToken = generateMockJWT();
+          localStorage.setItem('adminToken', mockToken);
+          
+          // Store user info
+          localStorage.setItem('adminUser', JSON.stringify({
+            username: credentials.username,
+            role: 'admin',
+            loginTime: new Date().toISOString()
+          }));
+          
+          navigate('/admin/dashboard');
+        } else {
+          setError('Invalid username or password. Use admin/password for demo.');
+        }
+      } else {
+        setError(err.message || 'Login failed. Please check your credentials and try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -204,6 +236,7 @@ const AdminLogin = () => {
             <div className="text-blue-700 dark:text-blue-300 text-sm space-y-1">
               <p><strong>Username:</strong> admin</p>
               <p><strong>Password:</strong> password</p>
+              <p className="text-xs mt-2 opacity-75">Note: Uses real backend authentication when available, falls back to demo mode if backend is offline.</p>
             </div>
           </div>
 
