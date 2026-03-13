@@ -1,0 +1,41 @@
+# ----------------------------------------------------------------------
+# 1. REWRITE ENGINE & ROUTING
+# ----------------------------------------------------------------------
+Options -MultiViews
+RewriteEngine On
+RewriteBase /
+
+# Force HTTPS redirect
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://esena.co.ke/$1 [L,R=301]
+
+# A. API PASSTHROUGH
+# Let Passenger handle any request starting with /api
+# This tells Apache: "Don't look for a file, just send this to the Node app"
+RewriteRule ^api(/.*)?$ - [L,NC]
+
+# B. REACT ROUTER (FRONTEND)
+# If the requested URL isn't a physical file or folder, send it to index.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+
+# ----------------------------------------------------------------------
+# 2. SECURITY HEADERS & CACHING
+# ----------------------------------------------------------------------
+Header always set X-Content-Type-Options nosniff
+Header always set X-Frame-Options SAMEORIGIN
+Header always set X-XSS-Protection "1; mode=block"
+
+# Optimize caching for static assets
+<IfModule mod_expires.c>
+ExpiresActive On
+ExpiresDefault "access plus 1 month"
+ExpiresByType image/x-icon "access plus 1 year"
+ExpiresByType image/jpeg "access plus 1 year"
+ExpiresByType image/png "access plus 1 year"
+ExpiresByType image/svg+xml "access plus 1 year"
+ExpiresByType text/css "access plus 1 month"
+ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
