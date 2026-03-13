@@ -29,6 +29,8 @@ const ManageBlogs = () => {
   const [errors, setErrors] = useState({});
 
   const isMobile = breakpoint === 'mobile';
+  const isTablet = breakpoint === 'tablet';
+  const shouldShowMenuButton = isMobile || isTablet;
 
   useEffect(() => {
     // Auto-collapse sidebar on mobile
@@ -215,7 +217,7 @@ const ManageBlogs = () => {
     <div className="min-h-screen bg-gradient-to-br from-glass-blue/20 via-glass-green/20 to-glass-white dark:from-slate-900/50 dark:via-slate-800/50 dark:to-slate-900 flex flex-col">
       <AdminHeader 
         onMenuToggle={() => setSidebarOpen(true)}
-        showMenuButton={isMobile}
+        showMenuButton={shouldShowMenuButton}
       />
       
       <div className="flex flex-1">
@@ -225,7 +227,7 @@ const ManageBlogs = () => {
         />
         
         <div className={`flex-1 transition-all duration-300 ${
-          !isMobile && sidebarOpen ? 'ml-64' : !isMobile ? 'ml-16' : ''
+          !shouldShowMenuButton && sidebarOpen ? 'ml-64' : !shouldShowMenuButton ? 'ml-16' : ''
         }`}>
           <div className="p-6">
             {/* Header */}
