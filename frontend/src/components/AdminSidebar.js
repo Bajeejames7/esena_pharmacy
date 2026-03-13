@@ -151,14 +151,36 @@ const SidebarContent = ({
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="relative mb-8">
-        {/* Toggle button positioned absolutely */}
+        {/* Logo section with proper spacing */}
+        <div className={`flex ${!shouldUseOverlay ? 'justify-between' : 'justify-center'} items-center mb-4`}>
+          {/* Logo */}
+          <div className="flex justify-center flex-1">
+            {(!isCollapsed || shouldUseOverlay) && (
+              <img 
+                src="/full_logo.jpeg" 
+                alt="Esena Pharmacy" 
+                className="h-12 w-auto object-contain max-w-[180px]"
+              />
+            )}
+            
+            {isCollapsed && !shouldUseOverlay && (
+              <img 
+                src="/full_logo.jpeg" 
+                alt="Esena Pharmacy" 
+                className="h-8 w-8 object-cover rounded-full"
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Toggle button positioned separately */}
         {!shouldUseOverlay && (
           <button
             onClick={onToggle}
-            className="absolute top-0 right-0 p-1 rounded-lg hover:bg-white/20 dark:hover:bg-slate-700/50 transition-colors z-10"
+            className="absolute top-0 right-0 p-2 rounded-lg hover:bg-white/20 dark:hover:bg-slate-700/50 transition-colors z-10"
             aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
@@ -167,33 +189,14 @@ const SidebarContent = ({
         {shouldUseOverlay && (
           <button
             onClick={onToggle}
-            className="absolute top-0 right-0 p-1 rounded-lg hover:bg-white/20 dark:hover:bg-slate-700/50 transition-colors z-10"
+            className="absolute top-0 right-0 p-2 rounded-lg hover:bg-white/20 dark:hover:bg-slate-700/50 transition-colors z-10"
             aria-label="Close sidebar"
           >
-            <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         )}
-
-        {/* Logo centered with proper spacing */}
-        <div className="flex justify-center pt-2 pr-8">
-          {(!isCollapsed || shouldUseOverlay) && (
-            <img 
-              src="/full_logo.jpeg" 
-              alt="Esena Pharmacy" 
-              className="h-12 w-auto object-contain max-w-[180px]"
-            />
-          )}
-          
-          {isCollapsed && !shouldUseOverlay && (
-            <img 
-              src="/full_logo.jpeg" 
-              alt="Esena Pharmacy" 
-              className="h-8 w-auto object-contain max-w-[32px]"
-            />
-          )}
-        </div>
       </div>
 
       {/* Navigation */}
@@ -206,14 +209,14 @@ const SidebarContent = ({
                 <Link
                   to={item.path}
                   onClick={shouldUseOverlay ? onToggle : undefined}
-                  className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center ${isCollapsed && !shouldUseOverlay ? 'justify-center' : 'space-x-3'} px-3 py-2 rounded-lg transition-colors ${
                     isActive
                       ? 'bg-gradient-to-r from-glass-blue/20 to-glass-green/20 text-blue-700 dark:text-blue-300'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-slate-700/50 hover:text-gray-800 dark:hover:text-gray-100'
                   }`}
-                  title={isCollapsed ? item.label : undefined}
+                  title={isCollapsed && !shouldUseOverlay ? item.label : undefined}
                 >
-                  <span className={isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}>
+                  <span className={`${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'} ${isCollapsed && !shouldUseOverlay ? 'text-lg' : ''}`}>
                     {item.icon}
                   </span>
                   {(!isCollapsed || shouldUseOverlay) && (
@@ -244,21 +247,32 @@ const SidebarContent = ({
           </div>
         )}
 
+        {/* Collapsed state user avatar */}
+        {isCollapsed && !shouldUseOverlay && (
+          <div className="mb-4 flex justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-glass-blue to-glass-green rounded-full flex items-center justify-center">
+              <span className="text-white font-medium text-sm">
+                {userInfo.username.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          </div>
+        )}
+
         {showLogoutConfirm ? (
           <div className="space-y-2">
             {(!isCollapsed || shouldUseOverlay) && (
               <p className="text-sm text-gray-600 dark:text-gray-300 px-3">Are you sure?</p>
             )}
-            <div className="flex space-x-2">
+            <div className={`flex ${isCollapsed && !shouldUseOverlay ? 'flex-col' : ''} space-${isCollapsed && !shouldUseOverlay ? 'y' : 'x'}-2`}>
               <button
                 onClick={handleLogout}
-                className="flex-1 px-3 py-2 bg-red-500/20 text-red-700 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-500/30 transition-colors"
+                className={`${isCollapsed && !shouldUseOverlay ? 'w-full' : 'flex-1'} px-3 py-2 bg-red-500/20 text-red-700 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-500/30 transition-colors`}
               >
                 {isCollapsed && !shouldUseOverlay ? '✓' : 'Yes'}
               </button>
               <button
                 onClick={() => setShowLogoutConfirm(false)}
-                className="flex-1 px-3 py-2 bg-gray-500/20 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-500/30 transition-colors"
+                className={`${isCollapsed && !shouldUseOverlay ? 'w-full' : 'flex-1'} px-3 py-2 bg-gray-500/20 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-500/30 transition-colors`}
               >
                 {isCollapsed && !shouldUseOverlay ? '✗' : 'No'}
               </button>
@@ -267,10 +281,10 @@ const SidebarContent = ({
         ) : (
           <button
             onClick={() => setShowLogoutConfirm(true)}
-            className="w-full flex items-center space-x-3 px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-red-500/20 hover:text-red-700 dark:hover:text-red-400 rounded-lg transition-colors"
-            title={isCollapsed ? 'Logout' : undefined}
+            className={`w-full flex items-center ${isCollapsed && !shouldUseOverlay ? 'justify-center' : 'space-x-3'} px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-red-500/20 hover:text-red-700 dark:hover:text-red-400 rounded-lg transition-colors`}
+            title={isCollapsed && !shouldUseOverlay ? 'Logout' : undefined}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`${isCollapsed && !shouldUseOverlay ? 'w-6 h-6' : 'w-5 h-5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
             {(!isCollapsed || shouldUseOverlay) && (

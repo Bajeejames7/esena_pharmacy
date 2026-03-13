@@ -46,11 +46,6 @@ const AdminHeader = ({ onMenuToggle, showMenuButton = true }) => {
           )}
           
           <div className="flex items-center space-x-3">
-            <img 
-              src="/full_logo.jpeg" 
-              alt="Esena Pharmacy" 
-              className="h-10 w-auto object-contain"
-            />
             <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{getPageTitle()}</h1>
           </div>
         </div>
