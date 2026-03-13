@@ -10,19 +10,43 @@ RewriteCond %{HTTP:X-Forwarded-Proto} !https
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://esena.co.ke/$1 [L,R=301]
 
-# A. API PASSTHROUGH
+# A. STATIC FILES - Serve directly with correct MIME types
+# Handle static assets first before any routing rules
+RewriteCond %{REQUEST_URI} \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ [NC]
+RewriteRule ^(.*)$ - [L]
+
+# B. API PASSTHROUGH
 # Let Passenger handle any request starting with /api
 # This tells Apache: "Don't look for a file, just send this to the Node app"
 RewriteRule ^api(/.*)?$ - [L,NC]
 
-# B. REACT ROUTER (FRONTEND)
+# C. REACT ROUTER (FRONTEND)
 # If the requested URL isn't a physical file or folder, send it to index.html
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ [NC]
 RewriteRule . /index.html [L]
 
 # ----------------------------------------------------------------------
-# 2. SECURITY HEADERS & CACHING
+# 2. MIME TYPE DEFINITIONS
+# ----------------------------------------------------------------------
+<IfModule mod_mime.c>
+    AddType text/css .css
+    AddType application/javascript .js
+    AddType application/json .json
+    AddType image/png .png
+    AddType image/jpeg .jpg .jpeg
+    AddType image/gif .gif
+    AddType image/svg+xml .svg
+    AddType image/x-icon .ico
+    AddType font/woff .woff
+    AddType font/woff2 .woff2
+    AddType font/ttf .ttf
+    AddType font/eot .eot
+</IfModule>
+
+# ----------------------------------------------------------------------
+# 3. SECURITY HEADERS & CACHING
 # ----------------------------------------------------------------------
 Header always set X-Content-Type-Options nosniff
 Header always set X-Frame-Options SAMEORIGIN
