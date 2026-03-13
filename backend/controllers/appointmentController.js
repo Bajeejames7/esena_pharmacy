@@ -160,8 +160,25 @@ exports.getAppointmentByToken = async (req, res) => {
 
 exports.getAllAppointments = async (req, res) => {
   try {
-    const [appointments] = await db.query("SELECT * FROM appointments ORDER BY date DESC");
-    res.json(appointments);
+    // Extract query parameters
+    const limit = parseInt(req.query.limit) || null;
+    const sort = req.query.sort || 'created_at';
+    const order = req.query.order === 'asc' ? 'ASC' : 'DESC';
+    
+    // Validate sort field to prevent SQL injection
+    const validSortFields = ['created_at', 'date', 'status', 'customer_name'];
+    const sortField = validSortFields.includes(sort) ? sort : 'created_at';
+    
+    // Build query
+    let query = `SELECT * FROM appointments ORDER BY ${sortField} ${order}`;
+    if (limit) {
+      query += ` LIMIT ${limit}`;
+    }
+    
+    const [appointments] = await db.query(query);
+    
+    // Return in the format expected by the frontend
+    res.json({ appointments });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }

@@ -32,7 +32,7 @@ const WhatsAppButton = ({
           }
         `}
       </style>
-      <div className={`fixed bottom-6 right-6 z-50 ${className}`}>
+      <div className={`fixed bottom-24 right-6 z-50 ${className}`}>
       <GlassCard
         className="p-4 hover:scale-110 transform transition-all duration-300"
         style={{

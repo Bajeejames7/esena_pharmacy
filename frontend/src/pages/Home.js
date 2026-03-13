@@ -464,7 +464,7 @@ const Home = () => {
               <div>
                 <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">Trusted Local Pharmacy</h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  As a trusted pharmacy in Ruaraka, Nairobi, we've been serving the community for over 20 years with reliable healthcare services and quality medications.
+                  As a trusted pharmacy in Ruaraka, Nairobi, we've been serving the community for over 5 years with reliable healthcare services and quality medications.
                 </p>
                 <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">Professional Pharmacist Consultations</h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
@@ -495,7 +495,7 @@ const Home = () => {
               breakpoint === 'tablet' ? 'grid-cols-2' : 'grid-cols-4'
             }`}>
               <div>
-                <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2">20+</div>
+                <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2">5+</div>
                 <div className="text-gray-600 dark:text-gray-300">Years of Service</div>
               </div>
               <div>

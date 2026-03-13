@@ -58,16 +58,45 @@ app.use(generalLimiter);
 // 5. STATIC FILES
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// 6. ROUTES
-app.use("/auth", require("./routes/auth"));
-app.use("/products", require("./routes/products"));
-app.use("/orders", require("./routes/orders"));
-app.use("/appointments", require("./routes/appointments"));
-app.use("/contact", require("./routes/contact"));
-app.use("/blogs", require("./routes/blogs"));
-app.use("/admin/dashboard", require("./routes/dashboard"));
+// 6. ROUTES - Dual path support for cPanel deployment
+app.use(["/auth", "/api/auth"], require("./routes/auth"));
+app.use(["/products", "/api/products"], require("./routes/products"));
+app.use(["/orders", "/api/orders", "/admin/orders", "/api/admin/orders"], require("./routes/orders"));
+app.use(["/appointments", "/api/appointments", "/admin/appointments", "/api/admin/appointments"], require("./routes/appointments"));
+app.use(["/contact", "/api/contact"], require("./routes/contact"));
+app.use(["/blogs", "/api/blogs"], require("./routes/blogs"));
+app.use(["/admin/dashboard", "/api/admin/dashboard"], require("./routes/dashboard"));
 
-// 7. DB TEST ROUTE
+// 6.1. EXPLICIT ADMIN ROUTES (Fallback for cPanel routing issues)
+// These handle the exact paths the frontend is calling
+app.use("/api/admin/orders", require("./routes/orders"));
+app.use("/api/admin/appointments", require("./routes/appointments"));
+app.use("/api/admin/dashboard", require("./routes/dashboard"));
+
+// 7. DEBUG ROUTES (Remove after fixing)
+app.get("/debug/routes", (req, res) => {
+  const routes = [];
+  app._router.stack.forEach((middleware) => {
+    if (middleware.route) {
+      routes.push({
+        path: middleware.route.path,
+        methods: Object.keys(middleware.route.methods)
+      });
+    } else if (middleware.name === 'router') {
+      middleware.handle.stack.forEach((handler) => {
+        if (handler.route) {
+          routes.push({
+            path: handler.route.path,
+            methods: Object.keys(handler.route.methods)
+          });
+        }
+      });
+    }
+  });
+  res.json({ routes, message: "Available routes" });
+});
+
+// 8. DB TEST ROUTE
 app.get("/db-test", async (req, res) => {
   try {
     const [result] = await db.query("SELECT 1 as test");
@@ -77,7 +106,7 @@ app.get("/db-test", async (req, res) => {
   }
 });
 
-// 8. BACKGROUND TASKS (Lazy Loading)
+// 9. BACKGROUND TASKS (Lazy Loading)
 const startBackgroundTasks = async () => {
   try {
     logger.info("Starting background database maintenance...");
@@ -99,7 +128,7 @@ db.query("SELECT 1")
     logger.error("Initial Database connection failed", err);
   });
 
-// 9. ERROR HANDLING
+// 10. ERROR HANDLING
 app.use((req, res) => {
   res.status(404).json({ success: false, message: "Route not found" });
 });
@@ -112,7 +141,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 10. DYNAMIC LISTEN LOGIC (The "Anti-Lock" Fix)
+// 11. DYNAMIC LISTEN LOGIC (The "Anti-Lock" Fix)
 const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, () => {

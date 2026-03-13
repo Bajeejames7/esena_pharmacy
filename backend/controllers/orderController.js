@@ -176,8 +176,25 @@ exports.getOrderByToken = async (req, res) => {
 
 exports.getAllOrders = async (req, res) => {
   try {
-    const [orders] = await db.query("SELECT * FROM orders ORDER BY created_at DESC");
-    res.json(orders);
+    // Extract query parameters
+    const limit = parseInt(req.query.limit) || null;
+    const sort = req.query.sort || 'created_at';
+    const order = req.query.order === 'asc' ? 'ASC' : 'DESC';
+    
+    // Validate sort field to prevent SQL injection
+    const validSortFields = ['created_at', 'total', 'status', 'customer_name'];
+    const sortField = validSortFields.includes(sort) ? sort : 'created_at';
+    
+    // Build query
+    let query = `SELECT * FROM orders ORDER BY ${sortField} ${order}`;
+    if (limit) {
+      query += ` LIMIT ${limit}`;
+    }
+    
+    const [orders] = await db.query(query);
+    
+    // Return in the format expected by the frontend
+    res.json({ orders });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
