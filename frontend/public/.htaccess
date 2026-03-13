@@ -21,7 +21,14 @@ RewriteRule ^(.*)$ - [L]
 RewriteRule ^api(/.*)?$ - [L,NC]
 
 # C. REACT ROUTER (FRONTEND)
-# If the requested URL isn't a physical file or folder, send it to index.html
+# Handle admin panel routing separately
+RewriteCond %{REQUEST_URI} ^/admin [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ [NC]
+RewriteRule ^admin/.* /admin/index.html [L]
+
+# Handle main app routing
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_URI} !\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ [NC]
