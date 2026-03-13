@@ -1,13 +1,17 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
+import { useBreakpoint } from '../utils/responsive';
 import ThemeToggle from './ThemeToggle';
 
 /**
- * Admin header component for mobile devices
+ * Admin header component for mobile and tablet devices
  * Shows page title and mobile menu toggle
  */
 const AdminHeader = ({ onMenuToggle, showMenuButton = true }) => {
   const location = useLocation();
+  const { breakpoint } = useBreakpoint();
+  
+  const shouldShowHeader = breakpoint === 'mobile' || breakpoint === 'tablet';
 
   const getPageTitle = () => {
     const path = location.pathname;
@@ -26,7 +30,7 @@ const AdminHeader = ({ onMenuToggle, showMenuButton = true }) => {
   };
 
   return (
-    <header className="lg:hidden sticky top-0 z-40 glass-card border-b border-white/20 dark:border-slate-600/30">
+    <header className={`${shouldShowHeader ? 'block' : 'hidden'} sticky top-0 z-40 glass-card border-b border-white/20 dark:border-slate-600/30`}>
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center space-x-3">
           {showMenuButton && (

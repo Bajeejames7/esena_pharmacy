@@ -14,6 +14,8 @@ const AdminSidebar = ({ isOpen, onToggle }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const isMobile = breakpoint === 'mobile';
+  const isTablet = breakpoint === 'tablet';
+  const shouldUseOverlay = isMobile || isTablet; // Use overlay for both mobile and tablet
 
   const menuItems = [
     {
@@ -80,8 +82,8 @@ const AdminSidebar = ({ isOpen, onToggle }) => {
 
   const userInfo = getUserInfo();
 
-  // Mobile overlay
-  if (isMobile && isOpen) {
+  // Mobile and tablet overlay
+  if (shouldUseOverlay && isOpen) {
     return (
       <>
         {/* Backdrop */}
@@ -101,7 +103,7 @@ const AdminSidebar = ({ isOpen, onToggle }) => {
               setShowLogoutConfirm={setShowLogoutConfirm}
               handleLogout={handleLogout}
               onToggle={onToggle}
-              isMobile={isMobile}
+              shouldUseOverlay={shouldUseOverlay}
             />
           </GlassCard>
         </div>
@@ -110,7 +112,7 @@ const AdminSidebar = ({ isOpen, onToggle }) => {
   }
 
   // Desktop sidebar
-  if (!isMobile) {
+  if (!shouldUseOverlay) {
     return (
       <div className={`transition-all duration-300 ${isOpen ? 'w-64' : 'w-16'}`}>
         <div className="fixed left-0 top-0 h-full transition-all duration-300" style={{ width: isOpen ? '256px' : '64px' }}>
@@ -142,7 +144,7 @@ const SidebarContent = ({
   setShowLogoutConfirm, 
   handleLogout, 
   onToggle, 
-  isMobile, 
+  shouldUseOverlay, 
   isCollapsed 
 }) => {
   return (
@@ -150,7 +152,7 @@ const SidebarContent = ({
       {/* Header */}
       <div className="relative mb-8">
         {/* Toggle button positioned absolutely */}
-        {!isMobile && (
+        {!shouldUseOverlay && (
           <button
             onClick={onToggle}
             className="absolute top-0 right-0 p-1 rounded-lg hover:bg-white/20 dark:hover:bg-slate-700/50 transition-colors z-10"
@@ -162,7 +164,7 @@ const SidebarContent = ({
           </button>
         )}
         
-        {isMobile && (
+        {shouldUseOverlay && (
           <button
             onClick={onToggle}
             className="absolute top-0 right-0 p-1 rounded-lg hover:bg-white/20 dark:hover:bg-slate-700/50 transition-colors z-10"
@@ -176,7 +178,7 @@ const SidebarContent = ({
 
         {/* Logo centered with proper spacing */}
         <div className="flex justify-center pt-2 pr-8">
-          {(!isCollapsed || isMobile) && (
+          {(!isCollapsed || shouldUseOverlay) && (
             <img 
               src="/full_logo.jpeg" 
               alt="Esena Pharmacy" 
@@ -184,7 +186,7 @@ const SidebarContent = ({
             />
           )}
           
-          {isCollapsed && !isMobile && (
+          {isCollapsed && !shouldUseOverlay && (
             <img 
               src="/full_logo.jpeg" 
               alt="Esena Pharmacy" 
@@ -203,7 +205,7 @@ const SidebarContent = ({
               <li key={item.path}>
                 <Link
                   to={item.path}
-                  onClick={isMobile ? onToggle : undefined}
+                  onClick={shouldUseOverlay ? onToggle : undefined}
                   className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
                     isActive
                       ? 'bg-gradient-to-r from-glass-blue/20 to-glass-green/20 text-blue-700 dark:text-blue-300'
@@ -214,7 +216,7 @@ const SidebarContent = ({
                   <span className={isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}>
                     {item.icon}
                   </span>
-                  {(!isCollapsed || isMobile) && (
+                  {(!isCollapsed || shouldUseOverlay) && (
                     <span className="font-medium">{item.label}</span>
                   )}
                 </Link>
@@ -226,7 +228,7 @@ const SidebarContent = ({
 
       {/* User Info and Logout */}
       <div className="border-t border-white/20 pt-4">
-        {(!isCollapsed || isMobile) && (
+        {(!isCollapsed || shouldUseOverlay) && (
           <div className="mb-4">
             <div className="flex items-center space-x-3 px-3 py-2">
               <div className="w-8 h-8 bg-gradient-to-br from-glass-blue to-glass-green rounded-full flex items-center justify-center">
@@ -244,7 +246,7 @@ const SidebarContent = ({
 
         {showLogoutConfirm ? (
           <div className="space-y-2">
-            {(!isCollapsed || isMobile) && (
+            {(!isCollapsed || shouldUseOverlay) && (
               <p className="text-sm text-gray-600 dark:text-gray-300 px-3">Are you sure?</p>
             )}
             <div className="flex space-x-2">
@@ -252,13 +254,13 @@ const SidebarContent = ({
                 onClick={handleLogout}
                 className="flex-1 px-3 py-2 bg-red-500/20 text-red-700 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-500/30 transition-colors"
               >
-                {isCollapsed && !isMobile ? '✓' : 'Yes'}
+                {isCollapsed && !shouldUseOverlay ? '✓' : 'Yes'}
               </button>
               <button
                 onClick={() => setShowLogoutConfirm(false)}
                 className="flex-1 px-3 py-2 bg-gray-500/20 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-500/30 transition-colors"
               >
-                {isCollapsed && !isMobile ? '✗' : 'No'}
+                {isCollapsed && !shouldUseOverlay ? '✗' : 'No'}
               </button>
             </div>
           </div>
@@ -271,7 +273,7 @@ const SidebarContent = ({
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            {(!isCollapsed || isMobile) && (
+            {(!isCollapsed || shouldUseOverlay) && (
               <span className="font-medium">Logout</span>
             )}
           </button>
