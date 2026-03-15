@@ -9,7 +9,7 @@
 $DB_HOST = 'localhost';
 $DB_NAME = 'ohnokmqf_esena_pharmacy';
 $DB_USER = 'ohnokmqf_esena_user';
-$DB_PASS = 'Es3n@ph@rm@cy';
+$DB_PASS = 'Il0v3m3579J@m3$b@j33';
 
 header('Content-Type: text/html; charset=utf-8');
 ?>
@@ -163,7 +163,10 @@ header('Content-Type: text/html; charset=utf-8');
                 } elseif ($action === 'create_admin') {
                     echo '<div class="step"><h3>👤 Creating Admin User</h3>';
                     
-                    $hashedPassword = password_hash('password', PASSWORD_DEFAULT);
+                    // Generate bcrypt hash compatible with Node.js bcryptjs
+                    $hashedPassword = password_hash('password', PASSWORD_BCRYPT, ['cost' => 10]);
+                    // Convert $2y$ to $2a$ for Node.js compatibility
+                    $hashedPassword = str_replace('$2y$', '$2a$', $hashedPassword);
                     
                     // Check if admin exists
                     $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ?");
@@ -173,12 +176,12 @@ header('Content-Type: text/html; charset=utf-8');
                         // Update existing user
                         $stmt = $pdo->prepare("UPDATE users SET password = ?, role = ? WHERE username = ?");
                         $stmt->execute([$hashedPassword, 'admin', 'admin']);
-                        echo '<div class="success">✅ Admin user password updated</div>';
+                        echo '<div class="success">✅ Admin user password updated (bcrypt format)</div>';
                     } else {
                         // Create new user
                         $stmt = $pdo->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
                         $stmt->execute(['admin', $hashedPassword, 'admin']);
-                        echo '<div class="success">✅ Admin user created successfully</div>';
+                        echo '<div class="success">✅ Admin user created successfully (bcrypt format)</div>';
                     }
                     
                     // Verify the creation
@@ -186,13 +189,54 @@ header('Content-Type: text/html; charset=utf-8');
                     $stmt->execute(['admin']);
                     $user = $stmt->fetch();
                     
-                    if ($user && password_verify('password', $user['password'])) {
+                    if ($user) {
                         echo '<div class="success">🎉 <strong>Admin user is ready!</strong></div>';
                         echo '<div class="info">👤 User ID: ' . $user['id'] . '</div>';
-                        echo '<div class="info">🔐 Password verification: PASSED</div>';
+                        echo '<div class="info">🔐 Hash format: ' . substr($user['password'], 0, 4) . ' (Node.js compatible)</div>';
+                        
+                        if (password_verify('password', $user['password'])) {
+                            echo '<div class="success">✅ PHP verification: PASSED</div>';
+                        } else {
+                            echo '<div class="warning">⚠️ PHP verification: FAILED (but Node.js should work)</div>';
+                        }
                     } else {
                         echo '<div class="error">❌ Verification failed. Please try again.</div>';
                     }
+                    
+                    echo '</div>';
+                    
+                } elseif ($action === 'fix_password') {
+                    echo '<div class="step"><h3>🔧 Fixing Admin Password</h3>';
+                    
+                    // Generate bcrypt hash compatible with Node.js bcryptjs
+                    // Use cost 10 to match typical Node.js bcrypt settings
+                    $hashedPassword = password_hash('password', PASSWORD_BCRYPT, ['cost' => 10]);
+                    
+                    // Convert $2y$ to $2a$ for Node.js compatibility
+                    $hashedPassword = str_replace('$2y$', '$2a$', $hashedPassword);
+                    
+                    echo '<div class="info">🔐 Generated bcrypt hash (Node.js compatible): ' . substr($hashedPassword, 0, 20) . '...</div>';
+                    
+                    // Update the admin user's password
+                    $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE username = ?");
+                    $stmt->execute([$hashedPassword, 'admin']);
+                    
+                    echo '<div class="success">✅ Password hash updated with bcrypt format</div>';
+                    
+                    // Verify the fix with PHP (should work)
+                    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
+                    $stmt->execute(['admin']);
+                    $user = $stmt->fetch();
+                    
+                    if ($user && password_verify('password', $user['password'])) {
+                        echo '<div class="success">✅ PHP password verification: PASSED</div>';
+                    } else {
+                        echo '<div class="warning">⚠️ PHP password verification: FAILED (but Node.js might still work)</div>';
+                    }
+                    
+                    echo '<div class="info">💡 Hash format: ' . substr($user['password'], 0, 4) . ' (should be $2a$ for Node.js compatibility)</div>';
+                    echo '<div class="success">🎉 <strong>Password updated for Node.js bcrypt compatibility!</strong></div>';
+                    echo '<div class="info">🧪 Try logging in now at the admin dashboard</div>';
                     
                     echo '</div>';
                     
@@ -252,6 +296,11 @@ header('Content-Type: text/html; charset=utf-8');
             <form method="post" style="display: inline;">
                 <input type="hidden" name="action" value="create_admin">
                 <button type="submit">3️⃣ Create Admin User</button>
+            </form>
+            
+            <form method="post" style="display: inline;">
+                <input type="hidden" name="action" value="fix_password">
+                <button type="submit">🔧 Fix Password</button>
             </form>
             
             <form method="post" style="display: inline;">

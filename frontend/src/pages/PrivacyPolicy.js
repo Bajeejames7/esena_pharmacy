@@ -90,6 +90,23 @@ const PrivacyPolicy = () => {
                 This information helps us understand how users interact with our website and helps us improve the performance and 
                 security of our services.
               </p>
+
+              <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">1.3 Cookies and Similar Technologies</h3>
+              <p className="mb-3">
+                We use cookies and similar technologies to enhance your browsing experience and improve our website's functionality. 
+                Cookies are small text files stored on your device that help us:
+              </p>
+              <ul className="list-disc pl-6 mb-4 space-y-1">
+                <li><strong>Necessary Cookies:</strong> Essential for basic website functionality, security, and session management</li>
+                <li><strong>Performance Cookies:</strong> Store your preferences and enable faster loading by caching images and data</li>
+                <li><strong>Functional Cookies:</strong> Remember your settings like theme preferences and shopping cart contents</li>
+                <li><strong>Analytics Cookies:</strong> Help us understand website usage (currently not implemented)</li>
+                <li><strong>Marketing Cookies:</strong> Used for advertising purposes (currently not implemented)</li>
+              </ul>
+              <p className="mb-4">
+                You can manage your cookie preferences through our cookie consent banner or by clicking "Cookie Settings" in the footer. 
+                Note that disabling certain cookies may affect website functionality.
+              </p>
             </section>
 
             <section className="mb-8">

@@ -10,9 +10,9 @@ const Footer = () => {
     <footer className="mt-16">
       <GlassCard className="mx-4 mb-4" blur="lg" opacity={0.1}>
         <div className="px-6 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
             {/* Company Info */}
-            <div>
+            <div className="lg:col-span-2">
               <div className="mb-4">
                 <img 
                   src="/full_logo.jpeg" 
@@ -21,7 +21,7 @@ const Footer = () => {
                 />
               </div>
               <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-                Your trusted healthcare partner, providing quality medicines and professional pharmaceutical services.
+                Kenya's trusted online pharmacy delivering quality medicines and professional pharmaceutical services nationwide. Order online and get your medications delivered to your doorstep anywhere in Kenya.
               </p>
               <div className="flex space-x-4">
                 {/* Social Media Links */}
@@ -67,6 +67,11 @@ const Footer = () => {
                     Book Appointment
                   </Link>
                 </li>
+                <li>
+                  <Link to="/upload-prescription" className="text-gray-600 dark:text-gray-300 hover:text-glass-blue dark:hover:text-blue-400 transition-colors duration-200 text-sm">
+                    Upload Prescription
+                  </Link>
+                </li>
               </ul>
             </div>
 
@@ -75,71 +80,101 @@ const Footer = () => {
               <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Services</h3>
               <ul className="space-y-2">
                 <li>
-                  <span className="text-gray-600 dark:text-gray-300 text-sm">Dermatology Consultation</span>
-                </li>
-                <li>
-                  <span className="text-gray-600 dark:text-gray-300 text-sm">Lab Tests</span>
+                  <span className="text-gray-600 dark:text-gray-300 text-sm">Online Consultation</span>
                 </li>
                 <li>
                   <span className="text-gray-600 dark:text-gray-300 text-sm">Pharmacist Consultation</span>
                 </li>
                 <li>
-                  <span className="text-gray-600 dark:text-gray-300 text-sm">Home Delivery</span>
+                  <span className="text-gray-600 dark:text-gray-300 text-sm">Nationwide Delivery</span>
+                </li>
+                <li>
+                  <span className="text-gray-600 dark:text-gray-300 text-sm">WhatsApp Orders</span>
+                </li>
+                <li>
+                  <span className="text-gray-600 dark:text-gray-300 text-sm">Health Supplements</span>
                 </li>
               </ul>
             </div>
 
-            {/* Contact Info */}
+            {/* Physical Shops */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Contact Us</h3>
-              <div className="space-y-2">
-                <a 
-                  href="tel:0768103599" 
-                  className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-glass-blue dark:hover:text-blue-400 transition-colors duration-200 group"
-                >
-                  <svg className="w-4 h-4 text-gray-500 dark:text-gray-400 group-hover:text-glass-blue dark:group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                  <span className="text-sm">0768103599</span>
-                </a>
-                <a 
-                  href="mailto:esenapharmacy@gmail.com" 
-                  className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-glass-blue dark:hover:text-blue-400 transition-colors duration-200 group"
-                >
-                  <svg className="w-4 h-4 text-gray-500 dark:text-gray-400 group-hover:text-glass-blue dark:group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  <span className="text-sm">esenapharmacy@gmail.com</span>
-                </a>
-                <a 
-                  href="https://maps.app.goo.gl/aNLgSwfv4Nzw9Aj5A" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-start space-x-2 text-gray-600 dark:text-gray-300 hover:text-glass-blue dark:hover:text-blue-400 transition-colors duration-200 group"
-                >
-                  <svg className="w-4 h-4 text-gray-500 dark:text-gray-400 mt-0.5 group-hover:text-glass-blue dark:group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span className="text-sm">OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</span>
-                </a>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Physical Shops</h3>
+              <div className="space-y-3">
+                <div>
+                  <h4 className="font-medium text-gray-700 dark:text-gray-200 text-sm mb-1">Ruaraka Branch</h4>
+                  <a 
+                    href="https://maps.app.goo.gl/aNLgSwfv4Nzw9Aj5A" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-start space-x-2 text-gray-600 dark:text-gray-300 hover:text-glass-blue dark:hover:text-blue-400 transition-colors duration-200 group"
+                  >
+                    <svg className="w-3 h-3 text-gray-500 dark:text-gray-400 mt-1 group-hover:text-glass-blue dark:group-hover:text-blue-400 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span className="text-xs leading-relaxed">Outering Road Behind Eastmart Supermarket, Ruaraka, Nairobi</span>
+                  </a>
+                  <a 
+                    href="tel:0768103599" 
+                    className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-glass-blue dark:hover:text-blue-400 transition-colors duration-200 group mt-1"
+                  >
+                    <svg className="w-3 h-3 text-gray-500 dark:text-gray-400 group-hover:text-glass-blue dark:group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    <span className="text-xs">0768103599</span>
+                  </a>
+                </div>
+                
+                <div className="pt-2 border-t border-gray-200/20 dark:border-gray-600/20">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                    More locations coming soon across Kenya
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Bottom Bar */}
           <div className="mt-8 pt-8 border-t border-white/20 dark:border-slate-600/30">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <p className="text-gray-600 dark:text-gray-300 text-sm">
-                © 2026 Esena Pharmacy. All rights reserved.
-              </p>
-              <div className="flex space-x-6 mt-4 md:mt-0">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+              <div>
+                <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
+                  © 2026 Esena Pharmacy. All rights reserved.
+                </p>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                  <a 
+                    href="mailto:esenapharmacy@gmail.com" 
+                    className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-glass-blue dark:hover:text-blue-400 transition-colors duration-200 group text-sm"
+                  >
+                    <svg className="w-4 h-4 text-gray-500 dark:text-gray-400 group-hover:text-glass-blue dark:group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>esenapharmacy@gmail.com</span>
+                  </a>
+                  <span className="hidden sm:inline text-gray-400">•</span>
+                  <span className="text-gray-600 dark:text-gray-300 text-sm">
+                    Nationwide delivery across Kenya
+                  </span>
+                </div>
+              </div>
+              <div className="flex space-x-6">
                 <Link to="/privacy-policy" className="text-gray-600 dark:text-gray-300 hover:text-glass-blue dark:hover:text-blue-400 transition-colors duration-200 text-sm">
                   Privacy Policy
                 </Link>
                 <Link to="/terms" className="text-gray-600 dark:text-gray-300 hover:text-glass-blue dark:hover:text-blue-400 transition-colors duration-200 text-sm">
                   Terms of Service
                 </Link>
+                <button
+                  onClick={() => {
+                    // Clear cookie consent to show banner again
+                    document.cookie = 'cookie_consent=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
+                    window.location.reload();
+                  }}
+                  className="text-gray-600 dark:text-gray-300 hover:text-glass-blue dark:hover:text-blue-400 transition-colors duration-200 text-sm"
+                >
+                  Cookie Settings
+                </button>
               </div>
             </div>
           </div>

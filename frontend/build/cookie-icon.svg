@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- Cookie base - brown color -->
+  <circle cx="12" cy="12" r="10" fill="#D2691E" stroke="#8B4513" stroke-width="1.5"/>
+  
+  <!-- Cookie crumbs/chocolate chips - dark brown -->
+  <circle cx="8" cy="8" r="1" fill="#654321"/>
+  <circle cx="16" cy="9" r="0.8" fill="#654321"/>
+  <circle cx="9" cy="14" r="0.9" fill="#654321"/>
+  <circle cx="15" cy="15" r="0.7" fill="#654321"/>
+  <circle cx="12" cy="10" r="0.6" fill="#654321"/>
+  <circle cx="10" cy="17" r="0.8" fill="#654321"/>
+  <circle cx="17" cy="13" r="0.5" fill="#654321"/>
+  <circle cx="7" cy="12" r="0.7" fill="#654321"/>
+  <circle cx="14" cy="7" r="0.6" fill="#654321"/>
+  <circle cx="6" cy="15" r="0.5" fill="#654321"/>
+  
+  <!-- Enhanced bite mark with more realistic shape -->
+  <path d="M18.5 5.5 C20.5 7, 21 9, 20 11.5 C19 13, 17.5 13.5, 16 12.5 C17 10, 17.5 7.5, 18.5 5.5 Z" 
+        fill="white" 
+        stroke="none"/>
+  
+  <!-- Inner bite detail -->
+  <path d="M18.8 6.2 C19.5 7.2, 19.8 8.5, 19.2 10 C18.5 11, 17.8 11.2, 17.2 10.8 C17.8 9.2, 18.2 7.5, 18.8 6.2 Z" 
+        fill="#F5F5DC" 
+        stroke="none"/>
+  
+  <!-- Cookie texture lines -->
+  <path d="M6 10 Q12 8, 18 10" stroke="#8B4513" stroke-width="0.5" fill="none" opacity="0.3"/>
+  <path d="M5 14 Q12 12, 19 14" stroke="#8B4513" stroke-width="0.5" fill="none" opacity="0.3"/>
+  <path d="M7 18 Q12 16, 17 18" stroke="#8B4513" stroke-width="0.5" fill="none" opacity="0.3"/>
+</svg>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useBreakpoint } from '../utils/responsive';
 import GlassCard from '../components/GlassCard';
 import CategoryImage from '../components/CategoryImage';
+import BrandingSlider from '../components/BrandingSlider';
 
 /**
  * Home page with hero section and glassmorphism styling
@@ -48,9 +49,14 @@ const Home = () => {
   ];
 
   return (
-    <div className="pt-24 pb-16">
+    <div className="pb-16">
+      {/* Branding Slider - positioned very close to header */}
+      <div className="mt-16 -mt-6">
+        <BrandingSlider />
+      </div>
+
       {/* Hero Section */}
-      <section className="px-4 mb-16">
+      <section className="px-4 mb-16 pt-4">
         <div className="max-w-6xl mx-auto">
           <GlassCard className="p-8 md:p-12 text-center">
             <h1 className="text-3xl md:text-5xl font-bold mb-4 text-gray-800 dark:text-white">
@@ -262,11 +268,11 @@ const Home = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                 </div>
-                <h3 className="font-semibold text-gray-800 dark:text-white mb-2">Physical Location</h3>
+                <h3 className="font-semibold text-gray-800 dark:text-white mb-2">Nationwide Locations</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  OUTERING ROAD BEHIND EASTMART SUPERMARKET<br/>
-                  RUARAKA, NAIROBI<br/>
-                  Phone: +254 700 123 456
+                  Multiple physical locations across Kenya<br/>
+                  Online ordering with nationwide delivery<br/>
+                  Phone: +254 768 103 599
                 </p>
               </div>
             </div>
@@ -462,23 +468,23 @@ const Home = () => {
             </h2>
             <div className="grid md:grid-cols-2 gap-8">
               <div>
-                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">Trusted Local Pharmacy</h3>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">Kenya's Trusted Online Pharmacy</h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  As a trusted pharmacy in Ruaraka, Nairobi, we've been serving the community for over 5 years with reliable healthcare services and quality medications.
+                  As Kenya's leading online pharmacy with multiple locations nationwide, we've been serving communities across the country for over 5 years with reliable healthcare services and quality medications delivered to your doorstep.
                 </p>
                 <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">Professional Pharmacist Consultations</h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  Our experienced pharmacists provide personalized medication guidance, health consultations, and ensure safe medication management for all patients.
+                  Our experienced pharmacists provide personalized medication guidance, health consultations, and ensure safe medication management for all patients across Kenya.
                 </p>
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">Fast Medicine Delivery in Nairobi</h3>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">Nationwide Medicine Delivery</h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  We offer convenient home delivery services throughout Nairobi, ensuring you receive your medications quickly and safely at your doorstep.
+                  We offer convenient home delivery services throughout Kenya, ensuring you receive your medications quickly and safely at your doorstep, whether you're in Nairobi, Mombasa, Kisumu, or any other town.
                 </p>
                 <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">Quality Health Supplements</h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Wide range of authentic health supplements, vitamins, and wellness products to support your overall health and wellness journey.
+                  Wide range of authentic health supplements, vitamins, and wellness products to support your overall health and wellness journey, available online and at our physical locations.
                 </p>
               </div>
             </div>

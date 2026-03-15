@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend API Tester</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .test-section { background: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .success { color: #28a745; background: #d4edda; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .error { color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .info { color: #17a2b8; background: #d1ecf1; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .result { background: white; padding: 15px; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0; font-family: monospace; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Backend API Tester</h1>
+    <p>This tool tests your backend API endpoints to diagnose the 400 Bad Request error.</p>
+
+    <div class="test-section">
+        <h3>1. Test Backend Status</h3>
+        <button onclick="testBackendStatus()">Test Backend Health</button>
+        <div id="status-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Test Auth Endpoint</h3>
+        <button onclick="testAuthEndpoint()">Test Auth Endpoint (Empty Request)</button>
+        <div id="auth-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Test Admin Login</h3>
+        <button onclick="testAdminLogin()">Test Admin Login (admin/password)</button>
+        <div id="login-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Test Database Connection</h3>
+        <button onclick="testDatabase()">Test Database</button>
+        <div id="db-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://esena.co.ke/api';
+        
+        async function makeRequest(url, options = {}) {
+            try {
+                console.log(`Making request to: ${url}`);
+                console.log('Options:', options);
+                
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+                
+                const data = await response.json().catch(() => response.text());
+                
+                return {
+                    ok: response.ok,
+                    status: response.status,
+                    statusText: response.statusText,
+                    data: data,
+                    headers: Object.fromEntries(response.headers.entries())
+                };
+            } catch (error) {
+                return {
+                    ok: false,
+                    status: 0,
+                    statusText: 'Network Error',
+                    data: null,
+                    error: error.message
+                };
+            }
+        }
+        
+        function displayResult(elementId, result) {
+            const element = document.getElementById(elementId);
+            let html = '';
+            
+            if (result.ok) {
+                html += '<div class="success">✅ Request successful</div>';
+            } else {
+                html += '<div class="error">❌ Request failed</div>';
+            }
+            
+            html += `<div class="info">Status: ${result.status} ${result.statusText}</div>`;
+            
+            if (result.error) {
+                html += `<div class="error">Error: ${result.error}</div>`;
+            }
+            
+            html += '<div class="result">';
+            html += `Response Data:\n${JSON.stringify(result.data, null, 2)}`;
+            html += '\n\nResponse Headers:\n' + JSON.stringify(result.headers, null, 2);
+            html += '</div>';
+            
+            element.innerHTML = html;
+        }
+        
+        async function testBackendStatus() {
+            const result = await makeRequest(`${API_BASE}`);
+            displayResult('status-result', result);
+        }
+        
+        async function testAuthEndpoint() {
+            const result = await makeRequest(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                body: JSON.stringify({})
+            });
+            displayResult('auth-result', result);
+        }
+        
+        async function testAdminLogin() {
+            const result = await makeRequest(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    username: 'admin',
+                    password: 'password'
+                })
+            });
+            displayResult('login-result', result);
+        }
+        
+        async function testDatabase() {
+            const result = await makeRequest(`${API_BASE}/db-test`);
+            displayResult('db-result', result);
+        }
+    </script>
+</body>
+</html>

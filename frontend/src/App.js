@@ -1,14 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { CartProvider } from './contexts/CartContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { initPerformanceMonitoring } from './utils/performance';
+import { cacheManager } from './utils/cacheManager';
 import { compatibilityManager } from './utils/browserCompat';
 import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
+import CookieConsent from './components/CookieConsent';
+import CookieSettingsButton, { CookiePreferencesModal } from './components/CookieSettingsButton';
+import IvoBot from './components/IvoBot';
 import Home from './pages/Home';
 import About from './pages/About';
 import Products from './pages/Products';
@@ -93,15 +97,38 @@ const MainContentWrapper = ({ children }) => {
 };
 
 function App() {
+  const [showCookiePreferences, setShowCookiePreferences] = useState(false);
+
   useEffect(() => {
     // Initialize performance monitoring
     initPerformanceMonitoring();
+    
+    // Initialize performance system
+    cacheManager.init().catch(e => 
+      console.warn('Performance system running in basic mode:', e.message)
+    );
     
     // Initialize browser compatibility
     if (!compatibilityManager.initialized) {
       compatibilityManager.init();
     }
   }, []);
+
+  const handleSaveCookiePreferences = (preferences) => {
+    const consent = {
+      necessary: true, // Always required
+      ...preferences,
+      timestamp: Date.now()
+    };
+    
+    // Import CookieCache here to avoid circular dependency
+    import('./utils/cacheManager').then(({ CookieCache }) => {
+      CookieCache.set('cookie_consent', consent, 365);
+      setShowCookiePreferences(false);
+      // Reload to apply new settings
+      window.location.reload();
+    });
+  };
 
   return (
     <ErrorBoundary>
@@ -192,6 +219,36 @@ function App() {
               <Route path="/admin/*" element={null} />
               <Route path="*" element={<WhatsAppButton />} />
             </Routes>
+
+            {/* Ivo Bot - only show on public pages */}
+            <Routes>
+              <Route path="/admin/*" element={null} />
+              <Route path="*" element={<IvoBot />} />
+            </Routes>
+            
+            {/* Cookie Consent Banner - only show on public pages */}
+            <Routes>
+              <Route path="/admin/*" element={null} />
+              <Route path="*" element={<CookieConsent />} />
+            </Routes>
+
+            {/* Cookie Settings Button - only show on public pages after consent */}
+            <Routes>
+              <Route path="/admin/*" element={null} />
+              <Route path="*" element={
+                <CookieSettingsButton 
+                  onOpenPreferences={() => setShowCookiePreferences(true)} 
+                />
+              } />
+            </Routes>
+
+            {/* Cookie Preferences Modal */}
+            {showCookiePreferences && (
+              <CookiePreferencesModal
+                onSave={handleSaveCookiePreferences}
+                onClose={() => setShowCookiePreferences(false)}
+              />
+            )}
           </div>
         </FocusManager>
       </Router>

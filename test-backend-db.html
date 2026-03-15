@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Backend Database Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .success { color: #28a745; background: #d4edda; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .error { color: #dc3545; background: #f8d7da; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .info { color: #17a2b8; background: #d1ecf1; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        button { background: #007bff; color: white; padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; margin: 5px; }
+        .result { background: white; padding: 15px; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0; font-family: monospace; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>🗄️ Backend Database Test</h1>
+    
+    <div class="info">
+        <h3>🎯 Purpose</h3>
+        <p>Test if your backend can connect to the database and perform basic operations.</p>
+    </div>
+
+    <button onclick="testDatabaseConnection()">Test Database Connection</button>
+    <button onclick="testUserQuery()">Test User Query</button>
+    <button onclick="testFullLogin()">Test Full Login Process</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'https://esena.co.ke/api';
+        
+        function displayResult(title, result) {
+            const resultsDiv = document.getElementById('results');
+            let html = `<h3>${title}</h3>`;
+            
+            if (result.ok) {
+                html += '<div class="success">✅ Request successful</div>';
+            } else {
+                html += '<div class="error">❌ Request failed</div>';
+            }
+            
+            html += `<div class="info">Status: ${result.status} ${result.statusText}</div>`;
+            
+            if (result.error) {
+                html += `<div class="error">Network Error: ${result.error}</div>`;
+            }
+            
+            html += '<div class="result">';
+            html += JSON.stringify(result.data, null, 2);
+            html += '</div>';
+            
+            resultsDiv.innerHTML = html + resultsDiv.innerHTML;
+        }
+        
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+                
+                const data = await response.json().catch(() => response.text());
+                
+                return {
+                    ok: response.ok,
+                    status: response.status,
+                    statusText: response.statusText,
+                    data: data
+                };
+            } catch (error) {
+                return {
+                    ok: false,
+                    status: 0,
+                    statusText: 'Network Error',
+                    data: null,
+                    error: error.message
+                };
+            }
+        }
+        
+        async function testDatabaseConnection() {
+            // Try the db-test route that should exist in server.js
+            const result = await makeRequest(`${API_BASE}/db-test`);
+            displayResult('🗄️ Database Connection Test', result);
+        }
+        
+        async function testUserQuery() {
+            // Test a simple query that doesn't require auth
+            const result = await makeRequest(`${API_BASE}`, {
+                method: 'GET'
+            });
+            displayResult('📊 Basic API Query', result);
+        }
+        
+        async function testFullLogin() {
+            // Test the full login process
+            const result = await makeRequest(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    username: 'admin',
+                    password: 'password'
+                })
+            });
+            displayResult('🔐 Full Login Test', result);
+        }
+    </script>
+</body>
+</html>

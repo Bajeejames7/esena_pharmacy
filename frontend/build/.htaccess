@@ -44,23 +44,100 @@ RewriteRule . /index.html [L]
     AddType font/woff2 .woff2
     AddType font/ttf .ttf
     AddType font/eot .eot
+    AddType image/webp .webp
 </IfModule>
 
 # ----------------------------------------------------------------------
-# 3. SECURITY HEADERS & CACHING
+# 3. SECURITY HEADERS & ADVANCED CACHING
 # ----------------------------------------------------------------------
 Header always set X-Content-Type-Options nosniff
 Header always set X-Frame-Options SAMEORIGIN
 Header always set X-XSS-Protection "1; mode=block"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
 
-# Optimize caching for static assets
-<IfModule mod_expires.c>
-ExpiresActive On
-ExpiresDefault "access plus 1 month"
-ExpiresByType image/x-icon "access plus 1 year"
-ExpiresByType image/jpeg "access plus 1 year"
-ExpiresByType image/png "access plus 1 year"
-ExpiresByType image/svg+xml "access plus 1 year"
-ExpiresByType text/css "access plus 1 month"
-ExpiresByType application/javascript "access plus 1 month"
+# Enable GZIP Compression for better performance
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE image/svg+xml
 </IfModule>
+
+# Advanced caching for optimal performance
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # Images - Cache for 1 year with immutable flag
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+    
+    # Fonts - Cache for 1 year
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/ttf "access plus 1 year"
+    ExpiresByType font/eot "access plus 1 year"
+    
+    # CSS and JavaScript - Cache for 1 month
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    
+    # HTML - Short cache for dynamic content
+    ExpiresByType text/html "access plus 1 hour"
+    
+    # JSON - Cache for 1 day
+    ExpiresByType application/json "access plus 1 day"
+    
+    # Service Worker - No cache (always fresh)
+    <Files "sw.js">
+        ExpiresActive Off
+        Header unset Cache-Control
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires 0
+    </Files>
+</IfModule>
+
+# Cache Control Headers for better performance
+<IfModule mod_headers.c>
+    # Images - Immutable cache
+    <FilesMatch "\.(jpg|jpeg|png|gif|webp|svg|ico)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    
+    # Fonts - Immutable cache
+    <FilesMatch "\.(woff|woff2|ttf|eot)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    
+    # CSS and JS - Cache with revalidation
+    <FilesMatch "\.(css|js)$">
+        Header set Cache-Control "public, max-age=2592000, must-revalidate"
+    </FilesMatch>
+    
+    # HTML - Short cache
+    <FilesMatch "\.html$">
+        Header set Cache-Control "public, max-age=3600, must-revalidate"
+    </FilesMatch>
+    
+    # Service Worker - No cache
+    <Files "sw.js">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires 0
+    </Files>
+</IfModule>
+
+# Enable ETags for better caching validation
+FileETag MTime Size

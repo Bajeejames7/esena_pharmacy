@@ -4,14 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#A0D8F1" />
-    <meta name="description" content="Esena Pharmacy is Kenya's trusted national pharmacy chain providing quality medicines, health supplements, pharmacist consultations, prescription services, and fast delivery across Kenya. Multiple locations including Nairobi." />
-    <meta name="keywords" content="pharmacy Kenya, pharmacy Nairobi, buy medicine Kenya, prescription pharmacy Kenya, health supplements Kenya, Esena Pharmacy, pharmacist consultation Kenya, medicine delivery Kenya, pharmacy chain Kenya, trusted pharmacy Kenya" />
+    <meta name="description" content="Esena Pharmacy is Kenya's trusted online pharmacy delivering quality medicines, health supplements, pharmacist consultations, prescription services, and fast delivery nationwide. Multiple physical locations across Kenya." />
+    <meta name="keywords" content="pharmacy Kenya, online pharmacy Kenya, buy medicine Kenya, prescription pharmacy Kenya, health supplements Kenya, Esena Pharmacy, pharmacist consultation Kenya, medicine delivery Kenya, pharmacy chain Kenya, trusted pharmacy Kenya, nationwide delivery" />
     <meta name="author" content="Esena Pharmacy" />
     <meta name="robots" content="index, follow" />
     
     <!-- Open Graph Tags for Social Sharing -->
-    <meta property="og:title" content="Esena Pharmacy – Kenya's Trusted National Pharmacy Chain">
-    <meta property="og:description" content="Quality medications, health supplements, professional pharmacist consultations, and fast delivery services across Kenya. Multiple locations nationwide.">
+    <meta property="og:title" content="Esena Pharmacy – Kenya's Trusted Online Pharmacy">
+    <meta property="og:description" content="Quality medications, health supplements, professional pharmacist consultations, and nationwide delivery services across Kenya. Order online or visit our physical locations.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.esenapharmacy.co.ke">
     <meta property="og:image" content="https://www.esenapharmacy.co.ke/full_logo.jpeg">
@@ -19,14 +19,14 @@
     <!-- Twitter Card Tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Esena Pharmacy Kenya">
-    <meta name="twitter:description" content="Kenya's trusted pharmacy chain providing medicines, consultations, and health products nationwide.">
+    <meta name="twitter:description" content="Kenya's trusted online pharmacy providing medicines, consultations, and health products with nationwide delivery.">
     <meta name="twitter:image" content="https://www.esenapharmacy.co.ke/full_logo.jpeg">
     
     <!-- Local SEO Structured Data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "PharmacyChain",
+      "@type": "OnlineStore",
       "name": "Esena Pharmacy",
       "image": "https://www.esenapharmacy.co.ke/full_logo.jpeg",
       "telephone": "+254768103599",
@@ -42,7 +42,7 @@
       "url": "https://www.esenapharmacy.co.ke",
       "openingHours": "Mo-Su 08:00-20:00",
       "priceRange": "$$",
-      "description": "Kenya's trusted national pharmacy chain with multiple locations providing quality medicines, health supplements, and professional consultations.",
+      "description": "Kenya's trusted online pharmacy with multiple physical locations providing quality medicines, health supplements, and professional consultations with nationwide delivery.",
       "branch": [
         {
           "@type": "Pharmacy",
@@ -70,10 +70,42 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <title>Esena Pharmacy | Kenya's Trusted National Pharmacy Chain | Medicines, Supplements & Consultations</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <title>Esena Pharmacy | Kenya's Trusted Online Pharmacy | Medicines, Supplements & Consultations</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+              
+              // Check for updates
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // New content is available, notify user
+                    if (confirm('New version available! Reload to update?')) {
+                      window.location.reload();
+                    }
+                  }
+                });
+              });
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
   </body>
 </html>
