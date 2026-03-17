@@ -35,113 +35,62 @@ const withTransaction = async (callback) => {
 };
 
 /**
+ * Create a single index only if it doesn't already exist (MySQL 5.x compatible)
+ */
+const createIndexIfNotExists = async (indexName, tableName, columns) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT COUNT(*) as cnt FROM information_schema.statistics 
+       WHERE table_schema = DATABASE() AND table_name = ? AND index_name = ?`,
+      [tableName, indexName]
+    );
+    if (rows[0].cnt === 0) {
+      await db.query(`CREATE INDEX ${indexName} ON ${tableName}(${columns})`);
+      logger.debug(`Created index ${indexName} on ${tableName}`);
+    }
+  } catch (error) {
+    // Non-fatal: log and continue
+    logger.warn(`Skipped index ${indexName} on ${tableName}: ${error.message}`);
+  }
+};
+
+/**
  * Create database indexes for performance optimization
  * Implements Requirement 27.7
  */
 const createIndexes = async () => {
-  try {
-    logger.info('Creating database indexes for performance optimization');
+  logger.info('Creating database indexes for performance optimization');
 
-    // Orders table indexes
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_orders_token ON orders(token)
-    `);
-    
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_orders_email ON orders(email)
-    `);
-    
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)
-    `);
-    
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at)
-    `);
+  const indexes = [
+    ['idx_orders_token',            'orders',       'token'],
+    ['idx_orders_email',            'orders',       'email'],
+    ['idx_orders_status',           'orders',       'status'],
+    ['idx_orders_created_at',       'orders',       'created_at'],
+    ['idx_appointments_token',      'appointments', 'token'],
+    ['idx_appointments_email',      'appointments', 'email'],
+    ['idx_appointments_status',     'appointments', 'status'],
+    ['idx_appointments_date',       'appointments', 'appointment_date'],
+    ['idx_appointments_service',    'appointments', 'service'],
+    ['idx_products_category',       'products',     'category'],
+    ['idx_products_name',           'products',     'name'],
+    ['idx_products_stock',          'products',     'stock'],
+    ['idx_order_items_order_id',    'order_items',  'order_id'],
+    ['idx_order_items_product_id',  'order_items',  'product_id'],
+    ['idx_contacts_email',          'contacts',     'email'],
+    ['idx_contacts_created_at',     'contacts',     'created_at'],
+    ['idx_users_username',          'users',        'username'],
+    ['idx_users_role',              'users',        'role'],
+    ['idx_audit_logs_user_id',      'audit_logs',   'user_id'],
+    ['idx_audit_logs_action',       'audit_logs',   'action'],
+    ['idx_audit_logs_resource',     'audit_logs',   'resource_type, resource_id'],
+    ['idx_audit_logs_timestamp',    'audit_logs',   'timestamp'],
+  ];
 
-    // Appointments table indexes
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_appointments_token ON appointments(token)
-    `);
-    
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_appointments_email ON appointments(email)
-    `);
-    
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_appointments_status ON appointments(status)
-    `);
-    
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(appointment_date)
-    `);
-    
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_appointments_service ON appointments(service)
-    `);
-
-    // Products table indexes
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_products_category ON products(category)
-    `);
-    
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_products_name ON products(name)
-    `);
-    
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_products_stock ON products(stock)
-    `);
-
-    // Order items table indexes
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id)
-    `);
-    
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id)
-    `);
-
-    // Contacts table indexes
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_contacts_email ON contacts(email)
-    `);
-    
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_contacts_created_at ON contacts(created_at)
-    `);
-
-    // Users table indexes
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)
-    `);
-    
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)
-    `);
-
-    // Audit logs table indexes (if exists)
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id)
-    `);
-    
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action)
-    `);
-    
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_audit_logs_resource ON audit_logs(resource_type, resource_id)
-    `);
-    
-    await db.query(`
-      CREATE INDEX IF NOT EXISTS idx_audit_logs_timestamp ON audit_logs(timestamp)
-    `);
-
-    logger.info('Database indexes created successfully');
-  } catch (error) {
-    logger.error('Failed to create database indexes', error);
-    throw error;
+  for (const [name, table, cols] of indexes) {
+    await createIndexIfNotExists(name, table, cols);
   }
+
+  logger.info('Database indexes check completed');
 };
 
 /**

@@ -1,8 +1,7 @@
 const db = require("../config/db");
 const { logger } = require("../utils/logger");
 
-// Valid product categories
-const VALID_CATEGORIES = ['Prescription', 'OTC', 'Chronic', 'Supplements', 'PersonalCare'];
+const { VALID_CATEGORIES } = require("../utils/categories");
 
 // Validation helper
 const validateProductData = (data) => {
@@ -45,35 +44,47 @@ const validateProductData = (data) => {
   return errors;
 };
 
-// Get all products with optional category filtering (Requirement 3.2)
+// Get all products with optional category filtering and pagination (Requirement 3.2)
 exports.getAllProducts = async (req, res) => {
   try {
-    const { category } = req.query;
-    let query = "SELECT * FROM products";
+    const { category, search, limit, offset } = req.query;
+
+    const pageLimit = Math.min(parseInt(limit) || 12, 100); // cap at 100
+    const pageOffset = parseInt(offset) || 0;
+
+    const conditions = [];
     const params = [];
-    
-    // Apply category filter if provided
+
     if (category) {
-      // Validate category
       if (!VALID_CATEGORIES.includes(category)) {
-        return res.status(400).json({ 
-          message: "Invalid category", 
-          validCategories: VALID_CATEGORIES 
-        });
+        return res.status(400).json({ message: "Invalid category", validCategories: VALID_CATEGORIES });
       }
-      query += " WHERE category = ?";
+      conditions.push("category = ?");
       params.push(category);
     }
-    
-    const [products] = await db.query(query, params);
-    res.json(products);
+
+    if (search) {
+      conditions.push("(name LIKE ? OR description LIKE ?)");
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
+    const where = conditions.length ? " WHERE " + conditions.join(" AND ") : "";
+
+    // Total count for pagination
+    const [[{ total }]] = await db.query(`SELECT COUNT(*) as total FROM products${where}`, params);
+
+    // Paginated results
+    const [products] = await db.query(
+      `SELECT * FROM products${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      [...params, pageLimit, pageOffset]
+    );
+
+    res.json({ products, total, limit: pageLimit, offset: pageOffset });
   } catch (error) {
     console.error("Error fetching products:", error);
     logger.error("Database error in getAllProducts", error);
-    
-    // Don't crash the server, return a proper error response
-    res.status(500).json({ 
-      message: "Database connection error", 
+    res.status(500).json({
+      message: "Database connection error",
       error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
       timestamp: new Date().toISOString()
     });

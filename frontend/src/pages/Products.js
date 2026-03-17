@@ -1,110 +1,99 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { useCart } from '../contexts/CartContext';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import GlassCard from '../components/GlassCard';
 import ProductGrid from '../components/ProductGrid';
 import ProductSearch from '../components/ProductSearch';
+import { CATEGORIES } from '../utils/categories';
 
-/**
- * Products page with search, filter, and cart functionality
- * Implements Requirements 3.1, 3.2, 3.6, 3.7, 18.1, 18.2, 18.3, 18.4, 18.5
- */
+const PAGE_SIZE = 12; // 4 rows × 3 cols on desktop
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
 const Products = () => {
-  const { addToCart, isInCart, getItemQuantity } = useCart();
+  const [products, setProducts] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState(null);
+  const [layout, setLayout] = useState('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({});
-  const [layout, setLayout] = useState('grid');
-  const [allProducts, setAllProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  // Fetch products from API
+  // Track current offset for load-more
+  const offsetRef = useRef(0);
+  // Track active fetch params to reset on filter change
+  const activeParams = useRef('');
+
+  const buildQuery = useCallback((offset) => {
+    const params = new URLSearchParams({ limit: PAGE_SIZE, offset });
+    if (filters.category) params.set('category', filters.category);
+    if (searchTerm) params.set('search', searchTerm);
+    return params.toString();
+  }, [filters.category, searchTerm]);
+
+  // Initial / filter-change fetch — resets the list
   useEffect(() => {
-    const fetchProducts = async () => {
+    const query = buildQuery(0);
+    if (query === activeParams.current) return;
+    activeParams.current = query;
+    offsetRef.current = 0;
+
+    const fetchInitial = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        setLoading(true);
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/products`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch products');
-        }
-        
-        const data = await response.json();
-        setAllProducts(data.products || []);
+        const res = await fetch(`${API_BASE}/products?${query}`);
+        if (!res.ok) throw new Error('Failed to fetch products');
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.products || []);
+        setProducts(list);
+        setTotal(data.total ?? list.length);
+        offsetRef.current = list.length;
       } catch (err) {
-        console.error('Error fetching products:', err);
-        setError('Failed to load products. Please try again later.');
-        setAllProducts([]);
+        setError('Failed to load products. Please try again.');
+        setProducts([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
-  }, []);
+    fetchInitial();
+  }, [buildQuery]);
 
-  // Get unique categories
-  const categories = [...new Set(allProducts.map(product => product.category))];
-
-  // Filter and sort products
-  const filteredProducts = useMemo(() => {
-    let filtered = allProducts;
-
-    // Apply search filter
-    if (searchTerm) {
-      const search = searchTerm.toLowerCase();
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(search) ||
-        product.description.toLowerCase().includes(search) ||
-        product.category.toLowerCase().includes(search)
-      );
+  const handleLoadMore = async () => {
+    if (loadingMore || products.length >= total) return;
+    setLoadingMore(true);
+    try {
+      const query = buildQuery(offsetRef.current);
+      const res = await fetch(`${API_BASE}/products?${query}`);
+      if (!res.ok) throw new Error('Failed to fetch');
+      const data = await res.json();
+      const more = Array.isArray(data) ? data : (data.products || []);
+      setProducts(prev => [...prev, ...more]);
+      setTotal(data.total ?? total);
+      offsetRef.current += more.length;
+    } catch (err) {
+      // silently fail — user can retry
+    } finally {
+      setLoadingMore(false);
     }
-
-    // Apply category filter
-    if (filters.category) {
-      filtered = filtered.filter(product => product.category === filters.category);
-    }
-
-    // Apply stock filter
-    if (filters.inStockOnly) {
-      filtered = filtered.filter(product => product.stock > 0);
-    }
-
-    // Apply price range filter
-    if (filters.priceMin !== null && filters.priceMin !== undefined) {
-      filtered = filtered.filter(product => product.price >= filters.priceMin);
-    }
-    if (filters.priceMax !== null && filters.priceMax !== undefined) {
-      filtered = filtered.filter(product => product.price <= filters.priceMax);
-    }
-
-    // Apply sorting
-    switch (filters.sortBy) {
-      case 'name_desc':
-        filtered.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-      case 'price_asc':
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case 'price_desc':
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      case 'category':
-        filtered.sort((a, b) => a.category.localeCompare(b.category));
-        break;
-      case 'stock':
-        filtered.sort((a, b) => b.stock - a.stock);
-        break;
-      default: // 'name'
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    return filtered;
-  }, [allProducts, searchTerm, filters]);
-
-  const handleProductClick = (product) => {
-    // TODO: Navigate to product details page
-    console.log('Product clicked:', product);
   };
+
+  // Client-side sort (search/filter already handled server-side, sort is local)
+  const sortedProducts = [...products].sort((a, b) => {
+    switch (filters.sortBy) {
+      case 'name_desc': return b.name.localeCompare(a.name);
+      case 'price_asc': return parseFloat(a.price) - parseFloat(b.price);
+      case 'price_desc': return parseFloat(b.price) - parseFloat(a.price);
+      case 'stock': return b.stock - a.stock;
+      default: return 0; // server already returns by created_at DESC
+    }
+  });
+
+  // Client-side stock filter (lightweight, no extra request)
+  const displayProducts = filters.inStockOnly
+    ? sortedProducts.filter(p => p.stock > 0)
+    : sortedProducts;
+
+  const hasMore = products.length < total;
 
   if (loading) {
     return (
@@ -124,17 +113,8 @@ const Products = () => {
       <div className="pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4">
           <GlassCard className="p-12 text-center">
-            <div className="text-red-500 mb-4">
-              <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">Error Loading Products</h2>
             <p className="text-gray-600 dark:text-gray-300 mb-4">{error}</p>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="glass-button-primary"
-            >
+            <button onClick={() => { activeParams.current = ''; setFilters({}); }} className="glass-button-primary">
               Try Again
             </button>
           </GlassCard>
@@ -145,11 +125,11 @@ const Products = () => {
 
   return (
     <div className="pt-24 pb-16">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
         {/* Page Header */}
-        <GlassCard className="p-8 text-center mb-8">
-          <h1 className="text-gray-800 mb-4">Our Products</h1>
-          <p className="text-gray-600">
+        <GlassCard className="p-4 sm:p-8 text-center mb-6">
+          <h1 className="text-gray-800 dark:text-white mb-2">Our Products</h1>
+          <p className="text-gray-600 dark:text-gray-300">
             Browse our comprehensive selection of medications, supplements, and healthcare products.
           </p>
         </GlassCard>
@@ -158,26 +138,21 @@ const Products = () => {
         <ProductSearch
           onSearch={setSearchTerm}
           onFilterChange={setFilters}
-          categories={categories}
+          categories={CATEGORIES}
           className="mb-8"
         />
 
-        {/* Layout Toggle and Results Info */}
+        {/* Results info + layout toggle */}
         <div className="flex justify-between items-center mb-6">
-          <div className="text-gray-600">
-            {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} found
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Showing {displayProducts.length} of {total} product{total !== 1 ? 's' : ''}
             {searchTerm && ` for "${searchTerm}"`}
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">View:</span>
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600 dark:text-gray-400">View:</span>
             <button
               onClick={() => setLayout('grid')}
-              className={`p-2 rounded-lg transition-colors ${
-                layout === 'grid' 
-                  ? 'bg-glass-blue/20 text-blue-600' 
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
+              className={`p-2 rounded-lg transition-colors ${layout === 'grid' ? 'bg-glass-blue/20 text-blue-600' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
               aria-label="Grid view"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -186,11 +161,7 @@ const Products = () => {
             </button>
             <button
               onClick={() => setLayout('list')}
-              className={`p-2 rounded-lg transition-colors ${
-                layout === 'list' 
-                  ? 'bg-glass-blue/20 text-blue-600' 
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
+              className={`p-2 rounded-lg transition-colors ${layout === 'list' ? 'bg-glass-blue/20 text-blue-600' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
               aria-label="List view"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -200,28 +171,37 @@ const Products = () => {
           </div>
         </div>
 
-        {/* Product Grid */}
-        {filteredProducts.length === 0 && !loading ? (
+        {/* Grid */}
+        {displayProducts.length === 0 ? (
           <GlassCard className="p-12 text-center">
-            <div className="text-gray-400 mb-4">
-              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">No Products Found</h2>
             <p className="text-gray-600 dark:text-gray-300">
-              {searchTerm || Object.keys(filters).length > 0 
-                ? 'Try adjusting your search or filters to find what you\'re looking for.'
-                : 'No products are currently available. Please check back later.'
-              }
+              {searchTerm || filters.category ? "No products match your search. Try adjusting your filters." : "No products available yet."}
             </p>
           </GlassCard>
         ) : (
-          <ProductGrid
-            products={filteredProducts}
-            layout={layout}
-            onProductClick={handleProductClick}
-          />
+          <>
+            <ProductGrid products={displayProducts} layout={layout} />
+
+            {/* Load More */}
+            {hasMore && (
+              <div className="text-center mt-10">
+                <button
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  className="glass-button-secondary disabled:opacity-50 disabled:cursor-not-allowed px-8 py-3"
+                >
+                  {loadingMore ? (
+                    <span className="flex items-center gap-2">
+                      <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></span>
+                      Loading...
+                    </span>
+                  ) : (
+                    `Load More (${total - products.length} remaining)`
+                  )}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

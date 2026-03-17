@@ -289,17 +289,39 @@ const Checkout = () => {
               
               {/* Order Items */}
               <div className="space-y-3 mb-6">
-                {items.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center">
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-800 text-sm">{item.name}</p>
-                      <p className="text-gray-600 text-xs">Qty: {item.quantity}</p>
+                {items.map((item) => {
+                  const API_BASE = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace('/api', '');
+                  // Use pre-resolved imageUrl if available, otherwise build from filename
+                  const imageUrl = item.imageUrl
+                    || (item.image
+                      ? (item.image.startsWith('http') ? item.image : `${API_BASE}/uploads/products/${item.image}`)
+                      : null);
+
+                  return (
+                    <div key={item.id} className="flex items-center gap-3">
+                      {/* Thumbnail */}
+                      <div className="w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden bg-gradient-to-br from-glass-blue/20 to-glass-green/20">
+                        {imageUrl ? (
+                          <img src={imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-800 dark:text-gray-100 text-sm truncate">{item.name}</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-xs">Qty: {item.quantity} × KSh {parseFloat(item.price).toFixed(2)}</p>
+                      </div>
+                      <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm flex-shrink-0">
+                        KSh {(parseFloat(item.price) * item.quantity).toFixed(2)}
+                      </p>
                     </div>
-                    <p className="font-semibold text-gray-800 text-sm">
-                      KSh {(item.price * item.quantity).toFixed(2)}
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               
               {/* Totals */}

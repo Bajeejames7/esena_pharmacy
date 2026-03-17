@@ -251,32 +251,17 @@ const ManageAppointments = () => {
       <div className={`flex-1 transition-all duration-300 ${
         !shouldShowMenuButton && sidebarOpen ? 'ml-64' : !shouldShowMenuButton ? 'ml-16' : ''
       }`}>
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-4">
-              {isMobile && (
-                <button
-                  onClick={() => setSidebarOpen(true)}
-                  className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
-                  aria-label="Open menu"
-                >
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                </button>
-              )}
-              <div>
-                <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Manage Appointments</h1>
-                <p className="text-gray-600 dark:text-gray-300">View and manage customer appointments</p>
-              </div>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100">Manage Appointments</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-300">View and manage customer appointments</p>
             </div>
-            
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-2">
               <div className="hidden lg:block">
                 <ThemeToggle showLabel={true} />
               </div>
-              
               <GlassButton
                 variant="secondary"
                 onClick={loadAppointments}
@@ -288,11 +273,11 @@ const ManageAppointments = () => {
           </div>
 
           {/* Search and Filters */}
-          <GlassCard className="p-6 mb-6">
-            <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-4'}`}>
-              <div className="md:col-span-2">
+          <GlassCard className="p-4 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="sm:col-span-2">
                 <GlassInput
-                  placeholder="Search appointments by ID, customer name, or email..."
+                  placeholder="Search by ID, name or email..."
                   value={searchTerm}
                   onChange={handleSearch}
                 />

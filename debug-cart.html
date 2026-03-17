@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Debug Cart Data</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+    pre { background: white; padding: 15px; border-radius: 8px; overflow: auto; }
+    button { padding: 10px 20px; margin: 10px 5px 10px 0; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Cart Debug Tool</h1>
+  <button onclick="showCart()">Show Cart Data</button>
+  <button onclick="clearCart()">Clear Cart</button>
+  <div id="output"></div>
+
+  <script>
+    function showCart() {
+      const cart = localStorage.getItem('esena_cart_v2');
+      const output = document.getElementById('output');
+      
+      if (!cart) {
+        output.innerHTML = '<p>No cart data found in localStorage</p>';
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(cart);
+        output.innerHTML = '<h2>Cart Data:</h2><pre>' + JSON.stringify(parsed, null, 2) + '</pre>';
+        
+        if (parsed.items && parsed.items.length > 0) {
+          output.innerHTML += '<h2>Item Details:</h2>';
+          parsed.items.forEach((item, i) => {
+            output.innerHTML += `
+              <div style="background: white; padding: 15px; margin: 10px 0; border-radius: 8px;">
+                <h3>Item ${i + 1}: ${item.name}</h3>
+                <p><strong>ID:</strong> ${item.id}</p>
+                <p><strong>Price:</strong> ${item.price}</p>
+                <p><strong>Quantity:</strong> ${item.quantity}</p>
+                <p><strong>image:</strong> ${item.image || 'NOT SET'}</p>
+                <p><strong>imageUrl:</strong> ${item.imageUrl || 'NOT SET'}</p>
+                ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${item.name}" style="max-width: 200px; margin-top: 10px;">` : ''}
+              </div>
+            `;
+          });
+        }
+      } catch (e) {
+        output.innerHTML = '<p style="color: red;">Error parsing cart data: ' + e.message + '</p>';
+      }
+    }
+
+    function clearCart() {
+      if (confirm('Are you sure you want to clear the cart?')) {
+        localStorage.removeItem('esena_cart_v2');
+        document.getElementById('output').innerHTML = '<p style="color: green;">Cart cleared! Refresh your app.</p>';
+      }
+    }
+
+    // Auto-show on load
+    showCart();
+  </script>
+</body>
+</html>

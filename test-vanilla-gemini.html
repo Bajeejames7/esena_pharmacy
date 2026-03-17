@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanilla JavaScript Gemini API Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">Vanilla JavaScript Gemini API Test</h1>
+        
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-lg font-semibold mb-4">Direct Fetch API Test</h2>
+            <div class="space-y-4">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    placeholder="Enter your message" 
+                    value="Hello, introduce yourself as Ivo from Esena Pharmacy"
+                    class="w-full p-3 border border-gray-300 rounded"
+                />
+                <button 
+                    id="testButton" 
+                    class="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600"
+                >
+                    Test Gemini API with Fetch
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-lg font-semibold mb-4">Response</h2>
+            <div id="response" class="p-4 bg-gray-50 rounded min-h-[100px] whitespace-pre-wrap"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = 'AIzaSyAepR39ud1y8XXlduPKf2C7glOCWSTLr58';
+        const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+
+        async function callGeminiAPI(prompt) {
+            const url = `${API_URL}?key=${API_KEY}`;
+            
+            const requestBody = {
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.7,
+                    topK: 40,
+                    topP: 0.95,
+                    maxOutputTokens: 1024,
+                }
+            };
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(`API Error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+            }
+
+            const data = await response.json();
+            
+            if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                return data.candidates[0].content.parts[0].text;
+            } else {
+                throw new Error('Invalid response format from API');
+            }
+        }
+
+        document.getElementById('testButton').addEventListener('click', async () => {
+            const message = document.getElementById('messageInput').value;
+            const responseDiv = document.getElementById('response');
+            
+            if (!message) {
+                responseDiv.textContent = 'Please enter a message';
+                return;
+            }
+
+            responseDiv.textContent = 'Sending request...';
+
+            try {
+                const systemPrompt = `You are Ivo, the friendly virtual assistant for Esena Pharmacy, Kenya's leading online pharmacy. 
+
+PHARMACY INFO:
+- Name: Esena Pharmacy
+- Location: Ruaraka, Nairobi
+- Phone: 0768103599
+- Services: Online orders, prescription upload, consultations, delivery
+
+Keep responses friendly, helpful, and professional. Introduce yourself and offer to help with pharmacy needs.`;
+
+                const fullPrompt = `${systemPrompt}\n\nCustomer: ${message}\n\nIvo:`;
+
+                console.log('Sending request to Gemini API...');
+                const result = await callGeminiAPI(fullPrompt);
+                
+                responseDiv.textContent = result;
+                console.log('Success:', result);
+
+            } catch (error) {
+                console.error('Error:', error);
+                responseDiv.textContent = `Error: ${error.message}`;
+            }
+        });
+
+        console.log('Vanilla Gemini test loaded');
+        console.log('API Key present:', API_KEY ? 'Yes' : 'No');
+    </script>
+</body>
+</html>

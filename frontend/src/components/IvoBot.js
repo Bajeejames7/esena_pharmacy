@@ -16,6 +16,11 @@ const IvoBot = () => {
   // Use the custom hook
   const { sendMessage, clearHistory, isLoading } = useIvoBot();
 
+  // Debug logging
+  useEffect(() => {
+    console.log('IvoBot component mounted');
+  }, []);
+
   // Initial welcome message
   useEffect(() => {
     if (messages.length === 0) {
@@ -46,6 +51,7 @@ const IvoBot = () => {
   };
 
   const handleToggleChat = () => {
+    console.log('Chat toggle clicked, current state:', isOpen);
     setIsOpen(!isOpen);
   };
 
@@ -70,6 +76,8 @@ const IvoBot = () => {
     if (!inputMessage.trim() || isLoading) return;
 
     const userMessage = inputMessage.trim();
+    console.log('Sending message:', userMessage);
+    
     const userMessageObj = {
       id: Date.now(),
       type: 'user',
@@ -83,7 +91,9 @@ const IvoBot = () => {
 
     try {
       // Get bot response using the hook
+      console.log('Calling sendMessage...');
       const response = await sendMessage(userMessage);
+      console.log('Bot response:', response);
       
       const botMessageObj = {
         id: Date.now() + 1,
@@ -199,7 +209,7 @@ const IvoBot = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed right-4 bottom-60 z-50 w-80 h-96 max-w-[calc(100vw-2rem)] max-h-[calc(100vh-12rem)]">
+        <div className="fixed right-4 bottom-60 z-50 w-[28rem] h-[36rem] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] sm:w-96 sm:h-[32rem]">
           <GlassCard className="h-full flex flex-col" blur="lg">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/20 dark:border-gray-600/30">

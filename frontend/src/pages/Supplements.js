@@ -17,14 +17,14 @@ const Supplements = () => {
     const fetchSupplements = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/products?category=Supplement`);
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/products?category=Supplements`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch supplements');
         }
         
         const data = await response.json();
-        setSupplements(data.products || []);
+        setSupplements(Array.isArray(data) ? data : (data.products || []));
       } catch (err) {
         console.error('Error fetching supplements:', err);
         setError('Failed to load supplements. Please try again later.');

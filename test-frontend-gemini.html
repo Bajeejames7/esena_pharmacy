@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Gemini API Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">Frontend Gemini API Test</h1>
+        
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-lg font-semibold mb-4">Direct API Test</h2>
+            <div class="space-y-4">
+                <input 
+                    type="text" 
+                    id="apiKeyInput" 
+                    placeholder="Enter Gemini API Key" 
+                    value="AIzaSyAepR39ud1y8XXlduPKf2C7glOCWSTLr58"
+                    class="w-full p-3 border border-gray-300 rounded"
+                />
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    placeholder="Enter your message" 
+                    value="Hello, introduce yourself as Ivo from Esena Pharmacy"
+                    class="w-full p-3 border border-gray-300 rounded"
+                />
+                <button 
+                    id="testButton" 
+                    class="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600"
+                >
+                    Test Gemini API
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-lg font-semibold mb-4">Response</h2>
+            <div id="response" class="p-4 bg-gray-50 rounded min-h-[100px] whitespace-pre-wrap"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Gemini AI directly from CDN
+        import { GoogleGenerativeAI } from 'https://esm.run/@google/generative-ai';
+
+        document.getElementById('testButton').addEventListener('click', async () => {
+            const apiKey = document.getElementById('apiKeyInput').value;
+            const message = document.getElementById('messageInput').value;
+            const responseDiv = document.getElementById('response');
+            
+            if (!apiKey || !message) {
+                responseDiv.textContent = 'Please enter both API key and message';
+                return;
+            }
+
+            responseDiv.textContent = 'Sending request...';
+
+            try {
+                // Initialize Gemini AI
+                const genAI = new GoogleGenerativeAI(apiKey);
+                const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+                // System prompt for Ivo
+                const systemPrompt = `You are Ivo, the friendly virtual assistant for Esena Pharmacy, Kenya's leading online pharmacy. 
+
+PHARMACY INFO:
+- Name: Esena Pharmacy
+- Location: Ruaraka, Nairobi
+- Phone: 0768103599
+- Services: Online orders, prescription upload, consultations, delivery
+
+Keep responses friendly, helpful, and professional. Introduce yourself and offer to help with pharmacy needs.`;
+
+                const fullPrompt = `${systemPrompt}\n\nCustomer: ${message}\n\nIvo:`;
+
+                // Generate response
+                const result = await model.generateContent(fullPrompt);
+                const response = await result.response;
+                const text = response.text();
+
+                responseDiv.textContent = text;
+                console.log('Success:', text);
+
+            } catch (error) {
+                console.error('Error:', error);
+                responseDiv.textContent = `Error: ${error.message}`;
+            }
+        });
+
+        // Auto-test on load
+        console.log('Frontend Gemini test loaded');
+        console.log('API Key present:', document.getElementById('apiKeyInput').value ? 'Yes' : 'No');
+    </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../utils/database');
+const db = require('../config/db');
 const auth = require('../middleware/auth');
 
 /**
@@ -10,27 +10,27 @@ const auth = require('../middleware/auth');
 router.get('/stats', auth, async (req, res) => {
   try {
     // Get pending orders count
-    const [pendingOrdersResult] = await db.execute(
+    const [pendingOrdersResult] = await db.query(
       'SELECT COUNT(*) as count FROM orders WHERE status IN (?, ?)',
       ['pending', 'processing']
     );
     const pendingOrders = pendingOrdersResult[0].count;
 
     // Get pending appointments count
-    const [pendingAppointmentsResult] = await db.execute(
+    const [pendingAppointmentsResult] = await db.query(
       'SELECT COUNT(*) as count FROM appointments WHERE status = ?',
       ['pending']
     );
     const pendingAppointments = pendingAppointmentsResult[0].count;
 
     // Get products in stock count
-    const [productsInStockResult] = await db.execute(
+    const [productsInStockResult] = await db.query(
       'SELECT COUNT(*) as count FROM products WHERE stock > 0'
     );
     const productsInStock = productsInStockResult[0].count;
 
     // Get total revenue (sum of completed orders)
-    const [revenueResult] = await db.execute(
+    const [revenueResult] = await db.query(
       'SELECT COALESCE(SUM(total), 0) as total FROM orders WHERE status IN (?, ?)',
       ['delivered', 'completed']
     );
@@ -43,11 +43,11 @@ router.get('/stats', auth, async (req, res) => {
     sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
 
     // Orders trend
-    const [currentOrdersResult] = await db.execute(
+    const [currentOrdersResult] = await db.query(
       'SELECT COUNT(*) as count FROM orders WHERE created_at >= ?',
       [thirtyDaysAgo.toISOString().split('T')[0]]
     );
-    const [previousOrdersResult] = await db.execute(
+    const [previousOrdersResult] = await db.query(
       'SELECT COUNT(*) as count FROM orders WHERE created_at >= ? AND created_at < ?',
       [sixtyDaysAgo.toISOString().split('T')[0], thirtyDaysAgo.toISOString().split('T')[0]]
     );
@@ -58,11 +58,11 @@ router.get('/stats', auth, async (req, res) => {
       Math.round(((currentOrders - previousOrders) / previousOrders) * 100) : 0;
 
     // Revenue trend
-    const [currentRevenueResult] = await db.execute(
+    const [currentRevenueResult] = await db.query(
       'SELECT COALESCE(SUM(total), 0) as total FROM orders WHERE status IN (?, ?) AND created_at >= ?',
       ['delivered', 'completed', thirtyDaysAgo.toISOString().split('T')[0]]
     );
-    const [previousRevenueResult] = await db.execute(
+    const [previousRevenueResult] = await db.query(
       'SELECT COALESCE(SUM(total), 0) as total FROM orders WHERE status IN (?, ?) AND created_at >= ? AND created_at < ?',
       ['delivered', 'completed', sixtyDaysAgo.toISOString().split('T')[0], thirtyDaysAgo.toISOString().split('T')[0]]
     );
@@ -73,7 +73,7 @@ router.get('/stats', auth, async (req, res) => {
       Math.round(((currentRevenue - previousRevenue) / previousRevenue) * 100) : 0;
 
     // Get file storage usage (approximate)
-    const [uploadsResult] = await db.execute(
+    const [uploadsResult] = await db.query(
       'SELECT COUNT(*) as count FROM products WHERE image IS NOT NULL OR video IS NOT NULL'
     );
     const fileCount = uploadsResult[0].count;

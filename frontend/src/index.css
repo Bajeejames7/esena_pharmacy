@@ -29,7 +29,7 @@
   }
   
   .glass-input {
-    @apply backdrop-blur-glass border rounded-lg px-4 py-3 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-glass-blue/50 focus:border-glass-blue/50 transition-all duration-200;
+    @apply backdrop-blur-glass border rounded-lg px-3 py-2 sm:px-4 sm:py-3 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-glass-blue/50 focus:border-glass-blue/50 transition-all duration-200;
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.2);
     color: #374151;
@@ -42,7 +42,7 @@
   }
   
   .glass-button {
-    @apply backdrop-blur-glass border rounded-lg px-6 py-3 font-medium hover:shadow-glass-hover hover:scale-105 focus:outline-none focus:ring-2 focus:ring-glass-blue/50 transition-all duration-200 min-h-[44px] transform;
+    @apply backdrop-blur-glass border rounded-lg px-4 py-2 sm:px-6 sm:py-3 font-medium hover:shadow-glass-hover hover:scale-105 focus:outline-none focus:ring-2 focus:ring-glass-blue/50 transition-all duration-200 min-h-[44px] transform;
     background: rgba(255, 255, 255, 0.2);
     border-color: rgba(255, 255, 255, 0.3);
     color: #374151;
@@ -128,16 +128,25 @@
 
 /* Base styles */
 @layer base {
+  html {
+    overflow-x: hidden;
+    width: 100%;
+  }
+
   body {
     @apply font-poppins transition-colors duration-300;
     background: linear-gradient(135deg, rgba(160, 216, 241, 0.2), rgba(180, 231, 193, 0.2), rgba(255, 255, 255, 1));
     min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+    overflow-x: hidden;
     color: #1f2937;
   }
   
   .dark body {
     background: linear-gradient(135deg, rgba(30, 41, 59, 1), rgba(51, 65, 85, 1), rgba(71, 85, 105, 1));
     color: #f9fafb;
+    overflow-x: hidden;
   }
   
   /* Enhanced theme transition */
@@ -460,8 +469,8 @@
   z-index: 1000;
 }
 
-/* Ensure proper heading hierarchy */
-h1 { font-size: 2rem; }
+/* Heading sizes — let Tailwind responsive classes handle these */
+/* h1 { font-size: 2rem; }  ← removed: overrides Tailwind responsive classes */
 h2 { font-size: 1.5rem; }
 h3 { font-size: 1.25rem; }
 h4 { font-size: 1.125rem; }

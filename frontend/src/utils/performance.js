@@ -63,16 +63,20 @@ export const measureWebVitals = () => {
   // Cumulative Layout Shift (CLS)
   const measureCLS = () => {
     let clsValue = 0;
+    let clsTimeout = null;
     const observer = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
         if (!entry.hadRecentInput) {
           clsValue += entry.value;
         }
       }
+      // Debounce the log — only print after shifts settle (500ms of quiet)
       if (process.env.NODE_ENV === 'development') {
-        console.log('Cumulative Layout Shift:', clsValue);
+        clearTimeout(clsTimeout);
+        clsTimeout = setTimeout(() => {
+          console.log('Cumulative Layout Shift:', clsValue);
+        }, 500);
       }
-      // Target: < 0.25 - more lenient threshold
       if (clsValue > 0.25) {
         console.warn('CLS is higher than recommended (0.25)');
       }

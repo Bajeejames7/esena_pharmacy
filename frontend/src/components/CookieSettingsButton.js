@@ -30,11 +30,41 @@ const CookieSettingsButton = ({ onOpenPreferences }) => {
       >
         <GlassCard className="p-3 hover:scale-105 transition-all duration-300" blur="md">
           <div className="flex items-center justify-center">
-            <img 
-              src="/cookie_image.png" 
-              alt="Cookie Settings" 
-              className="w-6 h-6 group-hover:scale-110 transition-all duration-200"
-            />
+            <svg 
+              className="w-6 h-6 group-hover:scale-110 transition-all duration-200" 
+              viewBox="0 0 24 24" 
+              fill="none"
+            >
+              {/* Cookie base - brown color */}
+              <circle cx="12" cy="12" r="10" fill="#D2691E" stroke="#8B4513" strokeWidth="1.5"/>
+              
+              {/* Cookie crumbs/chocolate chips - dark brown */}
+              <circle cx="8" cy="8" r="1" fill="#654321"/>
+              <circle cx="16" cy="9" r="0.8" fill="#654321"/>
+              <circle cx="9" cy="14" r="0.9" fill="#654321"/>
+              <circle cx="15" cy="15" r="0.7" fill="#654321"/>
+              <circle cx="12" cy="10" r="0.6" fill="#654321"/>
+              <circle cx="10" cy="17" r="0.8" fill="#654321"/>
+              <circle cx="17" cy="13" r="0.5" fill="#654321"/>
+              <circle cx="7" cy="12" r="0.7" fill="#654321"/>
+              <circle cx="14" cy="7" r="0.6" fill="#654321"/>
+              <circle cx="6" cy="15" r="0.5" fill="#654321"/>
+              
+              {/* Enhanced bite mark with more realistic shape */}
+              <path d="M18.5 5.5 C20.5 7, 21 9, 20 11.5 C19 13, 17.5 13.5, 16 12.5 C17 10, 17.5 7.5, 18.5 5.5 Z" 
+                    fill="white" 
+                    stroke="none"/>
+              
+              {/* Inner bite detail */}
+              <path d="M18.8 6.2 C19.5 7.2, 19.8 8.5, 19.2 10 C18.5 11, 17.8 11.2, 17.2 10.8 C17.8 9.2, 18.2 7.5, 18.8 6.2 Z" 
+                    fill="#F5F5DC" 
+                    stroke="none"/>
+              
+              {/* Cookie texture lines */}
+              <path d="M6 10 Q12 8, 18 10" stroke="#8B4513" strokeWidth="0.5" fill="none" opacity="0.3"/>
+              <path d="M5 14 Q12 12, 19 14" stroke="#8B4513" strokeWidth="0.5" fill="none" opacity="0.3"/>
+              <path d="M7 18 Q12 16, 17 18" stroke="#8B4513" strokeWidth="0.5" fill="none" opacity="0.3"/>
+            </svg>
           </div>
         </GlassCard>
         
@@ -90,35 +120,30 @@ export const CookiePreferencesModal = ({ onSave, onClose }) => {
       name: 'Necessary Cookies',
       description: 'Essential for the website to function properly. These cannot be disabled.',
       required: true,
-      examples: 'Session management, security, basic functionality'
     },
     {
       id: 'performance',
       name: 'Performance Cookies',
       description: 'Help us improve site performance by storing your preferences and enabling faster loading.',
       required: false,
-      examples: 'Image caching, user preferences, performance settings'
     },
     {
       id: 'functional',
       name: 'Functional Cookies',
       description: 'Enable enhanced functionality and personalization features.',
       required: false,
-      examples: 'Theme preferences, language settings, shopping cart'
     },
     {
       id: 'analytics',
       name: 'Analytics Cookies',
-      description: 'Help us understand how visitors interact with our website (currently not used).',
+      description: 'Help us understand how visitors interact with our website.',
       required: false,
-      examples: 'Page views, user behavior, site statistics'
     },
     {
       id: 'marketing',
       name: 'Marketing Cookies',
-      description: 'Used to deliver relevant advertisements (currently not used).',
+      description: 'Used to deliver relevant advertisements.',
       required: false,
-      examples: 'Ad targeting, social media integration, marketing campaigns'
     }
   ];
 
@@ -154,9 +179,6 @@ export const CookiePreferencesModal = ({ onSave, onClose }) => {
                     </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
                       {category.description}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      <strong>Examples:</strong> {category.examples}
                     </p>
                   </div>
                   
@@ -198,18 +220,6 @@ export const CookiePreferencesModal = ({ onSave, onClose }) => {
             >
               Save Preferences
             </button>
-          </div>
-
-          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">
-              About Our Cookies
-            </h4>
-            <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-              <li>• We don't sell your data to third parties</li>
-              <li>• Performance cookies help make the site faster for you</li>
-              <li>• You can change these settings anytime using this button</li>
-              <li>• Necessary cookies are required for basic functionality</li>
-            </ul>
           </div>
         </div>
       </GlassCard>

@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useBreakpoint } from '../utils/responsive';
 import LazyImage from './LazyImage';
+import { useBreakpoint } from '../utils/responsive';
 
 const BrandingSlider = () => {
   const { breakpoint } = useBreakpoint();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [imageAspectRatios, setImageAspectRatios] = useState({});
 
   const brandingImages = [
     { 
@@ -112,37 +111,7 @@ const BrandingSlider = () => {
     setCurrentSlide((prev) => (prev - 1 + brandingImages.length) % brandingImages.length);
   };
 
-  // Handle image load to detect actual dimensions
-  const handleImageLoad = (index, event) => {
-    const img = event.target;
-    const aspectRatio = img.naturalWidth / img.naturalHeight;
-    
-    setImageAspectRatios(prev => ({
-      ...prev,
-      [index]: {
-        width: img.naturalWidth,
-        height: img.naturalHeight,
-        aspectRatio: aspectRatio,
-        isWide: aspectRatio > 1.5,
-        isSquare: aspectRatio >= 0.8 && aspectRatio <= 1.2,
-        isTall: aspectRatio < 0.8
-      }
-    }));
-  };
 
-  const getSliderHeight = () => {
-    // Adjust height based on current image type for better display
-    const currentImage = brandingImages[currentSlide];
-    const baseHeight = {
-      mobile: currentImage?.aspectRatio === 'square' ? 'h-96' : 'h-80',
-      tablet: currentImage?.aspectRatio === 'square' ? 'h-[28rem]' : 'h-96', 
-      desktop: currentImage?.aspectRatio === 'square' ? 'h-[32rem]' : 'h-[28rem]'
-    };
-
-    if (breakpoint === 'mobile') return `${baseHeight.mobile} sm:h-96`;
-    if (breakpoint === 'tablet') return `${baseHeight.tablet} md:h-[28rem]`;
-    return `${baseHeight.desktop} lg:h-[32rem]`;
-  };
 
   return (
     <div className="relative w-full overflow-hidden">
@@ -152,38 +121,23 @@ const BrandingSlider = () => {
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
         >
           {brandingImages.map((image, index) => {
-            const detectedRatio = imageAspectRatios[index];
-            const isSquareOrTall = detectedRatio?.isSquare || detectedRatio?.isTall || image.aspectRatio === 'square';
-            const isWideImage = detectedRatio?.isWide || (!detectedRatio && image.aspectRatio === 'wide');
-            
-            // On mobile, use object-contain for wide images to prevent cropping
-            const mobileObjectFit = breakpoint === 'mobile' && isWideImage ? 'contain' : 
-                                   isSquareOrTall ? 'contain' : image.objectFit;
-            
+            const desktopHeight = breakpoint === 'desktop' ? '420px' : breakpoint === 'tablet' ? '320px' : '220px';
+
             return (
               <div key={index} className="w-full flex-shrink-0">
-                <Link 
+                <Link
                   to={image.link}
-                  className="block w-full h-full cursor-pointer group"
+                  className="block w-full cursor-pointer group"
                   aria-label={`Navigate to ${image.description}`}
                 >
-                  <div className={`relative ${getSliderHeight()} ${
-                    isSquareOrTall || (breakpoint === 'mobile' && isWideImage)
-                      ? 'bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900' 
-                      : ''
-                  } transition-transform duration-300 group-hover:scale-[1.02]`}>
+                  <div className="relative w-full overflow-hidden" style={{ height: desktopHeight }}>
                     <LazyImage
                       src={image.src}
                       alt={image.alt}
-                      className={`w-full h-full object-${mobileObjectFit} object-${image.objectPosition} transition-all duration-300 group-hover:brightness-110`}
-                      priority={index === 0} // First image loads immediately
-                      preload={index < 3} // Preload first 3 images
-                      onLoad={(e) => handleImageLoad(index, e)}
+                      className="absolute inset-0 w-full h-full object-cover transition-all duration-300 group-hover:brightness-110"
+                      priority={index === 0}
+                      preload={index < 3}
                     />
-                    {/* Overlay for images with backgrounds */}
-                    {(isSquareOrTall || (breakpoint === 'mobile' && isWideImage)) && (
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-black/5 group-hover:from-black/10"></div>
-                    )}
                   </div>
                 </Link>
               </div>

@@ -53,7 +53,7 @@ const isValidToken = (token) => {
     }
     
     // Check if token has required fields
-    if (!payload.username || !payload.role) {
+    if (!payload.userId || !payload.role) {
       return false;
     }
     

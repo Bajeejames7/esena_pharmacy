@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ivo Bot Debug Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen">
+    <div class="container mx-auto p-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Ivo Bot Debug Test</h1>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Debug Info -->
+            <div class="glass-card p-6">
+                <h2 class="text-xl font-semibold mb-4">Debug Information</h2>
+                <div class="space-y-2 text-sm">
+                    <div><strong>API Key Present:</strong> <span id="apiKeyStatus">Checking...</span></div>
+                    <div><strong>Component Status:</strong> <span id="componentStatus">Loading...</span></div>
+                    <div><strong>Console Logs:</strong> Check browser console for detailed logs</div>
+                </div>
+                
+                <div class="mt-6">
+                    <h3 class="font-semibold mb-2">Test Actions:</h3>
+                    <div class="space-y-2">
+                        <button id="testApiKey" class="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                            Test API Key
+                        </button>
+                        <button id="testBotService" class="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                            Test Bot Service
+                        </button>
+                        <button id="sendTestMessage" class="w-full px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">
+                            Send Test Message
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Simulation -->
+            <div class="glass-card p-6">
+                <h2 class="text-xl font-semibold mb-4">Chat Simulation</h2>
+                
+                <!-- Messages Area -->
+                <div id="messagesArea" class="h-64 overflow-y-auto border border-gray-200 rounded p-4 mb-4 bg-white/50">
+                    <div class="text-gray-500 text-sm">Messages will appear here...</div>
+                </div>
+                
+                <!-- Input Area -->
+                <div class="flex space-x-2">
+                    <input 
+                        type="text" 
+                        id="messageInput" 
+                        placeholder="Type a message..." 
+                        class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button 
+                        id="sendButton" 
+                        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+                    >
+                        Send
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Troubleshooting Guide -->
+        <div class="mt-8 glass-card p-6">
+            <h2 class="text-xl font-semibold mb-4">Troubleshooting Guide</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-semibold mb-2">Common Issues:</h3>
+                    <ul class="text-sm space-y-1 text-gray-700">
+                        <li>• API key not configured in .env file</li>
+                        <li>• Google Generative AI package not installed</li>
+                        <li>• Network connectivity issues</li>
+                        <li>• CORS or security policy blocks</li>
+                        <li>• Component not imported in App.js</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-2">Solutions:</h3>
+                    <ul class="text-sm space-y-1 text-gray-700">
+                        <li>• Check REACT_APP_GEMINI_API_KEY in .env</li>
+                        <li>• Run: npm install @google/generative-ai</li>
+                        <li>• Verify internet connection</li>
+                        <li>• Check browser console for errors</li>
+                        <li>• Restart development server</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Debug script to test Ivo Bot functionality
+        console.log('Ivo Bot Debug Test loaded');
+        
+        // Check if we're in React environment
+        const isReactEnv = typeof process !== 'undefined' && process.env;
+        
+        document.getElementById('apiKeyStatus').textContent = isReactEnv ? 
+            (process.env.REACT_APP_GEMINI_API_KEY ? 'Present' : 'Missing') : 
+            'Not in React environment';
+            
+        document.getElementById('componentStatus').textContent = 'Debug page loaded';
+
+        // Test API Key button
+        document.getElementById('testApiKey').addEventListener('click', function() {
+            console.log('Testing API Key...');
+            const apiKey = isReactEnv ? process.env.REACT_APP_GEMINI_API_KEY : null;
+            
+            if (apiKey) {
+                console.log('API Key found, length:', apiKey.length);
+                addMessage('System', `API Key found (length: ${apiKey.length})`, 'system');
+            } else {
+                console.log('API Key not found');
+                addMessage('System', 'API Key not found in environment', 'error');
+            }
+        });
+
+        // Test Bot Service button
+        document.getElementById('testBotService').addEventListener('click', async function() {
+            console.log('Testing Bot Service...');
+            addMessage('System', 'Testing bot service initialization...', 'system');
+            
+            try {
+                // This would normally test the actual service
+                // For now, just simulate
+                setTimeout(() => {
+                    addMessage('System', 'Bot service test completed. Check console for details.', 'system');
+                }, 1000);
+            } catch (error) {
+                console.error('Bot service test failed:', error);
+                addMessage('System', `Bot service test failed: ${error.message}`, 'error');
+            }
+        });
+
+        // Send Test Message button
+        document.getElementById('sendTestMessage').addEventListener('click', function() {
+            const testMessage = "Hello, this is a test message";
+            document.getElementById('messageInput').value = testMessage;
+            sendMessage();
+        });
+
+        // Send message function
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            console.log('Sending message:', message);
+            addMessage('User', message, 'user');
+            input.value = '';
+            
+            // Simulate bot response
+            setTimeout(() => {
+                addMessage('Ivo', 'This is a simulated response. In the actual app, this would come from the Gemini API.', 'bot');
+            }, 1000);
+        }
+
+        function addMessage(sender, content, type) {
+            const messagesArea = document.getElementById('messagesArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `mb-2 p-2 rounded ${getMessageClass(type)}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            messageDiv.innerHTML = `
+                <div class="font-semibold text-sm">${sender} <span class="font-normal text-xs opacity-75">${timestamp}</span></div>
+                <div class="text-sm">${content}</div>
+            `;
+            
+            messagesArea.appendChild(messageDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        function getMessageClass(type) {
+            switch(type) {
+                case 'user': return 'bg-blue-100 border-l-4 border-blue-500';
+                case 'bot': return 'bg-green-100 border-l-4 border-green-500';
+                case 'system': return 'bg-gray-100 border-l-4 border-gray-500';
+                case 'error': return 'bg-red-100 border-l-4 border-red-500';
+                default: return 'bg-gray-50';
+            }
+        }
+
+        // Initial system message
+        addMessage('System', 'Debug test page loaded. Use the buttons above to test different components.', 'system');
+    </script>
+</body>
+</html>

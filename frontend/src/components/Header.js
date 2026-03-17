@@ -100,7 +100,7 @@ const Header = () => {
       className="sticky top-0 z-50 glass-card border-b border-white/20 dark:border-slate-600/30"
       id="navigation"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link 
@@ -226,10 +226,10 @@ const Header = () => {
           </nav>
 
           {/* Right side items */}
-          <div className="flex items-center space-x-2">
-            {/* Theme Toggle - More prominent */}
+          <div className="flex items-center gap-1 sm:gap-2">
+            {/* Theme Toggle — hide label on small screens */}
             <div className="order-2 lg:order-1">
-              <ThemeToggle showLabel={true} />
+              <ThemeToggle showLabel={false} />
             </div>
 
             {/* Cart Icon */}
@@ -239,14 +239,11 @@ const Header = () => {
                 className="relative inline-block p-2 rounded-lg hover:bg-white/5 dark:hover:bg-slate-700/20 hover:scale-105 transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-glass-blue/50"
                 aria-label={`Shopping cart with ${totalItems} items`}
               >
-                {/* Modern shopping cart icon */}
                 <img 
                   src="/cart.png" 
                   alt="Shopping Cart" 
                   className="w-6 h-6"
                 />
-                
-                {/* Cart count badge - only show when items exist */}
                 {totalItems > 0 && (
                   <span className="absolute top-0 right-0 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold shadow-lg border-2 border-white dark:border-gray-800 translate-x-1 -translate-y-1">
                     {totalItems > 99 ? '99+' : totalItems}
@@ -264,12 +261,12 @@ const Header = () => {
                   toggleMobileMenu();
                 }}
                 onKeyDown={(e) => handleKeyDown(e, toggleMobileMenu)}
-                className="relative p-3 bg-white/10 dark:bg-slate-700/50 hover:bg-white/20 dark:hover:bg-slate-600/50 rounded-xl hover:scale-105 transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-glass-blue/50 active:scale-95 border border-white/20 dark:border-slate-600/30"
+                className="p-2 bg-white/10 dark:bg-slate-700/50 hover:bg-white/20 dark:hover:bg-slate-600/50 rounded-xl hover:scale-105 transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-glass-blue/50 active:scale-95 border border-white/20 dark:border-slate-600/30"
                 aria-expanded={isMobileMenuOpen}
                 aria-label="Toggle mobile menu"
                 type="button"
               >
-                <svg className="w-6 h-6 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {isMobileMenuOpen ? (
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   ) : (

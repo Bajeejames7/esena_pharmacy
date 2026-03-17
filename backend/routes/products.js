@@ -21,10 +21,10 @@ router.get("/:id", getProductById);
 
 // Protected routes (require JWT authentication)
 // POST /api/products - Create new product with image/video upload (Requirements 3.2, 12.1)
-router.post("/", auth, sanitizeInput, upload, productAudit, createProduct);
+router.post("/", auth, upload, sanitizeInput, productAudit, createProduct);
 
 // PUT /api/products/:id - Update product (Requirements 12.1)
-router.put("/:id", auth, sanitizeInput, upload, productAudit, updateProduct);
+router.put("/:id", auth, upload, sanitizeInput, productAudit, updateProduct);
 
 // DELETE /api/products/:id - Delete product (Requirements 12.1)
 router.delete("/:id", auth, productAudit, deleteProduct);

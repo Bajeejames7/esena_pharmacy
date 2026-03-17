@@ -78,7 +78,7 @@ const Shop = () => {
                     {/* Product Details */}
                     <div className="flex-1 min-w-0 w-full sm:w-auto">
                       <h3 className="font-medium text-gray-800 dark:text-white truncate text-sm sm:text-base">{item.name}</h3>
-                      <p className="text-gray-600 dark:text-gray-300 text-sm">KSH {item.price.toFixed(2)} each</p>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm">KSH {parseFloat(item.price).toFixed(2)} each</p>
                       {item.category && (
                         <p className="text-sm text-gray-500 dark:text-gray-400">{item.category}</p>
                       )}
@@ -108,7 +108,7 @@ const Shop = () => {
                     {/* Item Total */}
                     <div className="text-right min-w-0 w-full sm:w-auto sm:text-right">
                       <p className="font-semibold text-gray-800 dark:text-white text-sm sm:text-base">
-                        KSH {(item.price * item.quantity).toFixed(2)}
+                        KSH {(parseFloat(item.price) * item.quantity).toFixed(2)}
                       </p>
                     </div>
                     

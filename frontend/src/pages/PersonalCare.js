@@ -17,14 +17,14 @@ const PersonalCare = () => {
     const fetchPersonalCareProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/products?category=Personal Care`);
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/products?category=PersonalCare`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch personal care products');
         }
         
         const data = await response.json();
-        setPersonalCareProducts(data.products || []);
+        setPersonalCareProducts(Array.isArray(data) ? data : (data.products || []));
       } catch (err) {
         console.error('Error fetching personal care products:', err);
         setError('Failed to load personal care products. Please try again later.');

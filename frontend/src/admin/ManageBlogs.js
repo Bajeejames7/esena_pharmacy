@@ -147,55 +147,55 @@ const ManageBlogs = () => {
     {
       key: 'title',
       label: 'Title',
-      render: (blog) => (
+      render: (value, row) => (
         <div>
-          <div className="font-medium text-gray-800 dark:text-gray-100">{blog.title}</div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">{blog.slug}</div>
+          <div className="font-medium text-gray-800 dark:text-gray-100">{value}</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">{row.slug}</div>
         </div>
       )
     },
     {
       key: 'author',
       label: 'Author',
-      render: (blog) => blog.author
+      render: (value) => value
     },
     {
       key: 'status',
       label: 'Status',
-      render: (blog) => (
+      render: (value) => (
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          blog.status === 'published' 
+          value === 'published' 
             ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' 
             : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
         }`}>
-          {blog.status}
+          {value}
         </span>
       )
     },
     {
       key: 'created_at',
       label: 'Created',
-      render: (blog) => formatDate(blog.created_at)
+      render: (value) => formatDate(value)
     },
     {
       key: 'actions',
       label: 'Actions',
-      render: (blog) => (
+      render: (_value, row) => (
         <div className="flex space-x-2">
           <button
-            onClick={() => handleEdit(blog)}
+            onClick={() => handleEdit(row)}
             className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm"
           >
             Edit
           </button>
           <button
-            onClick={() => handleToggleStatus(blog.id)}
+            onClick={() => handleToggleStatus(row.id)}
             className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 text-sm"
           >
-            {blog.status === 'published' ? 'Unpublish' : 'Publish'}
+            {row.status === 'published' ? 'Unpublish' : 'Publish'}
           </button>
           <button
-            onClick={() => handleDelete(blog.id)}
+            onClick={() => handleDelete(row.id)}
             className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm"
           >
             Delete

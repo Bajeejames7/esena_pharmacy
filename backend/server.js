@@ -67,6 +67,7 @@ app.use(["/contact", "/api/contact"], require("./routes/contact"));
 app.use(["/blogs", "/api/blogs"], require("./routes/blogs"));
 app.use(["/admin/dashboard", "/api/admin/dashboard"], require("./routes/dashboard"));
 app.use(["/fix-auth", "/api/fix-auth"], require("./routes/fix-auth"));
+app.use(["/bot", "/api/bot"], require("./routes/bot"));
 
 // 6.1. EXPLICIT ADMIN ROUTES (Fallback for cPanel routing issues)
 // These handle the exact paths the frontend is calling
@@ -115,7 +116,8 @@ const startBackgroundTasks = async () => {
     await initializeDatabase();
     logger.info("Background tasks completed successfully");
   } catch (error) {
-    logger.error("Background task error:", error.message);
+    console.error("Background task error details:", error);
+    logger.error("Background task error: " + (error.message || error.sqlMessage || JSON.stringify(error)));
   }
 };
 

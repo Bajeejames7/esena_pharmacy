@@ -56,11 +56,11 @@ const ProductSearch = ({
   const hasActiveFilters = searchTerm || selectedCategory || inStockOnly || priceRange.min || priceRange.max || sortBy !== 'name';
 
   return (
-    <GlassCard className={`p-6 ${className}`}>
-      <div className="space-y-6">
+    <GlassCard className={`p-4 ${className}`}>
+      <div className="space-y-4">
         {/* Search Input */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Search Products
           </label>
           <div className="relative">
@@ -68,7 +68,7 @@ const ProductSearch = ({
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by name, description, or category..."
+              placeholder="Search by name or description..."
               className="glass-input w-full pl-10"
             />
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -79,39 +79,34 @@ const ProductSearch = ({
           </div>
         </div>
 
-        {/* Filters Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Category Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Category
-            </label>
+        {/* Filters — stack on mobile, 2-col on sm, 4-col on lg */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Category */}
+          <div className="min-w-0">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="glass-input w-full"
             >
               <option value="">All Categories</option>
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
+              {categories.map((cat) => {
+                if (typeof cat === 'string') return <option key={cat} value={cat}>{cat}</option>;
+                return <option key={cat.value} value={cat.value}>{cat.label}</option>;
+              })}
             </select>
           </div>
 
           {/* Price Range */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Price Range
-            </label>
-            <div className="flex space-x-2">
+          <div className="min-w-0">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price Range</label>
+            <div className="flex gap-2">
               <input
                 type="number"
                 value={priceRange.min}
                 onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
                 placeholder="Min"
-                className="glass-input w-full"
+                className="glass-input w-0 flex-1 min-w-0"
                 min="0"
                 step="0.01"
               />
@@ -120,7 +115,7 @@ const ProductSearch = ({
                 value={priceRange.max}
                 onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
                 placeholder="Max"
-                className="glass-input w-full"
+                className="glass-input w-0 flex-1 min-w-0"
                 min="0"
                 step="0.01"
               />
@@ -128,10 +123,8 @@ const ProductSearch = ({
           </div>
 
           {/* Sort By */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sort By
-            </label>
+          <div className="min-w-0">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sort By</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
@@ -141,42 +134,31 @@ const ProductSearch = ({
               <option value="name_desc">Name (Z-A)</option>
               <option value="price_asc">Price (Low to High)</option>
               <option value="price_desc">Price (High to Low)</option>
-              <option value="category">Category</option>
               <option value="stock">Stock Level</option>
             </select>
           </div>
 
-          {/* Stock Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Availability
-            </label>
-            <div className="flex items-center space-x-3 mt-3">
+          {/* Availability */}
+          <div className="min-w-0 flex items-end pb-1">
+            <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 id="inStockOnly"
                 checked={inStockOnly}
                 onChange={(e) => setInStockOnly(e.target.checked)}
-                className="w-4 h-4 text-blue-600 bg-white/20 border-white/30 rounded focus:ring-blue-500 focus:ring-2"
+                className="w-4 h-4 text-blue-600 rounded"
               />
-              <label htmlFor="inStockOnly" className="text-sm text-gray-700">
-                In Stock Only
-              </label>
-            </div>
+              <span className="text-sm text-gray-700 dark:text-gray-300">In Stock Only</span>
+            </label>
           </div>
         </div>
 
         {/* Clear Filters */}
         {hasActiveFilters && (
-          <div className="flex justify-between items-center pt-4 border-t border-white/20">
-            <span className="text-sm text-gray-600">
-              Filters applied
-            </span>
-            <button
-              onClick={handleClearFilters}
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              Clear All Filters
+          <div className="flex justify-between items-center pt-2 border-t border-white/20">
+            <span className="text-sm text-gray-600 dark:text-gray-400">Filters applied</span>
+            <button onClick={handleClearFilters} className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+              Clear All
             </button>
           </div>
         )}

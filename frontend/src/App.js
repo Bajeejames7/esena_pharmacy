@@ -40,11 +40,47 @@ import ManageAppointments from './admin/ManageAppointments';
 import ManageBlogs from './admin/ManageBlogs';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Component to handle focus management on route changes
+// Page titles per route
+const PAGE_TITLES = {
+  '/': 'Home',
+  '/about': 'About Us',
+  '/products': 'Products',
+  '/supplements': 'Vitamins & Supplements',
+  '/personal-care': 'Personal Care',
+  '/book-appointment': 'Book Appointment',
+  '/contact': 'Contact Us',
+  '/shop': 'Shop',
+  '/checkout': 'Checkout',
+  '/order-success': 'Order Confirmed',
+  '/blog': 'Blog',
+  '/delivery': 'Delivery Info',
+  '/upload-prescription': 'Upload Prescription',
+  '/whatsapp-order': 'WhatsApp Order',
+  '/privacy-policy': 'Privacy Policy',
+  '/terms': 'Terms of Use',
+  '/track-order': 'Track Order',
+  '/admin/login': 'Admin Login',
+  '/admin/dashboard': 'Dashboard',
+  '/admin/products': 'Manage Products',
+  '/admin/orders': 'Manage Orders',
+  '/admin/appointments': 'Manage Appointments',
+  '/admin/blogs': 'Manage Blogs',
+};
+
+// Component to handle focus management and page title on route changes
 const FocusManager = ({ children }) => {
   const location = useLocation();
 
   useEffect(() => {
+    // Update page title
+    const match = Object.keys(PAGE_TITLES).find(path =>
+      path !== '/' ? location.pathname.startsWith(path) : location.pathname === '/'
+    );
+    const pageTitle = match ? PAGE_TITLES[match] : null;
+    document.title = pageTitle
+      ? `${pageTitle} | Esena Pharmacy`
+      : 'Esena Pharmacy | Kenya\'s Trusted Online Pharmacy';
+
     // Focus the main content area when route changes
     const mainContent = document.getElementById('main-content');
     if (mainContent) {
@@ -86,7 +122,7 @@ const MainContentWrapper = ({ children }) => {
   return (
     <main 
       id="main-content" 
-      className="flex-1"
+      className="flex-1 w-full overflow-x-hidden"
       tabIndex="-1"
       role="main"
       aria-label="Main content"
@@ -157,7 +193,7 @@ function App() {
           </div>
 
           <FocusManager>
-          <div className="min-h-screen flex flex-col">
+          <div className="min-h-screen w-full overflow-x-hidden flex flex-col">
             <ConditionalHeader />
             <MainContentWrapper>
               <Routes>

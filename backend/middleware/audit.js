@@ -20,20 +20,14 @@ const createAuditTable = async () => {
         new_values JSON,
         ip_address VARCHAR(45),
         user_agent TEXT,
-        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        INDEX idx_user_id (user_id),
-        INDEX idx_action (action),
-        INDEX idx_resource (resource_type, resource_id),
-        INDEX idx_timestamp (timestamp)
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    logger.info('audit_logs table ready');
   } catch (error) {
-    logger.error('Failed to create audit_logs table', error);
+    logger.warn('Could not create audit_logs table: ' + error.message);
   }
 };
-
-// Initialize audit table
-createAuditTable();
 
 // Store audit log in database
 const storeAuditLog = async (auditData) => {
@@ -236,6 +230,7 @@ const getAuditLogs = async (req, res) => {
 };
 
 module.exports = {
+  createAuditTable,
   productAudit,
   orderAudit,
   appointmentAudit,

@@ -115,7 +115,7 @@ const LazyImage = ({
   const shouldLoad = loading === 'eager' || priority || isInView;
 
   return (
-    <div ref={imgRef} className={`relative overflow-hidden ${className}`}>
+    <div ref={imgRef} className={`relative overflow-hidden w-full h-full ${className}`}>
       {/* Placeholder */}
       {!isLoaded && !hasError && (
         <img

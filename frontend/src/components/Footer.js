@@ -8,8 +8,8 @@ import GlassCard from './GlassCard';
 const Footer = () => {
   return (
     <footer className="mt-16">
-      <GlassCard className="mx-4 mb-4" blur="lg" opacity={0.1}>
-        <div className="px-6 py-8">
+      <GlassCard className="mx-2 sm:mx-4 mb-4" blur="lg" opacity={0.1}>
+        <div className="px-3 sm:px-6 py-6 sm:py-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
             {/* Company Info */}
             <div className="lg:col-span-2">
@@ -158,7 +158,7 @@ const Footer = () => {
                   </span>
                 </div>
               </div>
-              <div className="flex space-x-6">
+              <div className="flex flex-wrap gap-4">
                 <Link to="/privacy-policy" className="text-gray-600 dark:text-gray-300 hover:text-glass-blue dark:hover:text-blue-400 transition-colors duration-200 text-sm">
                   Privacy Policy
                 </Link>
@@ -167,7 +167,6 @@ const Footer = () => {
                 </Link>
                 <button
                   onClick={() => {
-                    // Clear cookie consent to show banner again
                     document.cookie = 'cookie_consent=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
                     window.location.reload();
                   }}

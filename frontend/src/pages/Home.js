@@ -50,13 +50,13 @@ const Home = () => {
 
   return (
     <div className="pb-16">
-      {/* Branding Slider - positioned very close to header */}
-      <div className="mt-16 -mt-6">
+      {/* Branding Slider - flush against header */}
+      <div className="-mt-0">
         <BrandingSlider />
       </div>
 
       {/* Hero Section */}
-      <section className="px-4 mb-16 pt-4">
+      <section className="px-4 mb-8 pt-2">
         <div className="max-w-6xl mx-auto">
           <GlassCard className="p-8 md:p-12 text-center">
             <h1 className="text-3xl md:text-5xl font-bold mb-4 text-gray-800 dark:text-white">
