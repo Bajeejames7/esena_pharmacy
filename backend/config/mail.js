@@ -744,6 +744,139 @@ const appointmentRescheduleTemplate = (appointment) => {
   };
 };
 
+/**
+ * Email to patient confirming their prescription was received
+ */
+const prescriptionReceivedTemplate = (prescription) => ({
+  subject: 'Prescription Received - Esena Pharmacy',
+  html: `
+    <!DOCTYPE html><html><head><style>
+      body{font-family:Arial,sans-serif;line-height:1.6;color:#333}
+      .container{max-width:600px;margin:0 auto;padding:20px}
+      .header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:30px;text-align:center;border-radius:10px 10px 0 0}
+      .content{background:#f9f9f9;padding:30px;border-radius:0 0 10px 10px}
+      .box{background:white;padding:20px;border-left:4px solid #667eea;margin:20px 0;border-radius:4px}
+      .steps{background:white;padding:20px;border-radius:6px;margin:16px 0}
+      .step{display:flex;align-items:flex-start;margin-bottom:12px}
+      .footer{text-align:center;margin-top:20px;color:#666;font-size:12px}
+    </style></head><body>
+    <div class="container">
+      <div class="header"><h1>📋 Prescription Received</h1></div>
+      <div class="content">
+        <p>Dear ${prescription.name},</p>
+        <p>We have received your prescription and our licensed pharmacist will review it shortly.</p>
+        <div class="box">
+          <p><strong>Reference ID:</strong> #${prescription.id}</p>
+          <p><strong>Submitted:</strong> ${new Date().toLocaleString('en-KE')}</p>
+          ${prescription.message ? `<p><strong>Your note:</strong> ${prescription.message}</p>` : ''}
+        </div>
+        <div class="steps">
+          <p style="font-weight:bold;margin-top:0">What happens next?</p>
+          <p>1️⃣ &nbsp;Pharmacist reviews your prescription <em>(within 2 hours)</em></p>
+          <p>2️⃣ &nbsp;We'll call/SMS you with medicine availability and total cost</p>
+          <p>3️⃣ &nbsp;Make payment via Mpesa or card</p>
+          <p>4️⃣ &nbsp;Receive your medicines via delivery or pickup</p>
+        </div>
+        <p>For urgent queries, call us on <strong>0768103599</strong> or reply to this email.</p>
+      </div>
+      <div class="footer"><p>Esena Pharmacy - Your Trusted Healthcare Partner</p><p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p></div>
+    </div></body></html>
+  `
+});
+
+/**
+ * Email to pharmacy admin alerting them of a new prescription
+ */
+const prescriptionAdminNotificationTemplate = (prescription) => ({
+  subject: `💊 New Prescription #${prescription.id} from ${prescription.name}`,
+  html: `
+    <!DOCTYPE html><html><head><style>
+      body{font-family:Arial,sans-serif;line-height:1.6;color:#333}
+      .container{max-width:600px;margin:0 auto;padding:20px}
+      .header{background:#2c3e50;color:white;padding:20px;text-align:center;border-radius:10px 10px 0 0}
+      .content{background:#f9f9f9;padding:20px;border-radius:0 0 10px 10px}
+      .urgent{background:#e74c3c;color:white;padding:10px;border-radius:5px;text-align:center;margin-bottom:20px}
+      .label{font-weight:bold;color:#2c3e50}
+      .info-row{margin:10px 0}
+    </style></head><body>
+    <div class="container">
+      <div class="header"><h2>💊 New Prescription Submitted</h2></div>
+      <div class="content">
+        <div class="urgent"><strong>⚡ ACTION REQUIRED: Review prescription within 2 hours</strong></div>
+        <div class="info-row"><span class="label">Reference ID:</span> #${prescription.id}</div>
+        <div class="info-row"><span class="label">Patient:</span> ${prescription.name}</div>
+        <div class="info-row"><span class="label">Phone:</span> ${prescription.phone}</div>
+        <div class="info-row"><span class="label">Email:</span> ${prescription.email}</div>
+        ${prescription.message ? `<div class="info-row"><span class="label">Patient Note:</span> ${prescription.message}</div>` : ''}
+        <div class="info-row"><span class="label">File:</span> ${prescription.file_path}</div>
+        <p><strong>Next Steps:</strong></p>
+        <ol>
+          <li>Open the admin panel and view the prescription file</li>
+          <li>Check medicine availability</li>
+          <li>Call/SMS the patient: <strong>${prescription.phone}</strong></li>
+          <li>Update the prescription status in the admin panel</li>
+        </ol>
+      </div>
+    </div></body></html>
+  `
+});
+
+/**
+ * Email to patient when prescription status is updated by admin
+ */
+const prescriptionStatusUpdateTemplate = (prescription, newStatus) => {
+  const statusMessages = {
+    reviewed: {
+      heading: '🔍 Prescription Reviewed',
+      headerColor: '#3498db',
+      body: `Our pharmacist has reviewed your prescription. We will contact you shortly on <strong>${prescription.phone}</strong> with medicine availability and pricing.`
+    },
+    completed: {
+      heading: '✅ Prescription Order Completed',
+      headerColor: '#27ae60',
+      body: `Your prescription order has been completed. Thank you for choosing Esena Pharmacy. We hope you feel better soon!`
+    },
+    cancelled: {
+      heading: '❌ Prescription Cancelled',
+      headerColor: '#e74c3c',
+      body: `Unfortunately we were unable to process your prescription. Please contact us on <strong>0768103599</strong> or visit our pharmacy for assistance.`
+    }
+  };
+
+  const msg = statusMessages[newStatus] || {
+    heading: 'Prescription Update',
+    headerColor: '#667eea',
+    body: `Your prescription status has been updated to <strong>${newStatus}</strong>.`
+  };
+
+  return {
+    subject: `${msg.heading} - Esena Pharmacy`,
+    html: `
+      <!DOCTYPE html><html><head><style>
+        body{font-family:Arial,sans-serif;line-height:1.6;color:#333}
+        .container{max-width:600px;margin:0 auto;padding:20px}
+        .header{background:${msg.headerColor};color:white;padding:30px;text-align:center;border-radius:10px 10px 0 0}
+        .content{background:#f9f9f9;padding:30px;border-radius:0 0 10px 10px}
+        .box{background:white;padding:20px;border-left:4px solid ${msg.headerColor};margin:20px 0;border-radius:4px}
+        .footer{text-align:center;margin-top:20px;color:#666;font-size:12px}
+      </style></head><body>
+      <div class="container">
+        <div class="header"><h1>${msg.heading}</h1></div>
+        <div class="content">
+          <p>Dear ${prescription.name},</p>
+          <p>${msg.body}</p>
+          <div class="box">
+            <p><strong>Reference ID:</strong> #${prescription.id}</p>
+            <p><strong>Status:</strong> ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}</p>
+          </div>
+          <p>For assistance, call <strong>0768103599</strong> or email <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a>.</p>
+        </div>
+        <div class="footer"><p>Esena Pharmacy - Your Trusted Healthcare Partner</p><p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p></div>
+      </div></body></html>
+    `
+  };
+};
+
 module.exports = {
   transporter,
   sendEmail,
@@ -758,5 +891,8 @@ module.exports = {
   appointmentConfirmationUpdateTemplate,
   appointmentCompletionTemplate,
   appointmentCancellationTemplate,
-  appointmentRescheduleTemplate
+  appointmentRescheduleTemplate,
+  prescriptionReceivedTemplate,
+  prescriptionAdminNotificationTemplate,
+  prescriptionStatusUpdateTemplate
 };

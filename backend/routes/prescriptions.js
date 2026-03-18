@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { uploadPrescription, getPrescriptions, updateStatus } = require('../controllers/prescriptionController');
+const { uploadPrescription, getPrescriptions, updateStatus, createOrderFromPrescription } = require('../controllers/prescriptionController');
 const auth = require('../middleware/auth');
 
 // Ensure upload directory exists
@@ -45,5 +45,8 @@ router.get('/', auth, getPrescriptions);
 
 // Admin: update status
 router.patch('/:id/status', auth, updateStatus);
+
+// Admin: create an order from a prescription
+router.post('/:id/create-order', auth, createOrderFromPrescription);
 
 module.exports = router;

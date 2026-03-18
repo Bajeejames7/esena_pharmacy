@@ -97,20 +97,23 @@ export const ordersAPI = {
     api.put(`/orders/${id}/shipping`, { shipping_cost: shippingCost }),
   cancel: (id, reason) => api.post(`/orders/${id}/cancel`, { reason }),
   cancelByToken: (token, reason) => api.post(`/orders/cancel/${token}`, { reason }),
-  getByToken: (token) => api.get(`/orders/track/${token}`),
+  getByToken: (token) => api.get(`/orders/${token}`),
 };
 
 // Appointments API methods
 export const appointmentsAPI = {
+  create: (data) => api.post('/appointments', data),
   getAll: () => api.get('/appointments'),
   getById: (id) => api.get(`/appointments/${id}`),
+  getByToken: (token) => api.get(`/appointments/${token}`),
+  getAvailability: (date) => api.get(`/appointments/availability?date=${date}`),
   updateStatus: (id, status) => api.put(`/appointments/${id}/status`, { status }),
-  getByToken: (token) => api.get(`/appointments/track/${token}`),
+  reschedule: (id, date, time) => api.put(`/appointments/${id}/reschedule`, { date, time }),
 };
 
 // Statistics API methods
 export const statsAPI = {
-  getDashboard: () => api.get('/stats/dashboard'),
+  getDashboard: () => api.get('/admin/dashboard/stats'),
 };
 
 // Blogs API methods
@@ -140,6 +143,7 @@ export const prescriptionsAPI = {
   }),
   getAll: () => api.get('/prescriptions'),
   updateStatus: (id, status) => api.patch(`/prescriptions/${id}/status`, { status }),
+  createOrder: (id, data) => api.post(`/prescriptions/${id}/create-order`, data),
 };
 
 export default api;

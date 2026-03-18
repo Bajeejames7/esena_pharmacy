@@ -236,7 +236,7 @@ exports.createOrder = async (req, res) => {
     
     // Get order items with product names for email
     const [orderItems] = await connection.query(
-      "SELECT oi.*, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?",
+      "SELECT oi.*, COALESCE(oi.item_name, p.name) as name FROM order_items oi LEFT JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?",
       [orderId]
     );
     
@@ -307,7 +307,7 @@ exports.getOrderById = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
     const [items] = await db.query(
-      "SELECT oi.*, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?",
+      "SELECT oi.*, COALESCE(oi.item_name, p.name) as name FROM order_items oi LEFT JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?",
       [id]
     );
     res.json({ ...orders[0], items });
@@ -335,7 +335,7 @@ exports.getOrderByToken = async (req, res) => {
     
     // Get order items with product details (Req 6.3)
     const [items] = await db.query(
-      "SELECT oi.*, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?",
+      "SELECT oi.*, COALESCE(oi.item_name, p.name) as name FROM order_items oi LEFT JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?",
       [orders[0].id]
     );
     
@@ -529,7 +529,7 @@ exports.updateShippingCost = async (req, res) => {
       return res.status(400).json({ message: `Cannot update delivery fee for a ${order.status} order.` });
     }
     const [items] = await connection.query(
-      'SELECT oi.*, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?',
+      'SELECT oi.*, COALESCE(oi.item_name, p.name) as name FROM order_items oi LEFT JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?',
       [id]
     );
 

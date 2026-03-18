@@ -231,9 +231,11 @@ const cleanupOldRecords = async () => {
 };
 
 /**
- * Ensure all required tables exist (safe to run on every startup)
+ * Ensure all required tables exist and apply any pending column migrations.
+ * Safe to run on every startup — uses IF NOT EXISTS / checks before altering.
  */
 const ensureTables = async () => {
+  // --- prescriptions table ---
   await db.query(`
     CREATE TABLE IF NOT EXISTS prescriptions (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -250,6 +252,76 @@ const ensureTables = async () => {
     )
   `);
   logger.info('Table check: prescriptions OK');
+
+  // --- settings table ---
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS settings (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      setting_key VARCHAR(100) UNIQUE NOT NULL,
+      setting_value VARCHAR(255) NOT NULL,
+      description VARCHAR(255),
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )
+  `);
+  await db.query(`
+    INSERT IGNORE INTO settings (setting_key, setting_value, description) VALUES
+      ('delivery_nairobi',        '150', 'Delivery cost within Nairobi (KSH)'),
+      ('delivery_outside_nairobi','350', 'Delivery cost outside Nairobi (KSH)'),
+      ('pickup_cost',             '0',   'Cost for in-store pickup (KSH)')
+  `);
+  logger.info('Table check: settings OK');
+
+  // --- Migration: appointments.time column ---
+  try {
+    const [cols] = await db.query(
+      `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'appointments' AND COLUMN_NAME = 'time'`
+    );
+    if (cols.length === 0) {
+      await db.query(`ALTER TABLE appointments ADD COLUMN time VARCHAR(10) AFTER date`);
+      logger.info('Migration applied: appointments.time column added');
+    }
+  } catch (err) {
+    logger.warn('Migration check appointments.time failed: ' + err.message);
+  }
+
+  // --- Migration: order_items.product_id nullable ---
+  try {
+    const [cols] = await db.query(
+      `SELECT IS_NULLABLE FROM information_schema.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'order_items' AND COLUMN_NAME = 'product_id'`
+    );
+    if (cols.length > 0 && cols[0].IS_NULLABLE === 'NO') {
+      await db.query(`ALTER TABLE order_items MODIFY COLUMN product_id INT NULL`);
+      logger.info('Migration applied: order_items.product_id made nullable');
+    }
+  } catch (err) {
+    logger.warn('Migration check order_items.product_id failed: ' + err.message);
+  }
+
+  // --- Migration: order_items.item_name column ---
+  try {
+    const [cols] = await db.query(
+      `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'order_items' AND COLUMN_NAME = 'item_name'`
+    );
+    if (cols.length === 0) {
+      await db.query(`ALTER TABLE order_items ADD COLUMN item_name VARCHAR(255) NULL AFTER product_id`);
+      logger.info('Migration applied: order_items.item_name column added');
+    }
+  } catch (err) {
+    logger.warn('Migration check order_items.item_name failed: ' + err.message);
+  }
+
+  // --- Migration: appointments status ENUM (add no_show) ---
+  try {
+    await db.query(
+      `ALTER TABLE appointments MODIFY COLUMN status ENUM('pending','confirmed','completed','cancelled','no_show') DEFAULT 'pending'`
+    );
+  } catch (err) {
+    // Non-fatal — already has the value or unsupported
+    logger.warn('Migration check appointments.status enum: ' + err.message);
+  }
 };
 
 /**

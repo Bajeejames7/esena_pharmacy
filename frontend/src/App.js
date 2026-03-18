@@ -39,6 +39,7 @@ import ManageProducts from './admin/ManageProducts';
 import ManageOrders from './admin/ManageOrders';
 import ManageAppointments from './admin/ManageAppointments';
 import ManageBlogs from './admin/ManageBlogs';
+import ManagePrescriptions from './admin/ManagePrescriptions';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Page titles per route
@@ -66,6 +67,7 @@ const PAGE_TITLES = {
   '/admin/orders': 'Manage Orders',
   '/admin/appointments': 'Manage Appointments',
   '/admin/blogs': 'Manage Blogs',
+  '/admin/prescriptions': 'Prescriptions',
 };
 
 // Component to handle focus management and page title on route changes
@@ -247,6 +249,11 @@ function App() {
               <Route path="/admin/blogs" element={
                 <ProtectedRoute>
                   <ManageBlogs />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/prescriptions" element={
+                <ProtectedRoute>
+                  <ManagePrescriptions />
                 </ProtectedRoute>
               } />
             </Routes>

@@ -31,6 +31,8 @@ const ManageBlogs = () => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
 
   const isMobile = breakpoint === 'mobile';
   const isTablet = breakpoint === 'tablet';
@@ -438,8 +440,35 @@ const ManageBlogs = () => {
 
       <GlassCard className="p-6">
         <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">All Blog Posts</h2>
+        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+          <div className="flex-1">
+            <GlassInput
+              placeholder="Search by title or author..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="sm:w-44">
+            <GlassSelect
+              value={statusFilter}
+              onChange={e => setStatusFilter(e.target.value)}
+              options={[
+                { value: '', label: 'All Statuses' },
+                { value: 'published', label: 'Published' },
+                { value: 'draft', label: 'Draft' },
+              ]}
+            />
+          </div>
+        </div>
         <DataTable
-          data={blogs}
+          data={blogs.filter(b => {
+            const term = searchTerm.toLowerCase();
+            const matchesSearch = !term ||
+              (b.title || '').toLowerCase().includes(term) ||
+              (b.author || '').toLowerCase().includes(term);
+            const matchesStatus = !statusFilter || b.status === statusFilter;
+            return matchesSearch && matchesStatus;
+          })}
           columns={columns}
           emptyMessage="No blog posts found"
         />
