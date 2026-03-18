@@ -32,14 +32,33 @@ CREATE TABLE orders (
   phone VARCHAR(20),
   delivery_address TEXT,
   notes TEXT,
+  delivery_type ENUM('delivery','pickup') DEFAULT 'delivery',
+  delivery_zone ENUM('nairobi','outside_nairobi','pickup') DEFAULT 'nairobi',
+  shipping_cost DECIMAL(10,2) DEFAULT 0.00,
   total DECIMAL(10,2),
   token VARCHAR(50) UNIQUE NOT NULL,
-  status ENUM('pending','payment_requested','paid','dispatched','completed') DEFAULT 'pending',
+  status ENUM('pending','payment_requested','paid','dispatched','ready_for_pickup','completed','cancelled') DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_token (token),
   INDEX idx_email (email),
   INDEX idx_status (status)
 );
+
+-- Delivery Settings (admin-configurable)
+CREATE TABLE settings (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  setting_key VARCHAR(100) UNIQUE NOT NULL,
+  setting_value VARCHAR(255) NOT NULL,
+  description VARCHAR(255),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Default delivery prices
+INSERT INTO settings (setting_key, setting_value, description) VALUES
+('delivery_nairobi', '150', 'Delivery cost within Nairobi (KSH)'),
+('delivery_outside_nairobi', '350', 'Delivery cost outside Nairobi (KSH)'),
+('pickup_cost', '0', 'Cost for in-store pickup (KSH)');
 
 -- Order Items
 CREATE TABLE order_items (
@@ -59,11 +78,13 @@ CREATE TABLE appointments (
   email VARCHAR(255),
   phone VARCHAR(20),
   service ENUM('Dermatology','LabTest','Pharmacist') NOT NULL,
-  date DATE NOT NULL,
+  date DATETIME NOT NULL,
+  time VARCHAR(10),
   message TEXT,
   token VARCHAR(50) UNIQUE NOT NULL,
-  status ENUM('pending','confirmed','completed') DEFAULT 'pending',
+  status ENUM('pending','confirmed','completed','cancelled') DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_token (token),
   INDEX idx_email (email),
   INDEX idx_status (status)

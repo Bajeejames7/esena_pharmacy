@@ -5,17 +5,19 @@ const {
   createAppointment,
   getAppointmentByToken,
   getAllAppointments,
-  updateAppointmentStatus
+  updateAppointmentStatus,
+  rescheduleAppointment
 } = require("../controllers/appointmentController");
 
 // Public routes
-router.post("/", createAppointment); // POST /api/appointments (Req 8.6)
+router.post("/", createAppointment);
 
 // Protected routes (require JWT authentication)
-router.get("/", auth, getAllAppointments); // GET /api/appointments (admin only)
-router.put("/:id/status", auth, updateAppointmentStatus); // PUT /api/appointments/:id/status (admin only)
+router.get("/", auth, getAllAppointments);
+router.put("/:id/status", auth, updateAppointmentStatus);
+router.put("/:id/reschedule", auth, rescheduleAppointment);
 
 // Public routes (must come after protected routes to avoid conflicts)
-router.get("/:token", getAppointmentByToken); // GET /api/appointments/:token (Req 9.1)
+router.get("/:token", getAppointmentByToken);
 
 module.exports = router;

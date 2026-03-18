@@ -43,7 +43,22 @@ const orderConfirmationTemplate = (order, items = []) => {
       <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">KSH ${(item.price * item.quantity).toFixed(2)}</td>
     </tr>`
   ).join('');
-  
+
+  const subtotal = order.subtotal != null ? parseFloat(order.subtotal) : (items.reduce((s, i) => s + i.price * i.quantity, 0));
+  const shippingCost = parseFloat(order.shipping_cost) || 0;
+  const deliveryZone = order.delivery_zone || 'nairobi';
+  const deliveryType = order.delivery_type || 'delivery';
+
+  const deliveryLabel = deliveryType === 'pickup'
+    ? 'In-store Pickup'
+    : deliveryZone === 'outside_nairobi'
+      ? 'Delivery (Outside Nairobi)'
+      : 'Delivery (Within Nairobi)';
+
+  const deliveryAddress = deliveryType === 'pickup'
+    ? 'Esena Pharmacy, Outering Road, Behind Eastmart Supermarket, Ruaraka, Nairobi'
+    : order.delivery_address;
+
   return {
     subject: "Order Confirmation - Esena Pharmacy",
     html: `
@@ -62,6 +77,7 @@ const orderConfirmationTemplate = (order, items = []) => {
           .items-table td { padding: 10px; border-bottom: 1px solid #eee; }
           .total-row { font-weight: bold; background: #f8f9fa; }
           .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+          .notice { background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px 16px; margin: 16px 0; font-size: 13px; border-radius: 4px; }
           .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
         </style>
       </head>
@@ -86,24 +102,40 @@ const orderConfirmationTemplate = (order, items = []) => {
                 <thead>
                   <tr>
                     <th>Product</th>
-                    <th style="text-align: center;">Quantity</th>
+                    <th style="text-align: center;">Qty</th>
                     <th style="text-align: right;">Subtotal</th>
                   </tr>
                 </thead>
                 <tbody>
                   ${itemsList}
+                  <tr>
+                    <td colspan="2" style="text-align: right; padding: 10px; color: #555;">Products Subtotal:</td>
+                    <td style="text-align: right; padding: 10px;">KSH ${subtotal.toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" style="text-align: right; padding: 10px; color: #555;">${deliveryLabel}:</td>
+                    <td style="text-align: right; padding: 10px;">${shippingCost === 0 ? 'FREE' : 'KSH ' + shippingCost.toFixed(2)}</td>
+                  </tr>
                   <tr class="total-row">
-                    <td colspan="2" style="text-align: right; padding: 15px;">Total:</td>
-                    <td style="text-align: right; padding: 15px;">KSH ${order.total.toFixed(2)}</td>
+                    <td colspan="2" style="text-align: right; padding: 15px;">Estimated Total:</td>
+                    <td style="text-align: right; padding: 15px;">KSH ${(subtotal + shippingCost).toFixed(2)}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
-            ` : `<p><strong>Order Total:</strong> KSH ${order.total.toFixed(2)}</p>`}
+            ` : `<p><strong>Estimated Total:</strong> KSH ${order.total.toFixed(2)}</p>`}
+
+            <div class="notice">
+              ⚠️ <strong>Note on Delivery Cost:</strong> The delivery fee shown is an estimate based on your selected zone (<em>${deliveryLabel}</em>). The final delivery cost may be adjusted by our team depending on your exact location. We will notify you of any changes before dispatch.
+            </div>
             
-            <p><strong>Delivery Address:</strong> ${order.delivery_address}</p>
+            <p><strong>${deliveryType === 'pickup' ? 'Pickup Location' : 'Delivery Address'}:</strong> ${deliveryAddress}</p>
             
             <a href="${process.env.FRONTEND_URL}/track/${order.token}" class="button">Track Your Order</a>
+            
+            <div style="background:#fff3cd;border-left:4px solid #ffc107;padding:12px 16px;margin:16px 0;font-size:13px;border-radius:4px;">
+              🔒 <strong>Privacy Notice:</strong> Your tracking token is personal and gives access to your order details. Please keep it secure and do not share it with anyone.
+            </div>
             
             <p>For assistance, contact us at <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a> or call 0768103599.</p>
           </div>
@@ -126,6 +158,14 @@ const orderAdminNotificationTemplate = (order, items) => {
   const itemsList = items.map(item => 
     `<li>${item.name || 'Product'} - Qty: ${item.quantity} - KSH ${(item.price * item.quantity).toFixed(2)}</li>`
   ).join('');
+
+  const subtotal = order.subtotal != null ? parseFloat(order.subtotal) : (items.reduce((s, i) => s + i.price * i.quantity, 0));
+  const shippingCost = parseFloat(order.shipping_cost) || 0;
+  const deliveryType = order.delivery_type || 'delivery';
+  const deliveryZone = order.delivery_zone || 'nairobi';
+  const deliveryLabel = deliveryType === 'pickup'
+    ? 'In-store Pickup'
+    : deliveryZone === 'outside_nairobi' ? 'Outside Nairobi Delivery' : 'Nairobi Delivery';
   
   return {
     subject: `🛒 New Order #${order.token} from ${order.customer_name}`,
@@ -141,6 +181,8 @@ const orderAdminNotificationTemplate = (order, items) => {
           .info-row { margin: 10px 0; }
           .label { font-weight: bold; color: #2c3e50; }
           .urgent { background: #e74c3c; color: white; padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 20px; }
+          .notice { background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px 14px; margin: 12px 0; font-size: 13px; border-radius: 4px; }
+          .delivery-badge { display: inline-block; background: #667eea; color: white; padding: 3px 10px; border-radius: 12px; font-size: 12px; }
         </style>
       </head>
       <body>
@@ -157,19 +199,30 @@ const orderAdminNotificationTemplate = (order, items) => {
             <div class="info-row"><span class="label">Customer:</span> ${order.customer_name}</div>
             <div class="info-row"><span class="label">Email:</span> ${order.email}</div>
             <div class="info-row"><span class="label">Phone:</span> ${order.phone}</div>
-            <div class="info-row"><span class="label">Delivery Address:</span> ${order.delivery_address}</div>
-            <div class="info-row"><span class="label">Total:</span> <strong>KSH ${order.total.toFixed(2)}</strong></div>
-            ${order.notes ? `<div class="info-row"><span class="label">Notes:</span> ${order.notes}</div>` : ''}
+            <div class="info-row">
+              <span class="label">Delivery Type:</span> 
+              <span class="delivery-badge">${deliveryLabel}</span>
+            </div>
+            <div class="info-row"><span class="label">${deliveryType === 'pickup' ? 'Pickup Location' : 'Delivery Address'}:</span> ${deliveryType === 'pickup' ? 'In-store (Esena Pharmacy, Ruaraka)' : order.delivery_address}</div>
+            ${order.notes ? `<div class="info-row"><span class="label">Payment Method:</span> ${order.notes}</div>` : ''}
             
             <h3>📦 Order Items:</h3>
             <ul>${itemsList}</ul>
             
+            <div class="info-row"><span class="label">Products Subtotal:</span> KSH ${subtotal.toFixed(2)}</div>
+            <div class="info-row"><span class="label">${deliveryLabel}:</span> ${shippingCost === 0 ? 'FREE' : 'KSH ' + shippingCost.toFixed(2)}</div>
+            <div class="info-row"><span class="label">Estimated Total:</span> <strong>KSH ${(subtotal + shippingCost).toFixed(2)}</strong></div>
+            
+            <div class="notice">
+              ⚠️ <strong>Delivery cost may need adjustment</strong> — verify the customer's exact location before confirming the final delivery fee. Update the order if the cost changes and notify the customer.
+            </div>
+            
             <p><strong>Next Steps:</strong></p>
             <ol>
               <li>Verify product availability</li>
+              <li>Confirm delivery location and adjust shipping cost if needed</li>
               <li>Contact customer if needed: ${order.phone}</li>
-              <li>Process payment if required</li>
-              <li>Prepare order for dispatch</li>
+              <li>Process payment and update order status</li>
             </ol>
           </div>
         </div>
@@ -508,6 +561,134 @@ const appointmentCompletionTemplate = (appointment) => {
   };
 };
 
+/**
+ * Email template for payment confirmed notification
+ */
+const paymentConfirmedTemplate = (order) => {
+  return {
+    subject: "Payment Confirmed - Esena Pharmacy",
+    html: `
+      <!DOCTYPE html><html><head><style>
+        body{font-family:Arial,sans-serif;line-height:1.6;color:#333}
+        .container{max-width:600px;margin:0 auto;padding:20px}
+        .header{background:#27ae60;color:white;padding:30px;text-align:center;border-radius:10px 10px 0 0}
+        .content{background:#f9f9f9;padding:30px;border-radius:0 0 10px 10px}
+        .box{background:white;padding:20px;border-left:4px solid #27ae60;margin:20px 0;border-radius:4px}
+        .button{display:inline-block;background:#27ae60;color:white;padding:12px 30px;text-decoration:none;border-radius:5px;margin:20px 0}
+        .footer{text-align:center;margin-top:20px;color:#666;font-size:12px}
+      </style></head><body>
+      <div class="container">
+        <div class="header"><h1>✅ Payment Confirmed!</h1></div>
+        <div class="content">
+          <p>Dear ${order.customer_name},</p>
+          <p>We have received your payment. Your order is now being prepared for dispatch.</p>
+          <div class="box">
+            <p><strong>Order Token:</strong> ${order.token}</p>
+            <p><strong>Amount Paid:</strong> KSH ${parseFloat(order.total).toFixed(2)}</p>
+          </div>
+          <p>We'll notify you once your order is on its way.</p>
+          <a href="${process.env.FRONTEND_URL || 'https://esena.co.ke'}/track/${order.token}" class="button">Track Your Order</a>
+          <p>For assistance, contact us at <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a> or call 0768103599.</p>
+        </div>
+        <div class="footer"><p>Esena Pharmacy - Your Trusted Healthcare Partner</p><p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p></div>
+      </div></body></html>
+    `
+  };
+};
+
+/**
+ * Email template for ready for pickup notification
+ */
+const readyForPickupTemplate = (order) => {
+  return {
+    subject: "Your Order is Ready for Pickup - Esena Pharmacy",
+    html: `
+      <!DOCTYPE html><html><head><style>
+        body{font-family:Arial,sans-serif;line-height:1.6;color:#333}
+        .container{max-width:600px;margin:0 auto;padding:20px}
+        .header{background:#667eea;color:white;padding:30px;text-align:center;border-radius:10px 10px 0 0}
+        .content{background:#f9f9f9;padding:30px;border-radius:0 0 10px 10px}
+        .box{background:white;padding:20px;border-left:4px solid #667eea;margin:20px 0;border-radius:4px}
+        .address{background:#e8f4fd;padding:16px;border-radius:6px;margin:16px 0}
+        .footer{text-align:center;margin-top:20px;color:#666;font-size:12px}
+      </style></head><body>
+      <div class="container">
+        <div class="header"><h1>🏪 Ready for Pickup!</h1></div>
+        <div class="content">
+          <p>Dear ${order.customer_name},</p>
+          <p>Your order is ready and waiting for you at our pharmacy.</p>
+          <div class="box">
+            <p><strong>Order Token:</strong> ${order.token}</p>
+            <p><strong>Total:</strong> KSH ${parseFloat(order.total).toFixed(2)}</p>
+          </div>
+          <div class="address">
+            <strong>📍 Pickup Location:</strong><br>
+            Esena Pharmacy<br>
+            OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI<br>
+            📞 0768103599
+          </div>
+          <p>Please bring this email or your tracking token when you come to collect your order.</p>
+          <p>For assistance, contact us at <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a> or call 0768103599.</p>
+        </div>
+        <div class="footer"><p>Esena Pharmacy - Your Trusted Healthcare Partner</p><p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p></div>
+      </div></body></html>
+    `
+  };
+};
+
+/**
+ * Email template for appointment reschedule notification to customer
+ */
+const appointmentRescheduleTemplate = (appointment) => {
+  return {
+    subject: "Appointment Rescheduled - Esena Pharmacy",
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+          .appointment-box { background: white; padding: 20px; border-left: 4px solid #f39c12; margin: 20px 0; border-radius: 4px; }
+          .button { display: inline-block; background: #f39c12; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>📅 Appointment Rescheduled</h1>
+          </div>
+          <div class="content">
+            <p>Dear ${appointment.name},</p>
+            <p>Your appointment has been rescheduled by our team. Please take note of your new date and time below.</p>
+            
+            <div class="appointment-box">
+              <p><strong>Service:</strong> ${appointment.service}</p>
+              <p><strong>New Date:</strong> ${new Date(appointment.date).toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <p><strong>New Time:</strong> ${appointment.time || new Date(appointment.date).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}</p>
+              <p><strong>Tracking Token:</strong><br>
+              <code style="font-size: 16px; color: #f39c12;">${appointment.token}</code></p>
+            </div>
+            
+            <a href="${process.env.FRONTEND_URL}/track-appointment/${appointment.token}" class="button">View Appointment Details</a>
+            
+            <p>If this new time doesn't work for you, please contact us as soon as possible.</p>
+            <p>📞 Call: 0768103599 | ✉️ Email: <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a></p>
+          </div>
+          <div class="footer">
+            <p>Esena Pharmacy - Your Trusted Healthcare Partner</p>
+            <p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  };
+};
+
 module.exports = {
   transporter,
   sendEmail,
@@ -515,8 +696,11 @@ module.exports = {
   orderAdminNotificationTemplate,
   paymentRequestTemplate,
   dispatchNotificationTemplate,
+  paymentConfirmedTemplate,
+  readyForPickupTemplate,
   appointmentConfirmationTemplate,
   appointmentAdminNotificationTemplate,
   appointmentConfirmationUpdateTemplate,
-  appointmentCompletionTemplate
+  appointmentCompletionTemplate,
+  appointmentRescheduleTemplate
 };

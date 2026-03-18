@@ -4,19 +4,162 @@ const {
   orderConfirmationTemplate, 
   orderAdminNotificationTemplate,
   paymentRequestTemplate,
-  dispatchNotificationTemplate
+  dispatchNotificationTemplate,
+  paymentConfirmedTemplate,
+  readyForPickupTemplate
 } = require("../config/mail");
 const { generateUniqueToken } = require("../utils/tokenGenerator");
 
 /**
- * Create a new order with validation and transaction handling
- * Implements Requirements 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 14.1, 14.2, 14.3, 14.9, 14.10
+ * Cancel an order - restores stock, sends cancellation email
+ * Can be called by customer (via token) or admin (via id + auth)
  */
+// Shared helper: build cancellation emails
+const buildCancellationEmails = (order, reason, cancelledByAdmin) => {
+  const frontendUrl = process.env.FRONTEND_URL || 'https://esena.co.ke';
+  const shopUrl = `${frontendUrl}/shop`;
+
+  const customerHtml = `
+    <!DOCTYPE html><html><head><style>
+      body{font-family:Arial,sans-serif;line-height:1.6;color:#333}
+      .container{max-width:600px;margin:0 auto;padding:20px}
+      .header{background:#e74c3c;color:white;padding:30px;text-align:center;border-radius:10px 10px 0 0}
+      .content{background:#f9f9f9;padding:30px;border-radius:0 0 10px 10px}
+      .button{display:inline-block;background:#667eea;color:white;padding:12px 30px;text-decoration:none;border-radius:5px;margin:20px 0}
+      .notice{background:#fff3cd;border-left:4px solid #ffc107;padding:12px 16px;margin:16px 0;font-size:13px}
+      .footer{text-align:center;margin-top:20px;color:#666;font-size:12px}
+    </style></head><body>
+    <div class="container">
+      <div class="header"><h1>❌ Order Cancelled</h1></div>
+      <div class="content">
+        <p>Dear ${order.customer_name},</p>
+        <p>Your order <strong>#${order.id}</strong> has been ${cancelledByAdmin ? 'cancelled by our team' : 'cancelled as requested'}.</p>
+        ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
+        <p>Your items have been restocked and are available for purchase again.</p>
+        <p>Whenever you're ready, you're welcome to shop with us again — we'd love to serve you!</p>
+        <a href="${shopUrl}" class="button">Resume Shopping</a>
+        <div class="notice">
+          🔒 <strong>Privacy reminder:</strong> Your order tracking token is personal. Please keep it secure and do not share it with anyone.
+        </div>
+        <p>For assistance, contact us at <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a> or call 0768103599.</p>
+      </div>
+      <div class="footer"><p>Esena Pharmacy - Your Trusted Healthcare Partner</p><p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p></div>
+    </div></body></html>`;
+
+  const adminHtml = `
+    <!DOCTYPE html><html><head><style>
+      body{font-family:Arial,sans-serif;line-height:1.6;color:#333}
+      .container{max-width:600px;margin:0 auto;padding:20px}
+      .header{background:#2c3e50;color:white;padding:20px;text-align:center;border-radius:10px 10px 0 0}
+      .content{background:#f9f9f9;padding:20px;border-radius:0 0 10px 10px}
+      .label{font-weight:bold;color:#2c3e50}
+      .info-row{margin:8px 0}
+      .badge{background:#e74c3c;color:white;padding:4px 10px;border-radius:4px;font-size:13px}
+    </style></head><body>
+    <div class="container">
+      <div class="header"><h2>🚫 Order Cancelled</h2></div>
+      <div class="content">
+        <p><span class="badge">CANCELLED</span></p>
+        <div class="info-row"><span class="label">Order ID:</span> #${order.id}</div>
+        <div class="info-row"><span class="label">Token:</span> ${order.token}</div>
+        <div class="info-row"><span class="label">Customer:</span> ${order.customer_name}</div>
+        <div class="info-row"><span class="label">Email:</span> ${order.email}</div>
+        <div class="info-row"><span class="label">Phone:</span> ${order.phone}</div>
+        <div class="info-row"><span class="label">Total:</span> KSH ${parseFloat(order.total).toFixed(2)}</div>
+        <div class="info-row"><span class="label">Cancelled by:</span> ${cancelledByAdmin ? 'Admin' : 'Customer'}</div>
+        ${reason ? `<div class="info-row"><span class="label">Reason:</span> ${reason}</div>` : ''}
+        <p style="margin-top:16px;color:#666;font-size:13px">Stock has been automatically restored for all items in this order.</p>
+      </div>
+    </div></body></html>`;
+
+  return { customerHtml, adminHtml };
+};
+
+exports.cancelOrder = async (req, res) => {
+  const connection = await db.getConnection();
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    const [orders] = await connection.query("SELECT * FROM orders WHERE id = ?", [id]);
+    if (orders.length === 0) return res.status(404).json({ message: "Order not found" });
+
+    const order = orders[0];
+    if (!['pending', 'payment_requested'].includes(order.status)) {
+      return res.status(400).json({ message: `Cannot cancel an order with status '${order.status}'.` });
+    }
+
+    await connection.beginTransaction();
+    const [items] = await connection.query("SELECT * FROM order_items WHERE order_id = ?", [id]);
+    for (const item of items) {
+      await connection.query("UPDATE products SET stock = stock + ? WHERE id = ?", [item.quantity, item.product_id]);
+    }
+    await connection.query("UPDATE orders SET status = 'cancelled' WHERE id = ?", [id]);
+    await connection.commit();
+
+    const { customerHtml, adminHtml } = buildCancellationEmails(order, reason, true);
+    try {
+      await sendEmail({ to: order.email, subject: "Your Order Has Been Cancelled - Esena Pharmacy", html: customerHtml });
+      await sendEmail({ to: process.env.EMAIL_USER, subject: `🚫 Order #${order.id} Cancelled by Admin`, html: adminHtml });
+    } catch (emailError) {
+      console.error("Cancellation email failed:", emailError);
+    }
+
+    res.json({ message: "Order cancelled successfully" });
+  } catch (error) {
+    await connection.rollback();
+    console.error("Cancel order error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  } finally {
+    connection.release();
+  }
+};
+
+exports.cancelOrderByToken = async (req, res) => {
+  const connection = await db.getConnection();
+  try {
+    const { token } = req.params;
+    const { reason } = req.body;
+
+    const [orders] = await connection.query("SELECT * FROM orders WHERE token = ?", [token]);
+    if (orders.length === 0) return res.status(404).json({ message: "Order not found" });
+
+    const order = orders[0];
+    if (!['pending', 'payment_requested'].includes(order.status)) {
+      return res.status(400).json({ message: "This order cannot be cancelled. Only pending or payment_requested orders can be cancelled." });
+    }
+
+    await connection.beginTransaction();
+    const [items] = await connection.query("SELECT * FROM order_items WHERE order_id = ?", [order.id]);
+    for (const item of items) {
+      await connection.query("UPDATE products SET stock = stock + ? WHERE id = ?", [item.quantity, item.product_id]);
+    }
+    await connection.query("UPDATE orders SET status = 'cancelled' WHERE id = ?", [order.id]);
+    await connection.commit();
+
+    const { customerHtml, adminHtml } = buildCancellationEmails(order, reason || 'Cancelled by customer', false);
+    try {
+      await sendEmail({ to: order.email, subject: "Your Order Has Been Cancelled - Esena Pharmacy", html: customerHtml });
+      await sendEmail({ to: process.env.EMAIL_USER, subject: `🚫 Order #${order.id} Cancelled by Customer`, html: adminHtml });
+    } catch (emailError) {
+      console.error("Cancellation email failed:", emailError);
+    }
+
+    res.json({ message: "Order cancelled successfully" });
+  } catch (error) {
+    await connection.rollback();
+    console.error("Cancel order by token error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  } finally {
+    connection.release();
+  }
+};
+
 exports.createOrder = async (req, res) => {
   const connection = await db.getConnection();
   
   try {
-    const { customer_name, email, phone, delivery_address, notes, items } = req.body;
+    const { customer_name, email, phone, delivery_address, notes, delivery_type, delivery_zone, shipping_cost, items } = req.body;
     
     // Validate required fields (Req 5.2, 5.3)
     if (!customer_name || !email || !phone || !delivery_address) {
@@ -55,8 +198,11 @@ exports.createOrder = async (req, res) => {
       }
     }
     
-    // Calculate order total from cart items (Req 5.4)
-    const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    // Calculate subtotal from cart items
+    const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const resolvedShipping = parseFloat(shipping_cost) || 0;
+    const total = subtotal + resolvedShipping;
+    const resolvedZone = delivery_zone || (delivery_type === 'pickup' ? 'pickup' : 'nairobi');
     
     // Generate unique token for order tracking (Req 5.5)
     const token = await generateUniqueToken();
@@ -66,17 +212,22 @@ exports.createOrder = async (req, res) => {
     
     // Insert order into database (Req 5.6)
     const [orderResult] = await connection.query(
-      "INSERT INTO orders (customer_name, email, phone, delivery_address, notes, total, token, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')",
-      [customer_name, email, phone, delivery_address, notes, total, token]
+      "INSERT INTO orders (customer_name, email, phone, delivery_address, notes, delivery_type, delivery_zone, shipping_cost, total, token, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')",
+      [customer_name, email, phone, delivery_address, notes, delivery_type || 'delivery', resolvedZone, resolvedShipping, total, token]
     );
     
     const orderId = orderResult.insertId;
     
-    // Insert order items in database transaction (Req 5.7)
+    // Insert order items and decrement stock in database transaction (Req 5.7)
     for (const item of items) {
       await connection.query(
         "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)",
         [orderId, item.product_id, item.quantity, item.price]
+      );
+      // Decrement product stock
+      await connection.query(
+        "UPDATE products SET stock = GREATEST(stock - ?, 0) WHERE id = ?",
+        [item.quantity, item.product_id]
       );
     }
     
@@ -96,6 +247,10 @@ exports.createOrder = async (req, res) => {
       phone,
       delivery_address,
       notes,
+      delivery_type: delivery_type || 'delivery',
+      delivery_zone: resolvedZone,
+      shipping_cost: resolvedShipping,
+      subtotal,
       total,
       token
     };
@@ -141,6 +296,24 @@ exports.createOrder = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   } finally {
     connection.release();
+  }
+};
+
+exports.getOrderById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [orders] = await db.query("SELECT * FROM orders WHERE id = ?", [id]);
+    if (orders.length === 0) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+    const [items] = await db.query(
+      "SELECT oi.*, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?",
+      [id]
+    );
+    res.json({ ...orders[0], items });
+  } catch (error) {
+    console.error("Get order by ID error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -210,7 +383,7 @@ exports.updateOrderStatus = async (req, res) => {
     const { id } = req.params;
     
     // Validate status value
-    const validStatuses = ['pending', 'payment_requested', 'paid', 'dispatched', 'completed'];
+    const validStatuses = ['pending', 'payment_requested', 'paid', 'dispatched', 'ready_for_pickup', 'completed', 'cancelled'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ 
         message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` 
@@ -227,12 +400,13 @@ exports.updateOrderStatus = async (req, res) => {
     const currentStatus = orders[0].status;
     const order = orders[0];
     
-    // Validate status transition follows workflow rules (Req 7.1, 7.2, 7.3, 7.4, 7.5)
+    // Validate status transition follows workflow rules
     const validTransitions = {
       'pending': ['payment_requested', 'completed'],
       'payment_requested': ['paid', 'completed'],
-      'paid': ['dispatched', 'completed'],
+      'paid': order.delivery_type === 'pickup' ? ['ready_for_pickup', 'completed'] : ['dispatched', 'completed'],
       'dispatched': ['completed'],
+      'ready_for_pickup': ['completed'],
       'completed': []
     };
     
@@ -252,6 +426,24 @@ exports.updateOrderStatus = async (req, res) => {
       if (status === 'payment_requested') {
         // Send payment request email (Req 7.7, 14.7)
         const template = paymentRequestTemplate(order);
+        const emailSent = await sendEmail({
+          to: order.email,
+          subject: template.subject,
+          html: template.html
+        });
+        emailWarning = !emailSent;
+      } else if (status === 'paid') {
+        // Send payment confirmed email
+        const template = paymentConfirmedTemplate(order);
+        const emailSent = await sendEmail({
+          to: order.email,
+          subject: template.subject,
+          html: template.html
+        });
+        emailWarning = !emailSent;
+      } else if (status === 'ready_for_pickup') {
+        // Send ready for pickup email
+        const template = readyForPickupTemplate(order);
         const emailSent = await sendEmail({
           to: order.email,
           subject: template.subject,
@@ -313,5 +505,79 @@ exports.updateOrderStatus = async (req, res) => {
   } catch (error) {
     console.error("Order status update error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+exports.updateShippingCost = async (req, res) => {
+  const connection = await db.getConnection();
+  try {
+    const { id } = req.params;
+    const { shipping_cost } = req.body;
+
+    if (shipping_cost === undefined || isNaN(parseFloat(shipping_cost)) || parseFloat(shipping_cost) < 0) {
+      return res.status(400).json({ message: 'Invalid shipping cost' });
+    }
+
+    const newShipping = parseFloat(shipping_cost);
+
+    const [orders] = await connection.query('SELECT * FROM orders WHERE id = ?', [id]);
+    if (orders.length === 0) return res.status(404).json({ message: 'Order not found' });
+
+    const order = orders[0];
+    const [items] = await connection.query(
+      'SELECT oi.*, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?',
+      [id]
+    );
+
+    const subtotal = items.reduce((sum, item) => sum + parseFloat(item.price) * item.quantity, 0);
+    const newTotal = subtotal + newShipping;
+
+    await connection.query(
+      'UPDATE orders SET shipping_cost = ?, total = ? WHERE id = ?',
+      [newShipping, newTotal, id]
+    );
+
+    // Email customer about updated delivery fee
+    try {
+      const frontendUrl = process.env.FRONTEND_URL || 'https://esena.co.ke';
+      const html = <!DOCTYPE html><html><head><style>
+        body{font-family:Arial,sans-serif;line-height:1.6;color:#333}
+        .container{max-width:600px;margin:0 auto;padding:20px}
+        .header{background:#667eea;color:white;padding:30px;text-align:center;border-radius:10px 10px 0 0}
+        .content{background:#f9f9f9;padding:30px;border-radius:0 0 10px 10px}
+        .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee}
+        .total{font-weight:bold;font-size:16px;padding-top:10px}
+        .button{display:inline-block;background:#667eea;color:white;padding:12px 30px;text-decoration:none;border-radius:5px;margin:20px 0}
+        .notice{background:#fff3cd;border-left:4px solid #ffc107;padding:12px 16px;margin:16px 0;font-size:13px}
+      </style></head><body>
+      <div class="container">
+        <div class="header"><h1>?? Delivery Fee Updated</h1></div>
+        <div class="content">
+          <p>Dear ,</p>
+          <p>The delivery fee for your order <strong>#</strong> has been updated by our team based on your exact location.</p>
+          <div class="row"><span>Products Subtotal</span><span>KSH </span></div>
+          <div class="row"><span>Delivery Fee</span><span></span></div>
+          <div class="row total"><span>New Total</span><span>KSH </span></div>
+          <div class="notice">?? Your order is being processed. You will be notified when payment is requested.</div>
+          <a href="/track/" class="button">Track Your Order</a>
+          <p>For questions, contact us at <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a> or call 0768103599.</p>
+        </div>
+      </div></body></html>;
+
+      await sendEmail({
+        to: order.email,
+        subject: Delivery Fee Updated - Order # - Esena Pharmacy,
+        html
+      });
+    } catch (emailErr) {
+      console.error('Shipping update email failed:', emailErr);
+    }
+
+    res.json({ message: 'Shipping cost updated', shipping_cost: newShipping, total: newTotal });
+  } catch (error) {
+    console.error('Update shipping cost error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  } finally {
+    connection.release();
   }
 };

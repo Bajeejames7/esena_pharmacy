@@ -27,6 +27,7 @@ import OrderSuccess from './pages/OrderSuccess';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import TrackOrder from './pages/TrackOrder';
+import TrackAppointment from './pages/TrackAppointment';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfUse from './pages/TermsOfUse';
 import UploadPrescription from './pages/UploadPrescription';
@@ -213,6 +214,8 @@ function App() {
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/track/:token" element={<TrackOrder />} />
               <Route path="/track-order" element={<TrackOrder />} />
+              <Route path="/track-appointment/:token" element={<TrackAppointment />} />
+              <Route path="/track-appointment" element={<TrackAppointment />} />
               <Route path="/delivery" element={<Delivery />} />
               <Route path="/upload-prescription" element={<UploadPrescription />} />
               <Route path="/whatsapp-order" element={<WhatsAppOrder />} />

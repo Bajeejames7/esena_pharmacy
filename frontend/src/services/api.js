@@ -1,4 +1,4 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 
 /**
  * API service with authentication interceptors
@@ -91,8 +91,12 @@ export const productsAPI = {
 export const ordersAPI = {
   create: (data) => api.post('/orders', data),
   getAll: () => api.get('/orders'),
-  getById: (id) => api.get(`/orders/${id}`),
+  getById: (id) => api.get(`/orders/${id}/details`),
   updateStatus: (id, status) => api.put(`/orders/${id}/status`, { status }),
+  updateShipping: (id, shippingCost) =>
+    api.put("/orders/${id}/shipping", { shipping_cost: shippingCost }),
+  cancel: (id, reason) => api.post(`/orders/${id}/cancel`, { reason }),
+  cancelByToken: (token, reason) => api.post(`/orders/cancel/${token}`, { reason }),
   getByToken: (token) => api.get(`/orders/track/${token}`),
 };
 

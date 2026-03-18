@@ -27,11 +27,9 @@ const BookAppointment = () => {
 
   const services = [
     { value: '', label: 'Select a service' },
-    { value: 'dermatology', label: 'Dermatology Consultation' },
-    { value: 'labtest', label: 'Lab Test' },
-    { value: 'pharmacist', label: 'Pharmacist Consultation' },
-    { value: 'vaccination', label: 'Vaccination' },
-    { value: 'health-screening', label: 'Health Screening' }
+    { value: 'Dermatology', label: 'Dermatology Consultation' },
+    { value: 'LabTest', label: 'Lab Test' },
+    { value: 'Pharmacist', label: 'Pharmacist Consultation' }
   ];
 
   const timeSlots = [
@@ -90,26 +88,34 @@ const BookAppointment = () => {
     }
 
     try {
-      // TODO: Implement actual appointment booking API call
-      console.log('Appointment booking:', formData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        service: formData.service,
+        date: formData.time ? `${formData.date}T${formData.time}:00` : formData.date,
+        message: formData.message
+      };
+
+      const response = await fetch(`${apiUrl}/appointments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to book appointment');
+      }
       
       setSubmitSuccess(true);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        service: '',
-        date: '',
-        time: '',
-        message: ''
-      });
+      setFormData({ name: '', email: '', phone: '', service: '', date: '', time: '', message: '' });
       setErrors({});
     } catch (error) {
       console.error('Appointment booking error:', error);
-      setErrors({ submit: 'Failed to book appointment. Please try again.' });
+      setErrors({ submit: error.message || 'Failed to book appointment. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }

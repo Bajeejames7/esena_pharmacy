@@ -4,7 +4,8 @@ const {
   appointmentConfirmationTemplate, 
   appointmentAdminNotificationTemplate,
   appointmentConfirmationUpdateTemplate,
-  appointmentCompletionTemplate
+  appointmentCompletionTemplate,
+  appointmentRescheduleTemplate
 } = require("../config/mail");
 const { generateUniqueToken } = require("../utils/tokenGenerator");
 
@@ -180,6 +181,50 @@ exports.getAllAppointments = async (req, res) => {
     // Return in the format expected by the frontend
     res.json({ appointments });
   } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Update appointment status with email notifications (Requirements 9.5, 9.6, 9.7)
+exports.rescheduleAppointment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { date, time } = req.body;
+
+    if (!date) {
+      return res.status(400).json({ message: "New date is required" });
+    }
+
+    const [appointments] = await db.query("SELECT * FROM appointments WHERE id = ?", [id]);
+    if (appointments.length === 0) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    const appointment = appointments[0];
+
+    // Build the new datetime string
+    const newDate = time ? `${date}T${time}:00` : date;
+
+    await db.query("UPDATE appointments SET date = ?, status = 'confirmed' WHERE id = ?", [newDate, id]);
+
+    // Send reschedule email to customer
+    let emailWarning = false;
+    try {
+      const updatedAppointment = { ...appointment, date: newDate, time: time || appointment.time };
+      const template = appointmentRescheduleTemplate(updatedAppointment);
+      const sent = await sendEmail({ to: appointment.email, subject: template.subject, html: template.html });
+      emailWarning = !sent;
+    } catch (emailError) {
+      console.error("Reschedule email failed:", emailError);
+      emailWarning = true;
+    }
+
+    res.json({
+      message: "Appointment rescheduled successfully",
+      warning: emailWarning ? "Email notification failed" : undefined
+    });
+  } catch (error) {
+    console.error("Reschedule error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

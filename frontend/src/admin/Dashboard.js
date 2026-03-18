@@ -111,7 +111,7 @@ const AdminDashboard = () => {
   const loadRecentData = async () => {
     try {
       // Load recent orders
-      const ordersResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/admin/orders?limit=5&sort=createdAt&order=desc`, {
+      const ordersResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/orders?limit=5&sort=created_at&order=desc`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
           'Content-Type': 'application/json'
@@ -415,11 +415,11 @@ const AdminDashboard = () => {
                             {order.status}
                           </span>
                         </div>
-                        <p className="text-gray-600 dark:text-gray-300 text-sm">{order.customer}</p>
-                        <p className="text-gray-500 dark:text-gray-400 text-xs">{order.date}</p>
+                        <p className="text-gray-600 dark:text-gray-300 text-sm">{order.customer_name}</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-xs">{new Date(order.created_at).toLocaleDateString()}</p>
                       </div>
                       <div className="text-right ml-4">
-                        <p className="font-semibold text-gray-800 dark:text-gray-100">${order.total.toFixed(2)}</p>
+                        <p className="font-semibold text-gray-800 dark:text-gray-100">KSH {parseFloat(order.total).toFixed(2)}</p>
                       </div>
                     </div>
                   ))

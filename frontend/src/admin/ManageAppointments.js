@@ -28,6 +28,9 @@ const ManageAppointments = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [serviceFilter, setServiceFilter] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [showReschedule, setShowReschedule] = useState(false);
+  const [rescheduleData, setRescheduleData] = useState({ date: '', time: '' });
+  const [rescheduling, setRescheduling] = useState(false);
 
   const isMobile = breakpoint === 'mobile';
   const isTablet = breakpoint === 'tablet';
@@ -77,12 +80,30 @@ const ManageAppointments = () => {
     setError(null);
     
     try {
-      // TODO: Replace with actual API call
-      // const response = await appointmentsAPI.getAll({ page: currentPage, search: searchTerm, status: statusFilter, service: serviceFilter });
-      
-      setAppointments([]);
-      setTotalItems(0);
-      setTotalPages(1);
+      const token = localStorage.getItem('adminToken');
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${apiUrl}/appointments`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('Failed to fetch appointments');
+      const data = await response.json();
+      let all = data.appointments || [];
+
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        all = all.filter(a =>
+          String(a.id).includes(term) ||
+          (a.name || '').toLowerCase().includes(term) ||
+          (a.email || '').toLowerCase().includes(term)
+        );
+      }
+      if (statusFilter) all = all.filter(a => a.status === statusFilter);
+      if (serviceFilter) all = all.filter(a => a.service === serviceFilter);
+
+      setTotalItems(all.length);
+      setTotalPages(Math.max(1, Math.ceil(all.length / itemsPerPage)));
+      const start = (currentPage - 1) * itemsPerPage;
+      setAppointments(all.slice(start, start + itemsPerPage));
     } catch (err) {
       setError('Failed to load appointments. Please try again.');
       console.error('Load appointments error:', err);
@@ -131,13 +152,13 @@ const ManageAppointments = () => {
       )
     },
     {
-      key: 'customerName',
+      key: 'name',
       label: 'Customer',
       sortable: true,
       render: (value, row) => (
         <div>
           <p className="font-medium text-gray-800 dark:text-gray-100">{value}</p>
-          <p className="text-sm text-gray-600 dark:text-gray-300">{row.customerEmail}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">{row.email}</p>
         </div>
       )
     },
@@ -145,10 +166,10 @@ const ManageAppointments = () => {
       key: 'service',
       label: 'Service',
       sortable: true,
-      render: (value, row) => (
+      render: (value) => (
         <div className="flex items-center space-x-2">
           <span className="text-lg">{getServiceIcon(value)}</span>
-          <span className="text-gray-800 dark:text-gray-100">{row.serviceLabel}</span>
+          <span className="text-gray-800 dark:text-gray-100">{value}</span>
         </div>
       )
     },
@@ -188,35 +209,53 @@ const ManageAppointments = () => {
 
   const handleStatusUpdate = async (appointmentId, newStatus) => {
     setUpdatingStatus(true);
-    
     try {
-      // TODO: Replace with actual API call
-      // await appointmentsAPI.updateStatus(appointmentId, newStatus);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update local state
-      setAppointments(prev => prev.map(appointment => 
-        appointment.id === appointmentId 
-          ? { ...appointment, status: newStatus, updatedAt: new Date().toISOString() }
-          : appointment
+      const token = localStorage.getItem('adminToken');
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${apiUrl}/appointments/${appointmentId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (!response.ok) throw new Error('Failed to update status');
+
+      setAppointments(prev => prev.map(a =>
+        a.id === appointmentId ? { ...a, status: newStatus } : a
       ));
-      
       if (selectedAppointment && selectedAppointment.id === appointmentId) {
-        setSelectedAppointment(prev => ({ 
-          ...prev, 
-          status: newStatus, 
-          updatedAt: new Date().toISOString() 
-        }));
+        setSelectedAppointment(prev => ({ ...prev, status: newStatus }));
       }
-      
-      console.log(`Appointment ${appointmentId} status updated to ${newStatus}`);
     } catch (error) {
       console.error('Update status error:', error);
       setError('Failed to update appointment status. Please try again.');
     } finally {
       setUpdatingStatus(false);
+    }
+  };
+
+  const handleReschedule = async () => {
+    if (!rescheduleData.date) return;
+    setRescheduling(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${apiUrl}/appointments/${selectedAppointment.id}/reschedule`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(rescheduleData)
+      });
+      if (!response.ok) throw new Error('Failed to reschedule');
+      const newDate = rescheduleData.time ? `${rescheduleData.date}T${rescheduleData.time}:00` : rescheduleData.date;
+      setAppointments(prev => prev.map(a =>
+        a.id === selectedAppointment.id ? { ...a, date: newDate, time: rescheduleData.time, status: 'confirmed' } : a
+      ));
+      setSelectedAppointment(prev => ({ ...prev, date: newDate, time: rescheduleData.time, status: 'confirmed' }));
+      setShowReschedule(false);
+      setRescheduleData({ date: '', time: '' });
+    } catch (err) {
+      setError('Failed to reschedule appointment.');
+    } finally {
+      setRescheduling(false);
     }
   };
 
@@ -357,7 +396,7 @@ const ManageAppointments = () => {
                         <p className="text-gray-600">Service</p>
                         <div className="flex items-center space-x-2">
                           <span className="text-lg">{getServiceIcon(selectedAppointment.service)}</span>
-                          <span className="font-medium text-gray-800">{selectedAppointment.serviceLabel}</span>
+                          <span className="font-medium text-gray-800">{selectedAppointment.service}</span>
                         </div>
                       </div>
                       <div>
@@ -386,6 +425,58 @@ const ManageAppointments = () => {
                         )}
                       </div>
                     </div>
+
+                    {/* Reschedule */}
+                    {['pending', 'confirmed'].includes(selectedAppointment.status) && (
+                      <div className="mt-4 pt-4 border-t border-white/20">
+                        <h4 className="font-medium text-gray-800 mb-3">Reschedule Appointment</h4>
+                        {!showReschedule ? (
+                          <GlassButton size="sm" variant="secondary" onClick={() => setShowReschedule(true)}>
+                            Change Date / Time
+                          </GlassButton>
+                        ) : (
+                          <div className="space-y-3">
+                            <GlassInput
+                              label="New Date"
+                              name="reschedule-date"
+                              type="date"
+                              value={rescheduleData.date}
+                              onChange={(e) => setRescheduleData(prev => ({ ...prev, date: e.target.value }))}
+                              min={new Date().toISOString().split('T')[0]}
+                            />
+                            <GlassSelect
+                              label="New Time"
+                              name="reschedule-time"
+                              value={rescheduleData.time}
+                              onChange={(e) => setRescheduleData(prev => ({ ...prev, time: e.target.value }))}
+                              options={[
+                                { value: '', label: 'Select time' },
+                                { value: '09:00', label: '9:00 AM' },
+                                { value: '09:30', label: '9:30 AM' },
+                                { value: '10:00', label: '10:00 AM' },
+                                { value: '10:30', label: '10:30 AM' },
+                                { value: '11:00', label: '11:00 AM' },
+                                { value: '11:30', label: '11:30 AM' },
+                                { value: '14:00', label: '2:00 PM' },
+                                { value: '14:30', label: '2:30 PM' },
+                                { value: '15:00', label: '3:00 PM' },
+                                { value: '15:30', label: '3:30 PM' },
+                                { value: '16:00', label: '4:00 PM' },
+                                { value: '16:30', label: '4:30 PM' },
+                              ]}
+                            />
+                            <div className="flex gap-2">
+                              <GlassButton size="sm" onClick={handleReschedule} disabled={rescheduling || !rescheduleData.date}>
+                                {rescheduling ? 'Saving...' : 'Confirm & Notify Customer'}
+                              </GlassButton>
+                              <GlassButton size="sm" variant="secondary" onClick={() => { setShowReschedule(false); setRescheduleData({ date: '', time: '' }); }}>
+                                Cancel
+                              </GlassButton>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Customer Message */}
@@ -405,15 +496,15 @@ const ManageAppointments = () => {
                     <div className="space-y-3 text-sm">
                       <div>
                         <p className="text-gray-600">Name</p>
-                        <p className="font-medium text-gray-800">{selectedAppointment.customerName}</p>
+                        <p className="font-medium text-gray-800">{selectedAppointment.name}</p>
                       </div>
                       <div>
                         <p className="text-gray-600">Email</p>
-                        <p className="text-gray-800">{selectedAppointment.customerEmail}</p>
+                        <p className="text-gray-800">{selectedAppointment.email}</p>
                       </div>
                       <div>
                         <p className="text-gray-600">Phone</p>
-                        <p className="text-gray-800">{selectedAppointment.customerPhone}</p>
+                        <p className="text-gray-800">{selectedAppointment.phone}</p>
                       </div>
                     </div>
                   </div>
@@ -424,11 +515,11 @@ const ManageAppointments = () => {
                     <div className="space-y-3 text-sm">
                       <div>
                         <p className="text-gray-600">Created</p>
-                        <p className="text-gray-800">{new Date(selectedAppointment.createdAt).toLocaleString()}</p>
+                        <p className="text-gray-800">{new Date(selectedAppointment.created_at).toLocaleString()}</p>
                       </div>
                       <div>
                         <p className="text-gray-600">Last Updated</p>
-                        <p className="text-gray-800">{new Date(selectedAppointment.updatedAt).toLocaleString()}</p>
+                        <p className="text-gray-800">{new Date(selectedAppointment.updated_at || selectedAppointment.created_at).toLocaleString()}</p>
                       </div>
                     </div>
                   </div>
@@ -441,7 +532,7 @@ const ManageAppointments = () => {
                         variant="secondary"
                         size="sm"
                         className="w-full"
-                        onClick={() => window.open(`mailto:${selectedAppointment.customerEmail}?subject=Appointment ${selectedAppointment.id}`)}
+                        onClick={() => window.open(`mailto:${selectedAppointment.email}?subject=Appointment ${selectedAppointment.id}`)}
                       >
                         Email Customer
                       </GlassButton>
@@ -449,7 +540,7 @@ const ManageAppointments = () => {
                         variant="secondary"
                         size="sm"
                         className="w-full"
-                        onClick={() => window.open(`tel:${selectedAppointment.customerPhone}`)}
+                        onClick={() => window.open(`tel:${selectedAppointment.phone}`)}
                       >
                         Call Customer
                       </GlassButton>

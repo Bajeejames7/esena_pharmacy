@@ -68,6 +68,7 @@ app.use(["/blogs", "/api/blogs"], require("./routes/blogs"));
 app.use(["/admin/dashboard", "/api/admin/dashboard"], require("./routes/dashboard"));
 app.use(["/fix-auth", "/api/fix-auth"], require("./routes/fix-auth"));
 app.use(["/bot", "/api/bot"], require("./routes/bot"));
+app.use(["/settings", "/api/settings"], require("./routes/settings"));
 
 // 6.1. EXPLICIT ADMIN ROUTES (Fallback for cPanel routing issues)
 // These handle the exact paths the frontend is calling
