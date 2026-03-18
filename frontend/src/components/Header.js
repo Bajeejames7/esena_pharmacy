@@ -35,7 +35,7 @@ const Header = () => {
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setActiveDropdown(null);
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(prev => !prev);
@@ -83,15 +83,21 @@ const Header = () => {
       { name: 'Contact', path: '/contact' }
     ],
     products: [
-      { name: 'All Products', path: '/products' },
-      { name: 'Supplements', path: '/supplements' },
-      { name: 'Personal Care', path: '/personal-care' }
+      { name: 'All Products', path: '/products', search: '' },
+      { name: 'Medicines & OTC', path: '/products', search: '?category=OTC' },
+      { name: 'Supplements', path: '/products', search: '?category=Supplements' },
+      { name: 'Personal Care', path: '/products', search: '?category=PersonalCare' },
+      { name: 'Baby & Mother', path: '/products', search: '?category=BabyMedicines' },
+      { name: 'Medical Devices', path: '/products', search: '?category=Thermometers' },
+      { name: 'First Aid', path: '/products', search: '?category=Bandages' },
+      { name: 'Sexual Health', path: '/products', search: '?category=Contraceptives' },
     ],
     services: [
       { name: 'Upload Prescription', path: '/upload-prescription' },
       { name: 'Book Appointment', path: '/book-appointment' },
       { name: 'Delivery Info', path: '/delivery' },
-      { name: 'Track Order', path: '/track-order' }
+      { name: 'Track Order', path: '/track-order' },
+      { name: 'Track Appointment', path: '/track-appointment' }
     ]
   };
 
@@ -166,8 +172,7 @@ const Header = () => {
                   ${isActivePage('/products') || isActivePage('/supplements') || isActivePage('/personal-care')
                     ? 'bg-glass-blue/20 text-blue-700 dark:text-blue-300 font-medium' 
                     : 'text-gray-700 dark:text-gray-200 hover:bg-white/10 dark:hover:bg-slate-700/50'
-                  }
-                `}
+                  }                `}
                 aria-expanded={activeDropdown === 'products'}
                 aria-haspopup="true"
               >
@@ -178,9 +183,13 @@ const Header = () => {
               </button>
               
               {activeDropdown === 'products' && (
-                <div className="absolute top-full left-0 mt-1 w-48 bg-white/85 dark:bg-gray-800/85 backdrop-blur-md border border-white/30 dark:border-gray-600/50 rounded-lg shadow-xl py-2 z-50">
+                <div className="absolute top-full left-0 mt-1 w-56 bg-white/85 dark:bg-gray-800/85 backdrop-blur-md border border-white/30 dark:border-gray-600/50 rounded-lg shadow-xl py-2 z-50">
                   {dropdownItems.products.map((item) => (
-                    <Link key={item.path} to={item.path} className={navLinkClass(item.path)}>
+                    <Link
+                      key={item.name}
+                      to={{ pathname: item.path, search: item.search }}
+                      className={`block px-4 py-2 rounded-lg transition-all duration-200 text-gray-800 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-gray-700/70 hover:text-blue-600 dark:hover:text-blue-300`}
+                    >
                       {item.name}
                     </Link>
                   ))}
@@ -210,7 +219,7 @@ const Header = () => {
               </button>
               
               {activeDropdown === 'services' && (
-                <div className="absolute top-full left-0 mt-1 w-48 bg-white/85 dark:bg-gray-800/85 backdrop-blur-md border border-white/30 dark:border-gray-600/50 rounded-lg shadow-xl py-2 z-50">
+                <div className="absolute top-full left-0 mt-1 w-56 bg-white/85 dark:bg-gray-800/85 backdrop-blur-md border border-white/30 dark:border-gray-600/50 rounded-lg shadow-xl py-2 z-50">
                   {dropdownItems.services.map((item) => (
                     <Link key={item.path} to={item.path} className={navLinkClass(item.path)}>
                       {item.name}
@@ -367,18 +376,13 @@ const Header = () => {
               <div className="px-2 ml-4 space-y-1">
                 {dropdownItems.products.map((item) => (
                   <Link 
-                    key={item.path}
-                    to={item.path}
+                    key={item.name}
+                    to={{ pathname: item.path, search: item.search }}
                     className="block px-4 py-3 text-gray-700 dark:text-gray-200 bg-white/10 dark:bg-slate-700/30 hover:bg-white/20 dark:hover:bg-slate-600/40 rounded-lg font-medium"
-                    onClick={(e) => {
-                      console.log('Clicked:', item.name);
-                      setIsMobileMenuOpen(false);
-                      setActiveDropdown(null);
-                    }}
+                    onClick={() => { setIsMobileMenuOpen(false); setActiveDropdown(null); }}
                     onTouchEnd={(e) => {
                       e.preventDefault();
-                      console.log('Touched:', item.name);
-                      navigate(item.path);
+                      navigate({ pathname: item.path, search: item.search });
                       setIsMobileMenuOpen(false);
                       setActiveDropdown(null);
                     }}

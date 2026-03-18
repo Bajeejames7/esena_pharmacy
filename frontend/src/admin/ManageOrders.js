@@ -308,7 +308,7 @@ const ManageOrders = () => {
                       </div>
 
                       {/* Editable delivery fee */}
-                      {selectedOrder.delivery_type !== 'pickup' && (
+                      {selectedOrder.delivery_type !== 'pickup' && !['completed', 'cancelled', 'paid', 'dispatched', 'ready_for_pickup'].includes(selectedOrder.status) && (
                         <div className="pt-4 border-t border-white/20">
                           <p className="text-sm font-medium text-gray-700 mb-2">Adjust Delivery Fee</p>
                           <div className="flex gap-2 items-end">

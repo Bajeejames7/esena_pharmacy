@@ -8,6 +8,9 @@ import GlassButton from '../components/forms/GlassButton';
 import GlassInput from '../components/forms/GlassInput';
 import GlassSelect from '../components/forms/GlassSelect';
 import ThemeToggle from '../components/ThemeToggle';
+import { appointmentsAPI } from '../services/api';
+import api from '../services/api';
+import { APPOINTMENT_SERVICE_FILTER_OPTIONS } from '../utils/appointmentServices';
 
 /**
  * Admin appointments management page
@@ -43,24 +46,15 @@ const ManageAppointments = () => {
     { value: 'confirmed', label: 'Confirmed' },
     { value: 'completed', label: 'Completed' },
     { value: 'cancelled', label: 'Cancelled' },
-    { value: 'no_show', label: 'No Show' }
   ];
 
-  const serviceOptions = [
-    { value: '', label: 'All Services' },
-    { value: 'dermatology', label: 'Dermatology' },
-    { value: 'labtest', label: 'Lab Test' },
-    { value: 'pharmacist', label: 'Pharmacist Consultation' },
-    { value: 'vaccination', label: 'Vaccination' },
-    { value: 'health-screening', label: 'Health Screening' }
-  ];
+  const serviceOptions = APPOINTMENT_SERVICE_FILTER_OPTIONS;
 
   const statusTransitions = {
     pending: ['confirmed', 'cancelled'],
-    confirmed: ['completed', 'no_show', 'cancelled'],
+    confirmed: ['completed', 'cancelled'],
     completed: [],
     cancelled: [],
-    no_show: []
   };
 
   useEffect(() => {
@@ -80,14 +74,8 @@ const ManageAppointments = () => {
     setError(null);
     
     try {
-      const token = localStorage.getItem('adminToken');
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${apiUrl}/appointments`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!response.ok) throw new Error('Failed to fetch appointments');
-      const data = await response.json();
-      let all = data.appointments || [];
+      const response = await appointmentsAPI.getAll();
+      let all = response.data?.appointments || [];
 
       if (searchTerm) {
         const term = searchTerm.toLowerCase();
@@ -120,26 +108,33 @@ const ManageAppointments = () => {
       case 'confirmed': return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
       case 'completed': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300';
       case 'cancelled': return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
-      case 'no_show': return 'bg-gray-100 dark:bg-gray-800/30 text-gray-800 dark:text-gray-300';
       default: return 'bg-gray-100 dark:bg-gray-800/30 text-gray-800 dark:text-gray-300';
     }
   };
 
   const getServiceIcon = (service) => {
-    switch (service) {
-      case 'dermatology':
-        return '👩‍⚕️';
-      case 'labtest':
-        return '🔬';
-      case 'pharmacist':
-        return '💊';
-      case 'vaccination':
-        return '💉';
-      case 'health-screening':
-        return '🩺';
-      default:
-        return '📋';
-    }
+    const s = (service || '').toLowerCase();
+    if (s.includes('doctor')) return '👨‍⚕️';
+    if (s.includes('pharmacist')) return '💊';
+    if (s.includes('online') || s.includes('telemedicine')) return '💻';
+    if (s.includes('dermatology') || s.includes('skin')) return '👩🏾‍⚕️';
+    if (s.includes('nutrition') || s.includes('wellness')) return '🥗';
+    if (s.includes('eye')) return '👁️';
+    if (s.includes('heart')) return '❤️';
+    if (s.includes('diabetes')) return '🩸';
+    if (s.includes('weight')) return '⚖️';
+    if (s.includes('lab') || s.includes('blood test')) return '🔬';
+    if (s.includes('malaria')) return '🦟';
+    if (s.includes('hiv')) return '🎗️';
+    if (s.includes('cholesterol')) return '🫀';
+    if (s.includes('screening')) return '🩺';
+    if (s.includes('blood pressure')) return '💓';
+    if (s.includes('glucose')) return '🩸';
+    if (s.includes('bmi')) return '📏';
+    if (s.includes('vaccination') || s.includes('immunization')) return '💉';
+    if (s.includes('family planning') || s.includes('contraception')) return '🌸';
+    if (s.includes('ear')) return '👂';
+    return '📋';
   };
 
   const columns = [
@@ -190,7 +185,7 @@ const ManageAppointments = () => {
       sortable: true,
       render: (value) => (
         <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(value)}`}>
-          {value.replace('_', ' ')}
+          {(value || 'pending').replace('_', ' ')}
         </span>
       )
     }
@@ -210,15 +205,8 @@ const ManageAppointments = () => {
   const handleStatusUpdate = async (appointmentId, newStatus) => {
     setUpdatingStatus(true);
     try {
-      const token = localStorage.getItem('adminToken');
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${apiUrl}/appointments/${appointmentId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ status: newStatus })
-      });
-      if (!response.ok) throw new Error('Failed to update status');
-
+      await appointmentsAPI.updateStatus(appointmentId, newStatus);
+      // Update both the table and the open modal
       setAppointments(prev => prev.map(a =>
         a.id === appointmentId ? { ...a, status: newStatus } : a
       ));
@@ -227,7 +215,9 @@ const ManageAppointments = () => {
       }
     } catch (error) {
       console.error('Update status error:', error);
-      setError('Failed to update appointment status. Please try again.');
+      // Reload from DB so optimistic update doesn't stick on failure
+      await loadAppointments();
+      alert(`Failed to update status: ${error.response?.data?.message || error.message || 'Please try again.'}`);
     } finally {
       setUpdatingStatus(false);
     }
@@ -237,14 +227,7 @@ const ManageAppointments = () => {
     if (!rescheduleData.date) return;
     setRescheduling(true);
     try {
-      const token = localStorage.getItem('adminToken');
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${apiUrl}/appointments/${selectedAppointment.id}/reschedule`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(rescheduleData)
-      });
-      if (!response.ok) throw new Error('Failed to reschedule');
+      await api.put(`/appointments/${selectedAppointment.id}/reschedule`, rescheduleData);
       const newDate = rescheduleData.time ? `${rescheduleData.date}T${rescheduleData.time}:00` : rescheduleData.date;
       setAppointments(prev => prev.map(a =>
         a.id === selectedAppointment.id ? { ...a, date: newDate, time: rescheduleData.time, status: 'confirmed' } : a
@@ -379,7 +362,7 @@ const ManageAppointments = () => {
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="font-semibold text-gray-800">Appointment Status</h3>
                       <span className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getStatusColor(selectedAppointment.status)}`}>
-                        {selectedAppointment.status.replace('_', ' ')}
+                        {(selectedAppointment.status || 'pending').replace('_', ' ')}
                       </span>
                     </div>
                     
@@ -401,7 +384,7 @@ const ManageAppointments = () => {
                       </div>
                       <div>
                         <p className="text-gray-600">Tracking Token</p>
-                        <p className="font-mono text-sm text-gray-800">{selectedAppointment.token}</p>
+                        <p className="font-mono text-xs text-gray-800 break-all">{selectedAppointment.token}</p>
                       </div>
                     </div>
 
@@ -543,14 +526,6 @@ const ManageAppointments = () => {
                         onClick={() => window.open(`tel:${selectedAppointment.phone}`)}
                       >
                         Call Customer
-                      </GlassButton>
-                      <GlassButton
-                        variant="secondary"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => window.open(`/track/${selectedAppointment.token}`, '_blank')}
-                      >
-                        View Tracking Page
                       </GlassButton>
                     </div>
                   </div>

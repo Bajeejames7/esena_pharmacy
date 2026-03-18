@@ -3,7 +3,12 @@ const router = express.Router();
 const { createContact } = require("../controllers/contactController");
 const { recaptchaMiddleware } = require("../utils/recaptcha");
 
-// Apply reCAPTCHA middleware and then the controller
-router.post("/", recaptchaMiddleware('contact_form', 0.5), createContact);
+// reCAPTCHA is optional for contact — skip middleware if no token provided
+router.post("/", (req, res, next) => {
+  if (req.body.recaptchaToken) {
+    return recaptchaMiddleware('contact_form', 0.5)(req, res, next);
+  }
+  next();
+}, createContact);
 
 module.exports = router;

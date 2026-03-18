@@ -524,6 +524,10 @@ exports.updateShippingCost = async (req, res) => {
     if (orders.length === 0) return res.status(404).json({ message: 'Order not found' });
 
     const order = orders[0];
+
+    if (['completed', 'cancelled', 'paid', 'dispatched', 'ready_for_pickup'].includes(order.status)) {
+      return res.status(400).json({ message: `Cannot update delivery fee for a ${order.status} order.` });
+    }
     const [items] = await connection.query(
       'SELECT oi.*, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?',
       [id]
@@ -540,33 +544,81 @@ exports.updateShippingCost = async (req, res) => {
     // Email customer about updated delivery fee
     try {
       const frontendUrl = process.env.FRONTEND_URL || 'https://esena.co.ke';
-      const html = <!DOCTYPE html><html><head><style>
+      const oldShipping = parseFloat(order.shipping_cost) || 0;
+
+      const itemsRows = items.map(item =>
+        `<tr>
+          <td style="padding:8px 10px;border-bottom:1px solid #eee;">${item.name || 'Product'}</td>
+          <td style="padding:8px 10px;border-bottom:1px solid #eee;text-align:center;">${item.quantity}</td>
+          <td style="padding:8px 10px;border-bottom:1px solid #eee;text-align:right;">KSH ${(parseFloat(item.price) * item.quantity).toFixed(2)}</td>
+        </tr>`
+      ).join('');
+
+      const html = `<!DOCTYPE html><html><head><style>
         body{font-family:Arial,sans-serif;line-height:1.6;color:#333}
         .container{max-width:600px;margin:0 auto;padding:20px}
         .header{background:#667eea;color:white;padding:30px;text-align:center;border-radius:10px 10px 0 0}
         .content{background:#f9f9f9;padding:30px;border-radius:0 0 10px 10px}
-        .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee}
-        .total{font-weight:bold;font-size:16px;padding-top:10px}
+        table{width:100%;border-collapse:collapse}
+        th{background:#f0f0f0;padding:10px;text-align:left;border-bottom:2px solid #ddd}
+        .summary-row td{padding:8px 10px;border-bottom:1px solid #eee}
+        .old-fee{text-decoration:line-through;color:#e74c3c;margin-right:8px}
+        .new-fee{color:#27ae60;font-weight:bold}
+        .total-row td{padding:12px 10px;font-weight:bold;font-size:15px;border-top:2px solid #667eea}
+        .token-box{background:white;padding:12px 16px;border-left:4px solid #667eea;margin:16px 0;font-size:13px}
         .button{display:inline-block;background:#667eea;color:white;padding:12px 30px;text-decoration:none;border-radius:5px;margin:20px 0}
         .notice{background:#fff3cd;border-left:4px solid #ffc107;padding:12px 16px;margin:16px 0;font-size:13px}
+        .footer{text-align:center;margin-top:20px;color:#666;font-size:12px}
       </style></head><body>
       <div class="container">
-        <div class="header"><h1>?? Delivery Fee Updated</h1></div>
+        <div class="header"><h1>🚚 Delivery Fee Updated</h1></div>
         <div class="content">
-          <p>Dear ,</p>
-          <p>The delivery fee for your order <strong>#</strong> has been updated by our team based on your exact location.</p>
-          <div class="row"><span>Products Subtotal</span><span>KSH </span></div>
-          <div class="row"><span>Delivery Fee</span><span></span></div>
-          <div class="row total"><span>New Total</span><span>KSH </span></div>
-          <div class="notice">?? Your order is being processed. You will be notified when payment is requested.</div>
-          <a href="/track/" class="button">Track Your Order</a>
+          <p>Dear ${order.customer_name || ''},</p>
+          <p>The delivery fee for your order <strong>#${order.id}</strong> has been updated by our team based on your exact location.</p>
+
+          <div class="token-box">
+            <strong>Tracking Code:</strong> <code style="color:#667eea;">${order.token}</code>
+          </div>
+
+          <h3 style="margin-bottom:8px;">Order Items</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th style="text-align:center;">Qty</th>
+                <th style="text-align:right;">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsRows}
+              <tr class="summary-row">
+                <td colspan="2" style="text-align:right;color:#555;">Products Subtotal</td>
+                <td style="text-align:right;">KSH ${subtotal.toFixed(2)}</td>
+              </tr>
+              <tr class="summary-row">
+                <td colspan="2" style="text-align:right;color:#555;">Delivery Fee</td>
+                <td style="text-align:right;">
+                  <span class="old-fee">KSH ${oldShipping.toFixed(2)}</span>
+                  <span class="new-fee">KSH ${newShipping.toFixed(2)}</span>
+                </td>
+              </tr>
+              <tr class="total-row">
+                <td colspan="2" style="text-align:right;">New Total</td>
+                <td style="text-align:right;">KSH ${newTotal.toFixed(2)}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="notice">📦 Your order is being processed. You will be notified when payment is requested.</div>
+          <a href="${frontendUrl}/track/${order.token}" class="button">Track Your Order</a>
           <p>For questions, contact us at <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a> or call 0768103599.</p>
         </div>
-      </div></body></html>;
+        <div class="footer"><p>Esena Pharmacy - Your Trusted Healthcare Partner</p><p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p></div>
+      </div></body></html>`;
 
       await sendEmail({
         to: order.email,
-        subject: Delivery Fee Updated - Order # - Esena Pharmacy,
+        subject: `Delivery Fee Updated - Order #${order.id} - Esena Pharmacy`,
         html
       });
     } catch (emailErr) {

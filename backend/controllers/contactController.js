@@ -23,10 +23,8 @@ const validateContactData = (data) => {
     }
   }
   
-  // Validate phone (Requirement 16.5)
-  if (!data.phone) {
-    errors.push("Phone is required");
-  } else if (data.phone.length < 10 || data.phone.length > 20) {
+  // Validate phone (optional)
+  if (data.phone && data.phone !== 'N/A' && (data.phone.length < 10 || data.phone.length > 20)) {
     errors.push("Phone must be between 10 and 20 characters");
   }
   
@@ -40,10 +38,10 @@ const validateContactData = (data) => {
 
 const createContact = async (req, res) => {
   try {
-    const { name, email, phone, message } = req.body;
+    const { name, email, phone, subject, message } = req.body;
     
-    // Validate contact data (Requirements 16.4, 16.5)
-    const validationErrors = validateContactData({ name, email, phone, message });
+    // Validate contact data
+    const validationErrors = validateContactData({ name, email, phone: phone || 'N/A', message });
     if (validationErrors.length > 0) {
       return res.status(400).json({ 
         message: "Validation failed", 
@@ -51,34 +49,31 @@ const createContact = async (req, res) => {
       });
     }
     
-    // Insert contact message into database (Requirement 16.5)
+    // Insert contact message into database
     await db.query(
       "INSERT INTO contacts (name, email, phone, message) VALUES (?, ?, ?, ?)",
-      [name, email, phone, message]
+      [name, email, phone || '', subject ? `[${subject}] ${message}` : message]
     );
     
-    // Send notification email to admin (Requirement 16.6)
     let emailWarning = false;
-    
     try {
-      // Send notification to admin
       await sendEmail({
         to: process.env.EMAIL_USER,
-        subject: `New Contact Message from ${name}`,
+        subject: `New Contact Message: ${subject || 'General Enquiry'} — ${name}`,
         html: `
           <h2>New Contact Form Submission</h2>
           <p><strong>Name:</strong> ${name}</p>
           <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Phone:</strong> ${phone}</p>
+          <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
+          <p><strong>Subject:</strong> ${subject || 'N/A'}</p>
           <p><strong>Message:</strong></p>
-          <div style="background-color: #f5f5f5; padding: 15px; border-left: 4px solid #007bff; margin: 10px 0;">
+          <div style="background:#f5f5f5;padding:15px;border-left:4px solid #007bff;margin:10px 0;">
             ${message.replace(/\n/g, '<br>')}
           </div>
           <p><em>Please respond to this inquiry promptly.</em></p>
         `
       });
-      
-      // Send confirmation email to customer
+
       await sendEmail({
         to: email,
         subject: "Thank you for contacting Esena Pharmacy",
@@ -86,7 +81,7 @@ const createContact = async (req, res) => {
           <h2>Thank you for your message, ${name}!</h2>
           <p>We have received your inquiry and will get back to you as soon as possible.</p>
           <p><strong>Your message:</strong></p>
-          <div style="background-color: #f5f5f5; padding: 15px; border-left: 4px solid #28a745; margin: 10px 0;">
+          <div style="background:#f5f5f5;padding:15px;border-left:4px solid #28a745;margin:10px 0;">
             ${message.replace(/\n/g, '<br>')}
           </div>
           <p>Our team typically responds within 24 hours during business days.</p>

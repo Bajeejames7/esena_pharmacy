@@ -45,11 +45,15 @@ const OrderSuccess = () => {
             Thank you for your order. We've received your order and will process it shortly.
           </p>
           
-          <div className="bg-blue-50/50 border border-blue-200 rounded-lg p-4 mb-6 text-sm">
+          <div className="bg-blue-50/50 border border-blue-200 rounded-lg p-4 mb-4 text-sm">
             <p className="text-gray-700 mb-2">
               📧 A tracking token has been sent to <span className="font-medium">{orderData.email}</span>. Use it to track your order status.
             </p>
             <p className="text-xs text-amber-600">🔒 Keep your tracking token private — it gives access to your order details. Do not share it with anyone.</p>
+          </div>
+
+          <div className="bg-amber-50/60 border border-amber-200 dark:border-amber-700 rounded-lg p-3 mb-6 text-sm text-amber-700 dark:text-amber-300">
+            📬 Can't find the email? Check your <span className="font-semibold">Spam / Junk</span> folder — our emails are sometimes filtered automatically.
           </div>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

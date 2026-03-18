@@ -1,5 +1,6 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import React, { useCallback } from 'react';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import useIdleTimeout from '../hooks/useIdleTimeout';
 
 /**
  * Protected route wrapper for admin routes with enhanced security
@@ -7,7 +8,16 @@ import { Navigate, useLocation } from 'react-router-dom';
  */
 const ProtectedRoute = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const token = localStorage.getItem('adminToken');
+
+  const handleTimeout = useCallback(() => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
+    navigate('/admin/login', { state: { from: location, sessionExpired: true }, replace: true });
+  }, [navigate, location]);
+
+  useIdleTimeout(handleTimeout);
   
   // Check if token exists
   if (!token) {

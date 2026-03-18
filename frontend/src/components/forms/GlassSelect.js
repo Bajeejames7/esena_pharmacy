@@ -34,7 +34,7 @@ const GlassSelect = forwardRef(({
   };
 
   const selectClasses = `
-    glass-input w-full min-h-[44px] pr-10 appearance-none
+    glass-input w-full min-h-[44px] pr-10
     ${error ? 'border-red-300 focus:border-red-500 focus:ring-red-500/50' : ''}
     ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
     ${isFocused ? 'ring-2 ring-glass-blue/50' : ''}
@@ -67,6 +67,7 @@ const GlassSelect = forwardRef(({
           disabled={disabled}
           required={required}
           className={selectClasses}
+          style={{ appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none' }}
           aria-invalid={error ? 'true' : 'false'}
           aria-describedby={`
             ${error ? errorId : ''} 

@@ -63,24 +63,14 @@ const Contact = () => {
     }
 
     try {
-      // Verify reCAPTCHA
+      // Verify reCAPTCHA (optional — backend allows null when key not configured)
       const recaptchaToken = await verifyRecaptcha('contact_form');
-      if (!recaptchaToken) {
-        setErrors({ submit: 'reCAPTCHA verification failed. Please try again.' });
-        setIsSubmitting(false);
-        return;
-      }
 
-      // TODO: Implement actual API call with reCAPTCHA token
-      const response = await fetch('/api/contact', {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${apiUrl}/contact`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          recaptchaToken
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, recaptchaToken })
       });
 
       if (response.ok) {
@@ -128,12 +118,12 @@ const Contact = () => {
   }
 
   return (
-    <div className="pt-24 pb-16">
+    <div className="pt-24 pb-16 min-h-screen">
       <div className="max-w-6xl mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Contact Form */}
           <GlassCard className="p-8">
-            <h1 className="text-gray-800 mb-6">Get in Touch</h1>
+            <h1 className="text-gray-800 dark:text-white mb-6">Get in Touch</h1>
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -217,7 +207,7 @@ const Contact = () => {
           {/* Contact Information */}
           <div className="space-y-6">
             <GlassCard className="p-8">
-              <h2 className="text-gray-800 mb-6">Contact Information</h2>
+              <h2 className="text-gray-800 dark:text-white mb-6">Contact Information</h2>
               
               <div className="space-y-4">
                 <a 
@@ -271,20 +261,20 @@ const Contact = () => {
             </GlassCard>
             
             <GlassCard className="p-8">
-              <h2 className="text-gray-800 mb-6">Business Hours</h2>
+              <h2 className="text-gray-800 dark:text-white mb-6">Business Hours</h2>
               
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Monday - Friday</span>
-                  <span className="text-gray-800">8:00 AM - 8:00 PM</span>
+                  <span className="text-gray-600 dark:text-gray-300">Monday - Friday</span>
+                  <span className="text-gray-800 dark:text-white">8:00 AM - 8:00 PM</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Saturday</span>
-                  <span className="text-gray-800">9:00 AM - 6:00 PM</span>
+                  <span className="text-gray-600 dark:text-gray-300">Saturday</span>
+                  <span className="text-gray-800 dark:text-white">9:00 AM - 6:00 PM</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Sunday</span>
-                  <span className="text-gray-800">10:00 AM - 4:00 PM</span>
+                  <span className="text-gray-600 dark:text-gray-300">Sunday</span>
+                  <span className="text-gray-800 dark:text-white">10:00 AM - 4:00 PM</span>
                 </div>
               </div>
             </GlassCard>

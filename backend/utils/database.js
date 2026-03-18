@@ -231,11 +231,36 @@ const cleanupOldRecords = async () => {
 };
 
 /**
+ * Ensure all required tables exist (safe to run on every startup)
+ */
+const ensureTables = async () => {
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS prescriptions (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      phone VARCHAR(20) NOT NULL,
+      email VARCHAR(255) NOT NULL,
+      message TEXT,
+      file_path VARCHAR(255) NOT NULL,
+      status ENUM('pending','reviewed','completed','cancelled') DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_prescriptions_status (status),
+      INDEX idx_prescriptions_email (email)
+    )
+  `);
+  logger.info('Table check: prescriptions OK');
+};
+
+/**
  * Initialize database optimizations
  */
 const initializeDatabase = async () => {
   try {
     logger.info('Initializing database optimizations');
+
+    // Ensure required tables exist
+    await ensureTables();
     
     // Create indexes
     await createIndexes();

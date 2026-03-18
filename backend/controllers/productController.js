@@ -47,9 +47,9 @@ const validateProductData = (data) => {
 // Get all products with optional category filtering and pagination (Requirement 3.2)
 exports.getAllProducts = async (req, res) => {
   try {
-    const { category, search, limit, offset } = req.query;
+    const { category, search, limit, offset, price_min, price_max } = req.query;
 
-    const pageLimit = Math.min(parseInt(limit) || 12, 100); // cap at 100
+    const pageLimit = Math.min(parseInt(limit) || 12, 100);
     const pageOffset = parseInt(offset) || 0;
 
     const conditions = [];
@@ -68,12 +68,19 @@ exports.getAllProducts = async (req, res) => {
       params.push(`%${search}%`, `%${search}%`);
     }
 
+    if (price_min !== undefined && price_min !== '') {
+      const min = parseFloat(price_min);
+      if (!isNaN(min)) { conditions.push("price >= ?"); params.push(min); }
+    }
+
+    if (price_max !== undefined && price_max !== '') {
+      const max = parseFloat(price_max);
+      if (!isNaN(max)) { conditions.push("price <= ?"); params.push(max); }
+    }
+
     const where = conditions.length ? " WHERE " + conditions.join(" AND ") : "";
 
-    // Total count for pagination
     const [[{ total }]] = await db.query(`SELECT COUNT(*) as total FROM products${where}`, params);
-
-    // Paginated results
     const [products] = await db.query(
       `SELECT * FROM products${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
       [...params, pageLimit, pageOffset]

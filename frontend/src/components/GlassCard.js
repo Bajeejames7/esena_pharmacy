@@ -57,6 +57,9 @@ const GlassCard = ({
     ? { backgroundColor: `rgba(255, 255, 255, ${validOpacity})` }
     : fallbackStyles;
 
+  // Dark mode background class
+  const darkBgClass = shouldUseGlassmorphism ? 'dark:bg-slate-800/50' : 'dark:bg-slate-800';
+
   // Hover classes
   const hoverClasses = hover 
     ? shouldUseGlassmorphism 
@@ -69,7 +72,7 @@ const GlassCard = ({
 
   return (
     <div
-      className={`${baseClasses} ${hoverClasses} ${interactiveClasses} ${className}`}
+      className={`${baseClasses} ${darkBgClass} ${hoverClasses} ${interactiveClasses} ${className}`}
       style={backgroundStyle}
       onClick={onClick}
       role={onClick ? 'button' : props.role}

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { validateAppointmentForm, validateField } from '../utils/validation';
+import { APPOINTMENT_SERVICES } from '../utils/appointmentServices';
 import GlassCard from '../components/GlassCard';
 import GlassInput from '../components/forms/GlassInput';
 import GlassSelect from '../components/forms/GlassSelect';
@@ -24,16 +25,10 @@ const BookAppointment = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [bookedTimes, setBookedTimes] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
-  const services = [
-    { value: '', label: 'Select a service' },
-    { value: 'Dermatology', label: 'Dermatology Consultation' },
-    { value: 'LabTest', label: 'Lab Test' },
-    { value: 'Pharmacist', label: 'Pharmacist Consultation' }
-  ];
-
-  const timeSlots = [
-    { value: '', label: 'Select a time' },
+  const ALL_TIME_SLOTS = [
     { value: '09:00', label: '9:00 AM' },
     { value: '09:30', label: '9:30 AM' },
     { value: '10:00', label: '10:00 AM' },
@@ -45,14 +40,39 @@ const BookAppointment = () => {
     { value: '15:00', label: '3:00 PM' },
     { value: '15:30', label: '3:30 PM' },
     { value: '16:00', label: '4:00 PM' },
-    { value: '16:30', label: '4:30 PM' }
+    { value: '16:30', label: '4:30 PM' },
   ];
+
+  // Derived: filter out already-booked slots
+  const timeSlots = ALL_TIME_SLOTS.map(slot => ({
+    ...slot,
+    disabled: bookedTimes.includes(slot.value),
+    label: bookedTimes.includes(slot.value) ? `${slot.label} (Booked)` : slot.label,
+  }));
+
+  // Fetch booked slots whenever date changes
+  useEffect(() => {
+    if (!formData.date) {
+      setBookedTimes([]);
+      return;
+    }
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+    setLoadingSlots(true);
+    fetch(`${apiUrl}/appointments/availability?date=${formData.date}`)
+      .then(r => r.json())
+      .then(data => setBookedTimes(data.bookedTimes || []))
+      .catch(() => setBookedTimes([]))
+      .finally(() => setLoadingSlots(false));
+  }, [formData.date]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
+      // reset time if date changes so a stale booked slot isn't kept
+      ...(name === 'date' ? { time: '' } : {})
     }));
 
     // Real-time validation
@@ -132,9 +152,12 @@ const BookAppointment = () => {
               </svg>
             </div>
             <h1 className="text-gray-800 dark:text-white mb-4">Appointment Booked Successfully!</h1>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
               Your appointment has been scheduled. We'll send you a confirmation email with all the details.
             </p>
+            <div className="bg-amber-50/60 border border-amber-200 dark:border-amber-700 rounded-lg p-3 mb-6 text-sm text-amber-700 dark:text-amber-300 text-left">
+              📬 Can't find the email? Check your <span className="font-semibold">Spam / Junk</span> folder — our emails are sometimes filtered automatically.
+            </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <GlassButton onClick={() => setSubmitSuccess(false)}>
                 Book Another Appointment
@@ -206,7 +229,8 @@ const BookAppointment = () => {
                   name="service"
                   value={formData.service}
                   onChange={handleChange}
-                  options={services}
+                  options={APPOINTMENT_SERVICES}
+                  placeholder="Select a service"
                   error={errors.service}
                   required
                 />
@@ -231,6 +255,7 @@ const BookAppointment = () => {
                   value={formData.time}
                   onChange={handleChange}
                   options={timeSlots}
+                  placeholder={loadingSlots ? 'Loading available times...' : 'Select a time'}
                   error={errors.time}
                   required
                 />
@@ -269,46 +294,31 @@ const BookAppointment = () => {
           <div className="space-y-6">
             <GlassCard className="p-6">
               <h2 className="text-gray-800 dark:text-white mb-4">Our Services</h2>
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-glass-blue to-glass-green rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-sm">👩🏾‍⚕️</span>
+              <div className="space-y-3">
+                {[
+                  { icon: '👨‍⚕️', title: 'Doctor Consultation', desc: 'General and specialist doctor consultations' },
+                  { icon: '💊', title: 'Pharmacist Consultation', desc: 'Medication reviews and health advice' },
+                  { icon: '💻', title: 'Online Consultation', desc: 'Telemedicine — consult from anywhere' },
+                  { icon: '👩🏾‍⚕️', title: 'Dermatology / Skin', desc: 'Skin health assessment and treatment' },
+                  { icon: '🥗', title: 'Nutrition & Wellness', desc: 'Diet and lifestyle guidance' },
+                  { icon: '👁️', title: 'Eye Care', desc: 'Vision and eye health consultations' },
+                  { icon: '🔬', title: 'Lab & Blood Tests', desc: 'Malaria, HIV, cholesterol and more' },
+                  { icon: '🩺', title: 'Health Screening', desc: 'BP, glucose, BMI and full screenings' },
+                  { icon: '💉', title: 'Vaccinations', desc: 'Immunization and travel vaccines' },
+                  { icon: '🌸', title: 'Family Planning', desc: 'Contraception and reproductive health' },
+                  { icon: '❤️', title: 'Heart & Diabetes Care', desc: 'Chronic disease management programs' },
+                  { icon: '👂', title: 'Ear Piercing', desc: 'Safe, professional ear piercing service' },
+                ].map(({ icon, title, desc }) => (
+                  <div key={title} className="flex items-start space-x-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-glass-blue to-glass-green rounded-lg flex items-center justify-center flex-shrink-0">
+                      <span className="text-sm">{icon}</span>
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-800 dark:text-white text-sm">{title}</h3>
+                      <p className="text-gray-600 dark:text-gray-300 text-xs">{desc}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800 dark:text-white">Dermatology Consultation</h3>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">Skin health assessment and treatment recommendations</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-glass-blue to-glass-green rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-sm">🔬</span>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800 dark:text-white">Lab Tests</h3>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">Blood work, urine tests, and health screenings</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-glass-blue to-glass-green rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-sm">💊</span>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800 dark:text-white">Pharmacist Consultation</h3>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">Medication reviews and health advice</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-glass-blue to-glass-green rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-sm">💉</span>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800 dark:text-white">Vaccinations</h3>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">Flu shots, travel vaccines, and immunizations</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </GlassCard>
             

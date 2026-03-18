@@ -77,7 +77,7 @@ CREATE TABLE appointments (
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255),
   phone VARCHAR(20),
-  service ENUM('Dermatology','LabTest','Pharmacist') NOT NULL,
+  service VARCHAR(100) NOT NULL,
   date DATETIME NOT NULL,
   time VARCHAR(10),
   message TEXT,

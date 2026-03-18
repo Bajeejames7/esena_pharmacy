@@ -151,14 +151,14 @@ const Home = () => {
             breakpoint === 'tablet' ? 'grid-cols-3' : 'grid-cols-4'
           }`}>
             {[
-              { name: 'Pain Relief', image: '/pain_relief.png', link: '/products?category=pain-relief', fallback: '🩹' },
-              { name: 'Cough & Flu', image: '/cough_&_flu.png', link: '/products?category=cough-flu', fallback: '🤧' },
-              { name: 'Vitamins & Supplements', image: '/vitamins_&_supplements.png', link: '/supplements', fallback: '💊' },
-              { name: 'Skin Care', image: '/skin_care.png', link: '/personal-care?category=skin-care', fallback: '🧴' },
-              { name: 'Baby Care', image: '/baby_care.png', link: '/products?category=baby-care', fallback: '👶' },
-              { name: 'Women\'s Health', image: '/womens_health.png', link: '/products?category=womens-health', fallback: '👩' },
-              { name: 'Diabetes', image: '/diabetis.png', link: '/products?category=diabetes', fallback: '🩺' },
-              { name: 'Digestive Health', image: '/digestive_health.png', link: '/products?category=digestive', fallback: '🫁' }
+              { name: 'Pain Relief', image: '/pain_relief.png', link: '/products?category=PainRelief', fallback: '🩹' },
+              { name: 'Cough & Flu', image: '/cough_&_flu.png', link: '/products?category=ColdAndFlu', fallback: '🤧' },
+              { name: 'Vitamins & Supplements', image: '/vitamins_&_supplements.png', link: '/products?category=Supplements', fallback: '💊' },
+              { name: 'Skin Care', image: '/skin_care.png', link: '/products?category=MedicatedSkinCare', fallback: '🧴' },
+              { name: 'Baby Care', image: '/baby_care.png', link: '/products?category=BabyMedicines', fallback: '👶' },
+              { name: 'Women\'s Health', image: '/womens_health.png', link: '/products?category=FeminineHealth', fallback: '👩' },
+              { name: 'Diabetes', image: '/diabetis.png', link: '/products?category=DiabetesCare', fallback: '🩺' },
+              { name: 'Digestive Health', image: '/digestive_health.png', link: '/products?category=DigestiveHealth', fallback: '🫁' }
             ].map((category, index) => (
               <Link key={index} to={category.link}>
                 <div className="text-center hover:scale-105 transition-all duration-300 group">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { validateField } from '../utils/validation';
 import GlassCard from '../components/GlassCard';
 import GlassInput from '../components/forms/GlassInput';
@@ -18,6 +18,8 @@ const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const sessionExpired = location.state?.sessionExpired;
 
   // Redirect if already logged in
   useEffect(() => {
@@ -208,6 +210,12 @@ const AdminLogin = () => {
               autoComplete="current-password"
               placeholder="Enter your password"
             />
+
+            {sessionExpired && (
+              <div className="p-4 bg-yellow-100/50 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-600 rounded-lg text-yellow-800 dark:text-yellow-200 text-sm">
+                Your session expired due to inactivity. Please sign in again.
+              </div>
+            )}
 
             {error && (
               <div className="p-4 bg-red-100/50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg text-red-700 dark:text-red-300">

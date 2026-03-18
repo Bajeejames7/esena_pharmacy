@@ -1,5 +1,8 @@
 const nodemailer = require("nodemailer");
 
+// Strip trailing slash so URLs like FRONTEND_URL + "/path" never produce double slashes
+const FRONTEND_URL = (process.env.FRONTEND_URL || 'https://esena.co.ke').replace(/\/$/, '');
+
 /**
  * Email transporter configuration with SMTP settings
  * Implements Requirements 14.9, 14.10
@@ -123,7 +126,7 @@ const orderConfirmationTemplate = (order, items = []) => {
                 </tbody>
               </table>
             </div>
-            ` : `<p><strong>Estimated Total:</strong> KSH ${order.total.toFixed(2)}</p>`}
+            ` : `<p><strong>Estimated Total:</strong> KSH ${parseFloat(order.total || 0).toFixed(2)}</p>`}
 
             <div class="notice">
               ⚠️ <strong>Note on Delivery Cost:</strong> The delivery fee shown is an estimate based on your selected zone (<em>${deliveryLabel}</em>). The final delivery cost may be adjusted by our team depending on your exact location. We will notify you of any changes before dispatch.
@@ -131,7 +134,7 @@ const orderConfirmationTemplate = (order, items = []) => {
             
             <p><strong>${deliveryType === 'pickup' ? 'Pickup Location' : 'Delivery Address'}:</strong> ${deliveryAddress}</p>
             
-            <a href="${process.env.FRONTEND_URL}/track/${order.token}" class="button">Track Your Order</a>
+            <a href="${FRONTEND_URL}/track/${order.token}" class="button">Track Your Order</a>
             
             <div style="background:#fff3cd;border-left:4px solid #ffc107;padding:12px 16px;margin:16px 0;font-size:13px;border-radius:4px;">
               🔒 <strong>Privacy Notice:</strong> Your tracking token is personal and gives access to your order details. Please keep it secure and do not share it with anyone.
@@ -264,7 +267,7 @@ const paymentRequestTemplate = (order) => {
             
             <div class="amount-box">
               <p style="margin: 0; font-size: 14px; color: #666;">Amount Due</p>
-              <div class="amount">KSH ${order.total.toFixed(2)}</div>
+              <div class="amount">KSH ${parseFloat(order.total || 0).toFixed(2)}</div>
             </div>
             
             <p><strong>Order Token:</strong> ${order.token}</p>
@@ -275,7 +278,7 @@ const paymentRequestTemplate = (order) => {
               <li>Select Pay Bill</li>
               <li>Enter Business Number: [TO BE CONFIGURED]</li>
               <li>Enter Account Number: ${order.token}</li>
-              <li>Enter Amount: ${order.total.toFixed(2)}</li>
+              <li>Enter Amount: ${parseFloat(order.total || 0).toFixed(2)}</li>
               <li>Enter your M-PESA PIN and confirm</li>
             </ol>
             
@@ -325,7 +328,7 @@ const dispatchNotificationTemplate = (order) => {
             <p><strong>Order Token:</strong> ${order.token}</p>
             <p><strong>Delivery Address:</strong> ${order.delivery_address}</p>
             
-            <a href="${process.env.FRONTEND_URL}/track/${order.token}" class="button">Track Your Order</a>
+            <a href="${FRONTEND_URL}/track/${order.token}" class="button">Track Your Order</a>
             
             <p>You should receive your order soon. If you have any questions, please contact us at <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a> or call 0768103599.</p>
           </div>
@@ -376,7 +379,7 @@ const appointmentConfirmationTemplate = (appointment) => {
               <code style="font-size: 16px; color: #667eea;">${appointment.token}</code></p>
             </div>
             
-            <a href="${process.env.FRONTEND_URL}/track-appointment/${appointment.token}" class="button">View Appointment Details</a>
+            <a href="${FRONTEND_URL}/track-appointment/${appointment.token}" class="button">View Appointment Details</a>
             
             <p>Please arrive 10 minutes before your scheduled time. If you need to reschedule, please contact us.</p>
           </div>
@@ -584,10 +587,10 @@ const paymentConfirmedTemplate = (order) => {
           <p>We have received your payment. Your order is now being prepared for dispatch.</p>
           <div class="box">
             <p><strong>Order Token:</strong> ${order.token}</p>
-            <p><strong>Amount Paid:</strong> KSH ${parseFloat(order.total).toFixed(2)}</p>
+            <p><strong>Amount Paid:</strong> KSH ${parseFloat(order.total || 0).toFixed(2)}</p>
           </div>
           <p>We'll notify you once your order is on its way.</p>
-          <a href="${process.env.FRONTEND_URL || 'https://esena.co.ke'}/track/${order.token}" class="button">Track Your Order</a>
+          <a href="${FRONTEND_URL}/track/${order.token}" class="button">Track Your Order</a>
           <p>For assistance, contact us at <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a> or call 0768103599.</p>
         </div>
         <div class="footer"><p>Esena Pharmacy - Your Trusted Healthcare Partner</p><p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p></div>
@@ -619,7 +622,7 @@ const readyForPickupTemplate = (order) => {
           <p>Your order is ready and waiting for you at our pharmacy.</p>
           <div class="box">
             <p><strong>Order Token:</strong> ${order.token}</p>
-            <p><strong>Total:</strong> KSH ${parseFloat(order.total).toFixed(2)}</p>
+            <p><strong>Total:</strong> KSH ${parseFloat(order.total || 0).toFixed(2)}</p>
           </div>
           <div class="address">
             <strong>📍 Pickup Location:</strong><br>
@@ -632,6 +635,58 @@ const readyForPickupTemplate = (order) => {
         </div>
         <div class="footer"><p>Esena Pharmacy - Your Trusted Healthcare Partner</p><p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p></div>
       </div></body></html>
+    `
+  };
+};
+
+/**
+ * Email template for appointment cancellation notification to customer
+ */
+const appointmentCancellationTemplate = (appointment) => {
+  return {
+    subject: "Appointment Cancelled - Esena Pharmacy",
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+          .appointment-box { background: white; padding: 20px; border-left: 4px solid #e74c3c; margin: 20px 0; border-radius: 4px; }
+          .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>❌ Appointment Cancelled</h1>
+          </div>
+          <div class="content">
+            <p>Dear ${appointment.name},</p>
+            <p>We're sorry to inform you that your appointment has been cancelled.</p>
+            
+            <div class="appointment-box">
+              <p><strong>Service:</strong> ${appointment.service}</p>
+              <p><strong>Date:</strong> ${new Date(appointment.date).toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <p><strong>Tracking Token:</strong> ${appointment.token}</p>
+            </div>
+            
+            <p>If you'd like to book a new appointment, please visit our website or contact us directly.</p>
+            <a href="${FRONTEND_URL}/book-appointment" class="button">Book a New Appointment</a>
+            
+            <p>📞 Call: 0768103599 | ✉️ Email: <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a></p>
+            <p>We apologize for any inconvenience caused.</p>
+          </div>
+          <div class="footer">
+            <p>Esena Pharmacy - Your Trusted Healthcare Partner</p>
+            <p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p>
+          </div>
+        </div>
+      </body>
+      </html>
     `
   };
 };
@@ -673,7 +728,7 @@ const appointmentRescheduleTemplate = (appointment) => {
               <code style="font-size: 16px; color: #f39c12;">${appointment.token}</code></p>
             </div>
             
-            <a href="${process.env.FRONTEND_URL}/track-appointment/${appointment.token}" class="button">View Appointment Details</a>
+            <a href="${FRONTEND_URL}/track-appointment/${appointment.token}" class="button">View Appointment Details</a>
             
             <p>If this new time doesn't work for you, please contact us as soon as possible.</p>
             <p>📞 Call: 0768103599 | ✉️ Email: <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a></p>
@@ -702,5 +757,6 @@ module.exports = {
   appointmentAdminNotificationTemplate,
   appointmentConfirmationUpdateTemplate,
   appointmentCompletionTemplate,
+  appointmentCancellationTemplate,
   appointmentRescheduleTemplate
 };

@@ -27,6 +27,10 @@ const ManageBlogs = () => {
     status: 'draft'
   });
   const [errors, setErrors] = useState({});
+  const [imageMode, setImageMode] = useState('url'); // 'url' | 'upload'
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const isMobile = breakpoint === 'mobile';
   const isTablet = breakpoint === 'tablet';
@@ -57,11 +61,18 @@ const ManageBlogs = () => {
     }
   };
 
+  const handleImageFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    setFormData(prev => ({ ...prev, image: '' }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
 
-    // Validation
     const newErrors = {};
     if (!formData.title.trim()) newErrors.title = 'Title is required';
     if (!formData.content.trim()) newErrors.content = 'Content is required';
@@ -72,15 +83,28 @@ const ManageBlogs = () => {
     }
 
     try {
-      if (editingBlog) {
-        await blogsAPI.update(editingBlog.id, formData);
-      } else {
-        await blogsAPI.create(formData);
+      let imageUrl = formData.image;
+
+      // Upload file first if one was selected
+      if (imageMode === 'upload' && imageFile) {
+        setUploadingImage(true);
+        const res = await blogsAPI.uploadImage(imageFile);
+        imageUrl = res.data.imageUrl;
+        setUploadingImage(false);
       }
-      
+
+      const payload = { ...formData, image: imageUrl };
+
+      if (editingBlog) {
+        await blogsAPI.update(editingBlog.id, payload);
+      } else {
+        await blogsAPI.create(payload);
+      }
+
       await fetchBlogs();
       resetForm();
     } catch (error) {
+      setUploadingImage(false);
       console.error('Error saving blog:', error);
       setErrors({ submit: error.response?.data?.message || 'Failed to save blog' });
     }
@@ -96,6 +120,9 @@ const ManageBlogs = () => {
       author: blog.author,
       status: blog.status
     });
+    setImageMode('url');
+    setImageFile(null);
+    setImagePreview(blog.image || '');
     setShowForm(true);
   };
 
@@ -131,6 +158,9 @@ const ManageBlogs = () => {
     setEditingBlog(null);
     setShowForm(false);
     setErrors({});
+    setImageMode('url');
+    setImageFile(null);
+    setImagePreview('');
   };
 
   const formatDate = (dateString) => {
@@ -305,12 +335,51 @@ const ManageBlogs = () => {
                 />
               </div>
               <div>
-                <GlassInput
-                  label="Featured Image URL"
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
-                />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Featured Image</label>
+                <div className="flex gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => { setImageMode('url'); setImageFile(null); setImagePreview(formData.image); }}
+                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${imageMode === 'url' ? 'bg-glass-blue text-white' : 'bg-white/30 dark:bg-slate-700/50 text-gray-700 dark:text-gray-300'}`}
+                  >
+                    URL
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setImageMode('upload'); }}
+                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${imageMode === 'upload' ? 'bg-glass-blue text-white' : 'bg-white/30 dark:bg-slate-700/50 text-gray-700 dark:text-gray-300'}`}
+                  >
+                    Upload
+                  </button>
+                </div>
+                {imageMode === 'url' ? (
+                  <GlassInput
+                    value={formData.image}
+                    onChange={(e) => { setFormData({ ...formData, image: e.target.value }); setImagePreview(e.target.value); }}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                ) : (
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handleImageFileChange}
+                    className="w-full text-sm text-gray-700 dark:text-gray-300 file:mr-3 file:py-2 file:px-3 file:rounded file:border-0 file:text-sm file:bg-glass-blue/20 file:text-glass-blue dark:file:text-blue-300 hover:file:bg-glass-blue/30 cursor-pointer"
+                  />
+                )}
+                {(imagePreview || formData.image) && (
+                  <img
+                    src={(() => {
+                      const src = imagePreview || formData.image;
+                      if (src && src.startsWith('/uploads/')) {
+                        return (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace('/api', '') + src;
+                      }
+                      return src;
+                    })()}
+                    alt="Preview"
+                    className="mt-2 h-24 w-full object-cover rounded-lg border border-white/20"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                )}
               </div>
             </div>
 
@@ -358,8 +427,9 @@ const ManageBlogs = () => {
               <GlassButton
                 type="submit"
                 className="bg-glass-blue text-white"
+                disabled={uploadingImage}
               >
-                {editingBlog ? 'Update Blog' : 'Create Blog'}
+                {uploadingImage ? 'Uploading image...' : editingBlog ? 'Update Blog' : 'Create Blog'}
               </GlassButton>
             </div>
           </form>

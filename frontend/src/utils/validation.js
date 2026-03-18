@@ -160,11 +160,11 @@ export const validateOrderForm = (formData) => {
     errors.phone = phoneValidation.error;
   }
   
-  // Validate address
+  // Validate address (skip length check for pickup placeholder)
   const addressValidation = validateRequired(formData.address, 'Address');
   if (!addressValidation.isValid) {
     errors.address = addressValidation.error;
-  } else {
+  } else if (formData.address !== 'In-store pickup') {
     const lengthValidation = validateLength(formData.address, 10, 200, 'Address');
     if (!lengthValidation.isValid) {
       errors.address = lengthValidation.error;

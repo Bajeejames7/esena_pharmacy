@@ -5,10 +5,10 @@ import GlassInput from '../components/forms/GlassInput';
 import GlassButton from '../components/forms/GlassButton';
 
 const statusInfo = {
-  pending: { icon: '⏳', color: 'text-yellow-600', bg: 'bg-yellow-100', label: 'Pending', message: 'Your appointment request has been received and is awaiting confirmation.' },
-  confirmed: { icon: '✅', color: 'text-green-600', bg: 'bg-green-100', label: 'Confirmed', message: 'Your appointment is confirmed. Please arrive 10 minutes early.' },
-  completed: { icon: '🎉', color: 'text-blue-600', bg: 'bg-blue-100', label: 'Completed', message: 'Your appointment has been completed. Thank you for visiting us!' },
-  cancelled: { icon: '❌', color: 'text-red-600', bg: 'bg-red-100', label: 'Cancelled', message: 'This appointment has been cancelled. Please book a new one if needed.' },
+  pending:   { icon: '⏳', color: 'text-yellow-700 dark:text-yellow-300', bg: 'bg-yellow-100 dark:bg-yellow-900/30', msgColor: 'text-yellow-800 dark:text-yellow-200', label: 'Pending',   message: 'Your appointment request has been received and is awaiting confirmation.' },
+  confirmed: { icon: '✅', color: 'text-green-700 dark:text-green-300',   bg: 'bg-green-100 dark:bg-green-900/30',   msgColor: 'text-green-800 dark:text-green-200',   label: 'Confirmed', message: 'Your appointment is confirmed. Please arrive 10 minutes early.' },
+  completed: { icon: '🎉', color: 'text-blue-700 dark:text-blue-300',     bg: 'bg-blue-100 dark:bg-blue-900/30',     msgColor: 'text-blue-800 dark:text-blue-200',     label: 'Completed', message: 'Your appointment has been completed. Thank you for visiting us!' },
+  cancelled: { icon: '❌', color: 'text-red-700 dark:text-red-300',       bg: 'bg-red-100 dark:bg-red-900/30',       msgColor: 'text-red-800 dark:text-red-200',       label: 'Cancelled', message: 'This appointment has been cancelled. Please book a new one if needed.' },
 };
 
 const TrackAppointment = () => {
@@ -19,18 +19,13 @@ const TrackAppointment = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (token) handleTrack();
+    if (token) fetchAppointment(token);
   }, [token]); // eslint-disable-line
 
-  const handleTrack = async (e) => {
-    if (e) e.preventDefault();
-    const t = trackingToken.trim();
-    if (!t) { setError('Please enter your tracking token'); return; }
-
+  const fetchAppointment = async (t) => {
     setLoading(true);
     setError('');
     setAppointment(null);
-
     try {
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       const res = await fetch(`${apiUrl}/appointments/${t}`);
@@ -49,6 +44,13 @@ const TrackAppointment = () => {
     }
   };
 
+  const handleTrack = async (e) => {
+    if (e) e.preventDefault();
+    const t = trackingToken.trim();
+    if (!t) { setError('Please enter your tracking token'); return; }
+    fetchAppointment(t);
+  };
+
   const info = appointment ? (statusInfo[appointment.status] || statusInfo.pending) : null;
 
   return (
@@ -61,7 +63,28 @@ const TrackAppointment = () => {
           </p>
         </GlassCard>
 
-        {!appointment && (
+        {loading && (
+          <GlassCard className="p-8 text-center">
+            <div className="flex items-center justify-center space-x-3 text-gray-600 dark:text-gray-300">
+              <svg className="animate-spin w-6 h-6" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+              </svg>
+              <span>Looking up your appointment...</span>
+            </div>
+          </GlassCard>
+        )}
+
+        {!appointment && !loading && error && token && (
+          <GlassCard className="p-8 text-center">
+            <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+            <GlassButton onClick={() => window.location.href = '/track-appointment'}>
+              Try Again
+            </GlassButton>
+          </GlassCard>
+        )}
+
+        {!appointment && !loading && (
           <GlassCard className="p-8 mb-6">
             <form onSubmit={handleTrack} className="space-y-4">
               <GlassInput
@@ -101,7 +124,7 @@ const TrackAppointment = () => {
               <span className="text-3xl">{info.icon}</span>
               <div>
                 <p className={`font-semibold text-lg ${info.color}`}>{info.label}</p>
-                <p className="text-gray-600 text-sm">{info.message}</p>
+                <p className={`text-sm ${info.msgColor}`}>{info.message}</p>
               </div>
             </div>
 
@@ -119,13 +142,38 @@ const TrackAppointment = () => {
                 <div>
                   <p className="text-gray-500 dark:text-gray-400">Date</p>
                   <p className="font-medium text-gray-800 dark:text-white">
-                    {new Date(appointment.date).toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    {(() => {
+                      const datePart = appointment.date
+                        ? appointment.date.split('T')[0]
+                        : null;
+                      if (!datePart) return 'Not specified';
+                      const [year, month, day] = datePart.split('-').map(Number);
+                      return new Date(year, month - 1, day).toLocaleDateString('en-KE', {
+                        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                      });
+                    })()}
                   </p>
                 </div>
                 <div>
                   <p className="text-gray-500 dark:text-gray-400">Time</p>
                   <p className="font-medium text-gray-800 dark:text-white">
-                    {appointment.time || new Date(appointment.date).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}
+                    {appointment.time
+                      ? (() => {
+                          const [h, m] = appointment.time.split(':').map(Number);
+                          const suffix = h >= 12 ? 'PM' : 'AM';
+                          const hour = h % 12 || 12;
+                          return `${hour}:${String(m).padStart(2, '0')} ${suffix}`;
+                        })()
+                      : appointment.date && appointment.date.includes('T')
+                        ? (() => {
+                            const timePart = appointment.date.split('T')[1].substring(0, 5);
+                            const [h, m] = timePart.split(':').map(Number);
+                            const suffix = h >= 12 ? 'PM' : 'AM';
+                            const hour = h % 12 || 12;
+                            return `${hour}:${String(m).padStart(2, '0')} ${suffix}`;
+                          })()
+                        : 'Not specified'
+                    }
                   </p>
                 </div>
                 <div className="col-span-2">

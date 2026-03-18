@@ -1,59 +1,27 @@
-import React, { useState, useEffect } from 'react';
 import GlassCard from './GlassCard';
 
 /**
- * Product search and filter component
- * Implements Requirements 3.6, 3.7, 18.1, 18.2, 18.3, 18.4, 18.5, 18.6, 18.7
+ * Fully controlled product search/filter component.
+ * All state lives in the parent — no internal state, no feedback loops.
  */
-const ProductSearch = ({ 
-  onSearch, 
-  onFilterChange, 
+const ProductSearch = ({
+  searchTerm = '',
+  onSearchChange,
+  category = '',
+  onCategoryChange,
+  inStockOnly = false,
+  onInStockChange,
+  priceMin = '',
+  priceMax = '',
+  onPriceMinChange,
+  onPriceMaxChange,
+  sortBy = 'name',
+  onSortChange,
+  onClearFilters,
   categories = [],
-  initialFilters = {},
   className = ''
 }) => {
-  const [searchTerm, setSearchTerm] = useState(initialFilters.search || '');
-  const [selectedCategory, setSelectedCategory] = useState(initialFilters.category || '');
-  const [inStockOnly, setInStockOnly] = useState(initialFilters.inStockOnly || false);
-  const [priceRange, setPriceRange] = useState({
-    min: initialFilters.priceMin || '',
-    max: initialFilters.priceMax || ''
-  });
-  const [sortBy, setSortBy] = useState(initialFilters.sortBy || 'name');
-
-  // Debounced search
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (onSearch) {
-        onSearch(searchTerm);
-      }
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm, onSearch]);
-
-  // Handle filter changes
-  useEffect(() => {
-    if (onFilterChange) {
-      onFilterChange({
-        category: selectedCategory,
-        inStockOnly,
-        priceMin: priceRange.min ? parseFloat(priceRange.min) : null,
-        priceMax: priceRange.max ? parseFloat(priceRange.max) : null,
-        sortBy
-      });
-    }
-  }, [selectedCategory, inStockOnly, priceRange, sortBy, onFilterChange]);
-
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setSelectedCategory('');
-    setInStockOnly(false);
-    setPriceRange({ min: '', max: '' });
-    setSortBy('name');
-  };
-
-  const hasActiveFilters = searchTerm || selectedCategory || inStockOnly || priceRange.min || priceRange.max || sortBy !== 'name';
+  const hasActiveFilters = searchTerm || category || inStockOnly || priceMin || priceMax || sortBy !== 'name';
 
   return (
     <GlassCard className={`p-4 ${className}`}>
@@ -67,26 +35,37 @@ const ProductSearch = ({
             <input
               type="text"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Search by name or description..."
-              className="glass-input w-full pl-10"
+              className={`glass-input w-full pl-10 ${searchTerm ? 'pr-8' : ''}`}
             />
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
+            {searchTerm && (
+              <button
+                onClick={() => onSearchChange('')}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                aria-label="Clear search"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Filters — stack on mobile, 2-col on sm, 4-col on lg */}
+        {/* Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Category */}
           <div className="min-w-0">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
             <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              value={category}
+              onChange={(e) => onCategoryChange(e.target.value)}
               className="glass-input w-full"
             >
               <option value="">All Categories</option>
@@ -103,8 +82,8 @@ const ProductSearch = ({
             <div className="flex gap-2">
               <input
                 type="number"
-                value={priceRange.min}
-                onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
+                value={priceMin}
+                onChange={(e) => onPriceMinChange(e.target.value)}
                 placeholder="Min"
                 className="glass-input w-0 flex-1 min-w-0"
                 min="0"
@@ -112,8 +91,8 @@ const ProductSearch = ({
               />
               <input
                 type="number"
-                value={priceRange.max}
-                onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
+                value={priceMax}
+                onChange={(e) => onPriceMaxChange(e.target.value)}
                 placeholder="Max"
                 className="glass-input w-0 flex-1 min-w-0"
                 min="0"
@@ -127,7 +106,7 @@ const ProductSearch = ({
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sort By</label>
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              onChange={(e) => onSortChange(e.target.value)}
               className="glass-input w-full"
             >
               <option value="name">Name (A-Z)</option>
@@ -143,9 +122,8 @@ const ProductSearch = ({
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
-                id="inStockOnly"
                 checked={inStockOnly}
-                onChange={(e) => setInStockOnly(e.target.checked)}
+                onChange={(e) => onInStockChange(e.target.checked)}
                 className="w-4 h-4 text-blue-600 rounded"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">In Stock Only</span>
@@ -157,7 +135,7 @@ const ProductSearch = ({
         {hasActiveFilters && (
           <div className="flex justify-between items-center pt-2 border-t border-white/20">
             <span className="text-sm text-gray-600 dark:text-gray-400">Filters applied</span>
-            <button onClick={handleClearFilters} className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+            <button onClick={onClearFilters} className="text-sm text-blue-600 hover:text-blue-800 font-medium">
               Clear All
             </button>
           </div>

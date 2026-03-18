@@ -7,7 +7,7 @@
 
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:3001/api',
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ export const ordersAPI = {
   getById: (id) => api.get(`/orders/${id}/details`),
   updateStatus: (id, status) => api.put(`/orders/${id}/status`, { status }),
   updateShipping: (id, shippingCost) =>
-    api.put("/orders/${id}/shipping", { shipping_cost: shippingCost }),
+    api.put(`/orders/${id}/shipping`, { shipping_cost: shippingCost }),
   cancel: (id, reason) => api.post(`/orders/${id}/cancel`, { reason }),
   cancelByToken: (token, reason) => api.post(`/orders/cancel/${token}`, { reason }),
   getByToken: (token) => api.get(`/orders/track/${token}`),
@@ -126,6 +126,20 @@ export const blogsAPI = {
   update: (id, data) => api.put(`/blogs/${id}`, data),
   delete: (id) => api.delete(`/blogs/${id}`),
   toggleStatus: (id) => api.patch(`/blogs/${id}/toggle-status`),
+  uploadImage: (file) => {
+    const form = new FormData();
+    form.append('image', file);
+    return api.post('/blogs/upload-image', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+};
+
+// Prescriptions API methods
+export const prescriptionsAPI = {
+  upload: (formData) => api.post('/prescriptions/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  getAll: () => api.get('/prescriptions'),
+  updateStatus: (id, status) => api.patch(`/prescriptions/${id}/status`, { status }),
 };
 
 export default api;

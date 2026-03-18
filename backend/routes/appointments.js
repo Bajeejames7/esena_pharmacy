@@ -6,11 +6,13 @@ const {
   getAppointmentByToken,
   getAllAppointments,
   updateAppointmentStatus,
-  rescheduleAppointment
+  rescheduleAppointment,
+  getAvailability
 } = require("../controllers/appointmentController");
 
 // Public routes
 router.post("/", createAppointment);
+router.get("/availability", getAvailability);
 
 // Protected routes (require JWT authentication)
 router.get("/", auth, getAllAppointments);

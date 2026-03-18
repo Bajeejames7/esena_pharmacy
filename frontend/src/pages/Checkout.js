@@ -79,7 +79,7 @@ const Checkout = () => {
 
     // For pickup, address fields aren't required
     const dataToValidate = formData.deliveryType === 'pickup'
-      ? { ...formData, address: 'pickup', city: 'Nairobi', state: 'Nairobi', landmark: 'pickup' }
+      ? { ...formData, address: 'In-store pickup', city: 'Nairobi', state: 'Nairobi', landmark: 'pickup' }
       : formData;
 
     const validation = validateOrderForm(dataToValidate);

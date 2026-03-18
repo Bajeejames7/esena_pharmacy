@@ -4,6 +4,7 @@ import GlassCard from '../components/GlassCard';
 import GlassInput from '../components/forms/GlassInput';
 import GlassTextarea from '../components/forms/GlassTextarea';
 import GlassButton from '../components/forms/GlassButton';
+import { prescriptionsAPI } from '../services/api';
 
 /**
  * Prescription Upload Page
@@ -119,22 +120,11 @@ const UploadPrescription = () => {
       submitData.append('message', formData.message);
       submitData.append('prescription', formData.prescriptionFile);
 
-      // TODO: Replace with actual API endpoint
-      const response = await fetch('/api/prescriptions/upload', {
-        method: 'POST',
-        body: submitData
-      });
+      const response = await prescriptionsAPI.upload(submitData);
 
-      if (response.ok) {
+      if (response.data?.success) {
         setIsSubmitted(true);
-        // Reset form
-        setFormData({
-          name: '',
-          phone: '',
-          email: '',
-          message: '',
-          prescriptionFile: null
-        });
+        setFormData({ name: '', phone: '', email: '', message: '', prescriptionFile: null });
       } else {
         throw new Error('Failed to submit prescription');
       }

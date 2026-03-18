@@ -5,12 +5,38 @@ const {
   appointmentAdminNotificationTemplate,
   appointmentConfirmationUpdateTemplate,
   appointmentCompletionTemplate,
+  appointmentCancellationTemplate,
   appointmentRescheduleTemplate
 } = require("../config/mail");
 const { generateUniqueToken } = require("../utils/tokenGenerator");
 
 // Valid appointment services
-const VALID_SERVICES = ['Dermatology', 'LabTest', 'Pharmacist'];
+const VALID_SERVICES = [
+  'Doctor Consultation',
+  'Pharmacist Consultation',
+  'Online Consultation',
+  'Dermatology',
+  'Nutrition and Wellness',
+  'Eye Care',
+  'Laboratory Tests',
+  'Blood Tests',
+  'Malaria Testing',
+  'HIV Testing Support',
+  'Cholesterol Testing',
+  'Vaccinations',
+  'Family Planning',
+  'Full Health Screening',
+  'Blood Pressure Check',
+  'Blood Glucose Testing',
+  'BMI Measurement',
+  'Diabetes Management',
+  'Heart Health Consultation',
+  'Weight Management',
+  'Ear Piercing',
+  // Legacy values for backward compatibility with existing records
+  'LabTest',
+  'Pharmacist',
+];
 
 // Validation helper
 const validateAppointmentData = (data) => {
@@ -81,11 +107,18 @@ exports.createAppointment = async (req, res) => {
     
     // Generate unique token for appointment tracking (Requirement 8.9)
     const token = await generateUniqueToken();
+
+    // Extract time from date string if present (e.g. "2026-03-25T09:00:00")
+    let timeValue = null;
+    if (date && date.includes('T')) {
+      const timePart = date.split('T')[1];
+      timeValue = timePart ? timePart.substring(0, 5) : null; // "09:00"
+    }
     
     // Insert appointment into database (Requirement 8.9)
     const [result] = await db.query(
-      "INSERT INTO appointments (name, email, phone, service, date, message, token, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')",
-      [name, email, phone, service, date, message || null, token]
+      "INSERT INTO appointments (name, email, phone, service, date, time, message, token, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')",
+      [name, email, phone, service, date, timeValue, message || null, token]
     );
     
     // Send email notifications (Requirements 8.10, 8.11)
@@ -155,6 +188,26 @@ exports.getAppointmentByToken = async (req, res) => {
     res.json(appointments[0]);
   } catch (error) {
     console.error("Appointment tracking error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Get booked time slots for a given date (public — used by booking form)
+exports.getAvailability = async (req, res) => {
+  try {
+    const { date } = req.query;
+    if (!date) return res.status(400).json({ message: "date query param required" });
+
+    // Match any appointment on that date that isn't cancelled
+    const [rows] = await db.query(
+      "SELECT time FROM appointments WHERE DATE(date) = ? AND status != 'cancelled' AND time IS NOT NULL",
+      [date]
+    );
+
+    const bookedTimes = rows.map(r => r.time);
+    res.json({ bookedTimes });
+  } catch (error) {
+    console.error("Availability check error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -236,7 +289,7 @@ exports.updateAppointmentStatus = async (req, res) => {
     const { id } = req.params;
     
     // Validate status value
-    const validStatuses = ['pending', 'confirmed', 'completed'];
+    const validStatuses = ['pending', 'confirmed', 'completed', 'cancelled', 'no_show'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ 
         message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` 
@@ -260,7 +313,6 @@ exports.updateAppointmentStatus = async (req, res) => {
     
     try {
       if (status === 'confirmed') {
-        // Send confirmation update email (Requirement 9.6)
         const template = appointmentConfirmationUpdateTemplate(appointment);
         const emailSent = await sendEmail({
           to: appointment.email,
@@ -269,8 +321,15 @@ exports.updateAppointmentStatus = async (req, res) => {
         });
         emailWarning = !emailSent;
       } else if (status === 'completed') {
-        // Send completion notification email (Requirement 9.7)
         const template = appointmentCompletionTemplate(appointment);
+        const emailSent = await sendEmail({
+          to: appointment.email,
+          subject: template.subject,
+          html: template.html
+        });
+        emailWarning = !emailSent;
+      } else if (status === 'cancelled') {
+        const template = appointmentCancellationTemplate(appointment);
         const emailSent = await sendEmail({
           to: appointment.email,
           subject: template.subject,
