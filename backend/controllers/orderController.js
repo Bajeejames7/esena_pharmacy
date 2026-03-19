@@ -9,6 +9,7 @@ const {
   readyForPickupTemplate
 } = require("../config/mail");
 const { generateUniqueToken } = require("../utils/tokenGenerator");
+const { logActivity } = require("../utils/activityLog");
 
 /**
  * Cancel an order - restores stock, sends cancellation email
@@ -96,6 +97,16 @@ exports.cancelOrder = async (req, res) => {
     }
     await connection.query("UPDATE orders SET status = 'cancelled' WHERE id = ?", [id]);
     await connection.commit();
+
+    await logActivity({
+      userId: req.user?.userId,
+      userName: req.user?.username,
+      action: 'ORDER_CANCELLED',
+      resourceType: 'order',
+      resourceId: parseInt(id),
+      description: `Order cancelled by admin. Reason: ${reason || 'none'}`,
+      ip: req.ip
+    });
 
     const { customerHtml, adminHtml } = buildCancellationEmails(order, reason, true);
     try {
@@ -417,7 +428,21 @@ exports.updateOrderStatus = async (req, res) => {
     }
     
     // Update order status (Req 7.1)
-    await db.query("UPDATE orders SET status = ? WHERE id = ?", [status, id]);
+    await db.query("UPDATE orders SET status = ?, handled_by = ?, handled_by_name = ? WHERE id = ?",
+      [status, req.user?.userId || null, req.user?.username || null, id]);
+
+    // Log activity
+    await logActivity({
+      userId: req.user?.userId,
+      userName: req.user?.username,
+      action: 'ORDER_STATUS_UPDATED',
+      resourceType: 'order',
+      resourceId: parseInt(id),
+      description: `Status changed from ${currentStatus} to ${status}`,
+      oldValue: { status: currentStatus },
+      newValue: { status },
+      ip: req.ip
+    });
     
     // Send email notifications based on status change (Req 7.7, 7.8, 7.9, 14.7, 14.8, 14.9, 14.10)
     let emailWarning = false;

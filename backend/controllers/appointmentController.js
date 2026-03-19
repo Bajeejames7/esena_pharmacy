@@ -9,6 +9,7 @@ const {
   appointmentRescheduleTemplate
 } = require("../config/mail");
 const { generateUniqueToken } = require("../utils/tokenGenerator");
+const { logActivity } = require("../utils/activityLog");
 
 // Valid appointment services
 const VALID_SERVICES = [
@@ -260,6 +261,18 @@ exports.rescheduleAppointment = async (req, res) => {
 
     await db.query("UPDATE appointments SET date = ?, status = 'confirmed' WHERE id = ?", [newDate, id]);
 
+    await logActivity({
+      userId: req.user?.userId,
+      userName: req.user?.username,
+      action: 'APPOINTMENT_RESCHEDULED',
+      resourceType: 'appointment',
+      resourceId: parseInt(id),
+      description: `Rescheduled to ${newDate}`,
+      oldValue: { date: appointment.date },
+      newValue: { date: newDate },
+      ip: req.ip
+    });
+
     // Send reschedule email to customer
     let emailWarning = false;
     try {
@@ -306,7 +319,20 @@ exports.updateAppointmentStatus = async (req, res) => {
     const appointment = appointments[0];
     
     // Update appointment status (Requirement 9.5)
-    await db.query("UPDATE appointments SET status = ? WHERE id = ?", [status, id]);
+    await db.query("UPDATE appointments SET status = ?, handled_by = ?, handled_by_name = ? WHERE id = ?",
+      [status, req.user?.userId || null, req.user?.username || null, id]);
+
+    await logActivity({
+      userId: req.user?.userId,
+      userName: req.user?.username,
+      action: 'APPOINTMENT_STATUS_UPDATED',
+      resourceType: 'appointment',
+      resourceId: parseInt(id),
+      description: `Status changed to ${status}`,
+      oldValue: { status: appointment.status },
+      newValue: { status },
+      ip: req.ip
+    });
     
     // Send email notification for status changes (Requirements 9.6, 9.7)
     let emailWarning = false;
