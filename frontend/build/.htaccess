@@ -24,6 +24,10 @@ RewriteRule ^(.*)$ - [L]
 RewriteCond %{REQUEST_URI} ^/api [NC]
 RewriteRule ^ - [L]
 
+# C. UPLOADS - Proxy directly to Node.js (port 5000) since symlinks are disabled on this host
+RewriteCond %{REQUEST_URI} ^/uploads [NC]
+RewriteRule ^(.*)$ http://localhost:5000/$1 [P,L]
+
 # C. REACT ROUTER (FRONTEND)
 # Handle both main frontend and admin routes - all go to the same index.html
 # since this is a single React app with client-side routing
