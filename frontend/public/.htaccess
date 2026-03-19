@@ -10,7 +10,11 @@ RewriteCond %{HTTP:X-Forwarded-Proto} !https
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://esena.co.ke/$1 [L,R=301]
 
-# A. STATIC FILES - Serve directly with correct MIME types
+# A. PHP FILES - Execute directly via Apache
+RewriteCond %{REQUEST_URI} \.php$ [NC]
+RewriteRule ^ - [L]
+
+# B. STATIC FILES - Serve directly with correct MIME types
 # Handle static assets first before any routing rules
 RewriteCond %{REQUEST_URI} \.(css|js|json|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|webp|mp4|pdf|txt|xml)$ [NC]
 RewriteRule ^(.*)$ - [L]
