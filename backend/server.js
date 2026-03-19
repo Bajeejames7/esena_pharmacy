@@ -70,6 +70,7 @@ app.use(["/fix-auth", "/api/fix-auth"], require("./routes/fix-auth"));
 app.use(["/bot", "/api/bot"], require("./routes/bot"));
 app.use(["/settings", "/api/settings"], require("./routes/settings"));
 app.use(["/prescriptions", "/api/prescriptions", "/admin/prescriptions", "/api/admin/prescriptions"], require("./routes/prescriptions"));
+app.use(["/admin/logs", "/api/admin/logs"], require("./routes/logs"));
 
 // 6.1. EXPLICIT ADMIN ROUTES (Fallback for cPanel routing issues)
 // These handle the exact paths the frontend is calling
