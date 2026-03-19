@@ -16,7 +16,7 @@ const Home = () => {
     {
       icon: (
         <img 
-          src="/quality_medication.jpg" 
+          src="/quality_medication.webp" 
           alt="Quality medications" 
           className="w-full h-full object-cover rounded-full"
         />
@@ -27,7 +27,7 @@ const Home = () => {
     {
       icon: (
         <img 
-          src="/expert_consultations.png" 
+          src="/expert_consultations.webp" 
           alt="Expert consultations" 
           className="w-full h-full object-cover rounded-full"
         />
@@ -38,7 +38,7 @@ const Home = () => {
     {
       icon: (
         <img 
-          src="/fast_delivery.png" 
+          src="/fast_delivery.webp" 
           alt="Fast delivery" 
           className="w-full h-full object-cover rounded-full"
         />
@@ -71,7 +71,7 @@ const Home = () => {
                 className="glass-button-primary inline-flex items-center justify-center px-8 py-4 text-lg"
               >
                 <img 
-                  src="/cart.png" 
+                  src="/cart.webp" 
                   alt="Shopping cart" 
                   className="w-5 h-5 mr-2 object-contain"
                 />
@@ -95,7 +95,7 @@ const Home = () => {
               <div className="flex flex-col items-center">
                 <div className="w-12 h-12 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center mb-2 shadow-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
                   <img 
-                    src="/fast_delivery.png" 
+                    src="/fast_delivery.webp" 
                     alt="Same day delivery" 
                     className="w-full h-full object-cover rounded-full"
                   />
@@ -113,7 +113,7 @@ const Home = () => {
               <div className="flex flex-col items-center">
                 <div className="w-12 h-12 bg-gradient-to-br from-glass-blue-dark to-glass-blue rounded-full flex items-center justify-center mb-2 shadow-lg">
                   <img 
-                    src="/pharmacist_support.png" 
+                    src="/pharmacist_support.webp" 
                     alt="Pharmacist support" 
                     className="w-6 h-6 object-contain"
                   />
@@ -123,7 +123,7 @@ const Home = () => {
               <div className="flex flex-col items-center">
                 <div className="w-12 h-12 bg-gradient-to-br from-glass-green-dark to-glass-green rounded-full flex items-center justify-center mb-2 shadow-lg overflow-hidden">
                   <img 
-                    src="/mpesa.png" 
+                    src="/mpesa.webp" 
                     alt="Pay via Mpesa / Card" 
                     className="w-full h-full object-cover rounded-full"
                   />
@@ -151,14 +151,14 @@ const Home = () => {
             breakpoint === 'tablet' ? 'grid-cols-3' : 'grid-cols-4'
           }`}>
             {[
-              { name: 'Pain Relief', image: '/pain_relief.png', link: '/products?category=PainRelief', fallback: '🩹' },
-              { name: 'Cough & Flu', image: '/cough_&_flu.png', link: '/products?category=ColdAndFlu', fallback: '🤧' },
-              { name: 'Vitamins & Supplements', image: '/vitamins_&_supplements.png', link: '/products?category=Supplements', fallback: '💊' },
-              { name: 'Skin Care', image: '/skin_care.png', link: '/products?category=MedicatedSkinCare', fallback: '🧴' },
-              { name: 'Baby Care', image: '/baby_care.png', link: '/products?category=BabyMedicines', fallback: '👶' },
-              { name: 'Women\'s Health', image: '/womens_health.png', link: '/products?category=FeminineHealth', fallback: '👩' },
-              { name: 'Diabetes', image: '/diabetis.png', link: '/products?category=DiabetesCare', fallback: '🩺' },
-              { name: 'Digestive Health', image: '/digestive_health.png', link: '/products?category=DigestiveHealth', fallback: '🫁' }
+              { name: 'Pain Relief', image: '/pain_relief.webp', link: '/products?category=PainRelief', fallback: '🩹' },
+              { name: 'Cough & Flu', image: '/cough_&_flu.webp', link: '/products?category=ColdAndFlu', fallback: '🤧' },
+              { name: 'Vitamins & Supplements', image: '/vitamins_&_supplements.webp', link: '/products?category=Supplements', fallback: '💊' },
+              { name: 'Skin Care', image: '/skin_care.webp', link: '/products?category=MedicatedSkinCare', fallback: '🧴' },
+              { name: 'Baby Care', image: '/baby_care.webp', link: '/products?category=BabyMedicines', fallback: '👶' },
+              { name: 'Women\'s Health', image: '/womens_health.webp', link: '/products?category=FeminineHealth', fallback: '👩' },
+              { name: 'Diabetes', image: '/diabetis.webp', link: '/products?category=DiabetesCare', fallback: '🩺' },
+              { name: 'Digestive Health', image: '/digestive_health.webp', link: '/products?category=DigestiveHealth', fallback: '🫁' }
             ].map((category, index) => (
               <Link key={index} to={category.link}>
                 <div className="text-center hover:scale-105 transition-all duration-300 group">
@@ -298,7 +298,7 @@ const Home = () => {
               { 
                 name: 'Pharmacist Consultation', 
                 link: '/book-appointment', 
-                icon: '/pharmacist_consulation.png', 
+                icon: '/pharmacist_consulation.webp', 
                 desc: 'Expert medication advice',
                 isImage: true,
                 bgColor: 'from-glass-blue to-glass-green'
@@ -318,7 +318,7 @@ const Home = () => {
               { 
                 name: 'Medicine Delivery', 
                 link: '/products', 
-                icon: '/fast_delivery.png', 
+                icon: '/fast_delivery.webp', 
                 desc: 'Same day delivery in Nairobi',
                 isImage: true,
                 bgColor: 'from-glass-blue to-glass-green'
@@ -365,7 +365,7 @@ const Home = () => {
             <GlassCard className="p-8">
               <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6 flex items-center justify-center">
                 <img 
-                  src="/fast_delivery.png" 
+                  src="/fast_delivery.webp" 
                   alt="Fast delivery" 
                   className="w-6 h-6 object-contain mr-2"
                 />

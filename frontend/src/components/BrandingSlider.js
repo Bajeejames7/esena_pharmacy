@@ -8,87 +8,15 @@ const BrandingSlider = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const brandingImages = [
-    { 
-      src: '/branding1.1.jpeg', 
-      alt: 'Esena Pharmacy Branding 1.1', 
-      aspectRatio: 'wide',
-      objectFit: 'cover',
-      objectPosition: 'center',
-      link: '/', // Stay on home
-      description: 'Home'
-    },
-    { 
-      src: '/branding1.2.jpeg', 
-      alt: 'Esena Pharmacy Branding 1.2', 
-      aspectRatio: 'wide',
-      objectFit: 'cover',
-      objectPosition: 'center',
-      link: '/book-appointment', // Book appointment
-      description: 'Book Appointment'
-    },
-    { 
-      src: '/branding2.1.jpeg', 
-      alt: 'Esena Pharmacy Branding 2.1', 
-      aspectRatio: 'wide',
-      objectFit: 'cover',
-      objectPosition: 'center',
-      link: '/personal-care', // Personal care
-      description: 'Personal Care'
-    },
-    { 
-      src: '/branding2.2.jpeg', 
-      alt: 'Esena Pharmacy Branding 2.2', 
-      aspectRatio: 'wide',
-      objectFit: 'cover',
-      objectPosition: 'center',
-      link: '/personal-care', // Personal care
-      description: 'Personal Care'
-    },
-    { 
-      src: '/branding3.1.jpeg', 
-      alt: 'Esena Pharmacy Branding 3.1', 
-      aspectRatio: 'wide',
-      objectFit: 'cover',
-      objectPosition: 'center',
-      link: '/personal-care', // Personal care
-      description: 'Personal Care'
-    },
-    { 
-      src: '/branding3.2.jpeg', 
-      alt: 'Esena Pharmacy Branding 3.2', 
-      aspectRatio: 'wide',
-      objectFit: 'cover',
-      objectPosition: 'center',
-      link: '/personal-care', // Personal care
-      description: 'Personal Care'
-    },
-    { 
-      src: '/branding4.1.jpeg', 
-      alt: 'Esena Pharmacy Branding 4.1', 
-      aspectRatio: 'square',
-      objectFit: 'contain',
-      objectPosition: 'center',
-      link: '/about', // About us
-      description: 'About Us'
-    },
-    { 
-      src: '/branding4.2.jpeg', 
-      alt: 'Esena Pharmacy Branding 4.2', 
-      aspectRatio: 'square',
-      objectFit: 'contain',
-      objectPosition: 'center',
-      link: '/contact', // Contact
-      description: 'Contact Us'
-    },
-    { 
-      src: '/branding4.3.jpeg', 
-      alt: 'Esena Pharmacy Branding 4.3', 
-      aspectRatio: 'square',
-      objectFit: 'contain',
-      objectPosition: 'center',
-      link: '/upload-prescription', // Upload prescription
-      description: 'Upload Prescription'
-    }
+    { src: '/branding1.1.webp', alt: 'Esena Pharmacy Branding 1.1', aspectRatio: 'wide', objectFit: 'cover', objectPosition: 'center', link: '/', description: 'Home' },
+    { src: '/branding1.2.webp', alt: 'Esena Pharmacy Branding 1.2', aspectRatio: 'wide', objectFit: 'cover', objectPosition: 'center', link: '/book-appointment', description: 'Book Appointment' },
+    { src: '/branding2.1.webp', alt: 'Esena Pharmacy Branding 2.1', aspectRatio: 'wide', objectFit: 'cover', objectPosition: 'center', link: '/personal-care', description: 'Personal Care' },
+    { src: '/branding2.2.webp', alt: 'Esena Pharmacy Branding 2.2', aspectRatio: 'wide', objectFit: 'cover', objectPosition: 'center', link: '/personal-care', description: 'Personal Care' },
+    { src: '/branding3.1.webp', alt: 'Esena Pharmacy Branding 3.1', aspectRatio: 'wide', objectFit: 'cover', objectPosition: 'center', link: '/personal-care', description: 'Personal Care' },
+    { src: '/branding3.2.webp', alt: 'Esena Pharmacy Branding 3.2', aspectRatio: 'wide', objectFit: 'cover', objectPosition: 'center', link: '/personal-care', description: 'Personal Care' },
+    { src: '/branding4.1.webp', alt: 'Esena Pharmacy Branding 4.1', aspectRatio: 'square', objectFit: 'contain', objectPosition: 'center', link: '/about', description: 'About Us' },
+    { src: '/branding4.2.webp', alt: 'Esena Pharmacy Branding 4.2', aspectRatio: 'square', objectFit: 'contain', objectPosition: 'center', link: '/contact', description: 'Contact Us' },
+    { src: '/branding4.3.webp', alt: 'Esena Pharmacy Branding 4.3', aspectRatio: 'square', objectFit: 'contain', objectPosition: 'center', link: '/upload-prescription', description: 'Upload Prescription' },
   ];
 
   useEffect(() => {

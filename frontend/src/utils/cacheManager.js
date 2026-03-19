@@ -445,18 +445,18 @@ export class CacheManager {
 
   preloadCriticalImages() {
     const criticalImages = [
-      '/branding1.1.jpeg',
-      '/branding1.2.jpeg',
-      '/branding2.1.jpeg',
-      '/branding2.2.jpeg',
-      '/branding3.1.jpeg',
-      '/branding3.2.jpeg',
-      '/branding4.1.jpeg',
-      '/branding4.2.jpeg',
-      '/branding4.3.jpeg',
-      '/quality_medication.jpg',
-      '/expert_consultations.png',
-      '/fast_delivery.png'
+      '/branding1.1.webp',
+      '/branding1.2.webp',
+      '/branding2.1.webp',
+      '/branding2.2.webp',
+      '/branding3.1.webp',
+      '/branding3.2.webp',
+      '/branding4.1.webp',
+      '/branding4.2.webp',
+      '/branding4.3.webp',
+      '/quality_medication.webp',
+      '/expert_consultations.webp',
+      '/fast_delivery.webp'
     ];
 
     this.imageCache.preloadImages(criticalImages);
