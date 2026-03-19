@@ -108,33 +108,33 @@ const AdminDashboard = () => {
 
   const [recentOrders, setRecentOrders] = useState([]);
   const [recentAppointments, setRecentAppointments] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
 
   const loadRecentData = async () => {
+    const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+    const authHeaders = {
+      'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+      'Content-Type': 'application/json'
+    };
+
     try {
-      // Load recent orders
-      const ordersResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/orders?limit=5&sort=created_at&order=desc`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const [ordersRes, appointmentsRes, activityRes] = await Promise.allSettled([
+        fetch(`${apiBase}/orders?limit=5&sort=created_at&order=desc`, { headers: authHeaders }),
+        fetch(`${apiBase}/appointments?limit=4&sort=created_at&order=desc`, { headers: authHeaders }),
+        fetch(`${apiBase}/admin/dashboard/activity`, { headers: authHeaders })
+      ]);
 
-      if (ordersResponse.ok) {
-        const ordersData = await ordersResponse.json();
-        setRecentOrders(ordersData.orders || []);
+      if (ordersRes.status === 'fulfilled' && ordersRes.value.ok) {
+        const d = await ordersRes.value.json();
+        setRecentOrders(d.orders || []);
       }
-
-      // Load recent appointments
-      const appointmentsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/appointments?limit=4&sort=created_at&order=desc`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (appointmentsResponse.ok) {
-        const appointmentsData = await appointmentsResponse.json();
-        setRecentAppointments(appointmentsData.appointments || []);
+      if (appointmentsRes.status === 'fulfilled' && appointmentsRes.value.ok) {
+        const d = await appointmentsRes.value.json();
+        setRecentAppointments(d.appointments || []);
+      }
+      if (activityRes.status === 'fulfilled' && activityRes.value.ok) {
+        const d = await activityRes.value.json();
+        setRecentActivity(d.logs || []);
       }
     } catch (error) {
       console.error('Failed to load recent data:', error);
@@ -430,6 +430,47 @@ const AdminDashboard = () => {
           )}
 
           {/* Recent Activity */}
+          {recentActivity.length > 0 && (
+            <GlassCard className="p-6 mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-gray-800 dark:text-gray-100 font-semibold">Recent Activity</h2>
+                <Link to="/admin/employees" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">
+                  Full Log →
+                </Link>
+              </div>
+              <div className="space-y-2">
+                {recentActivity.map(log => {
+                  const actionColors = {
+                    ORDER: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+                    APPOINTMENT: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+                    PRESCRIPTION: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+                    BLOG: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
+                  };
+                  const colorKey = Object.keys(actionColors).find(k => log.action.startsWith(k)) || 'ORDER';
+                  return (
+                    <div key={log.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/10 dark:hover:bg-slate-800/30 transition-colors">
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap mt-0.5 ${actionColors[colorKey]}`}>
+                        {log.resource_type}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-800 dark:text-gray-100 truncate">
+                          <span className="font-medium">{log.user_name}</span>
+                          {' — '}
+                          {log.description || log.action.replace(/_/g, ' ').toLowerCase()}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {new Date(log.created_at).toLocaleString()}
+                          {log.resource_id ? ` · #${log.resource_id}` : ''}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </GlassCard>
+          )}
+
+          {/* Recent Orders & Appointments */}
           <div className={`grid gap-6 ${
             isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'
           }`}>

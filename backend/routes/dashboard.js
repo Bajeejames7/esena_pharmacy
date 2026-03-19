@@ -172,4 +172,21 @@ router.get('/stats', auth, async (req, res) => {
   }
 });
 
+/**
+ * Get recent activity log for dashboard
+ * GET /api/admin/dashboard/activity
+ */
+router.get('/activity', auth, async (req, res) => {
+  try {
+    const [logs] = await db.query(
+      `SELECT id, user_name, action, resource_type, resource_id, description, created_at
+       FROM activity_log ORDER BY created_at DESC LIMIT 15`
+    );
+    res.json({ logs });
+  } catch (error) {
+    // Table may not exist yet (migration not run) — return empty gracefully
+    res.json({ logs: [] });
+  }
+});
+
 module.exports = router;
