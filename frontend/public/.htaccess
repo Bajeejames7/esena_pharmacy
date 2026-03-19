@@ -24,10 +24,6 @@ RewriteRule ^(.*)$ - [L]
 RewriteCond %{REQUEST_URI} ^/api [NC]
 RewriteRule ^ - [L]
 
-# C. UPLOADS PASSTHROUGH - Apache serves directly via symlink (ln -s /home/ohnokmqf/esenaapp/uploads /home/ohnokmqf/public_html/uploads)
-RewriteCond %{REQUEST_URI} ^/uploads [NC]
-RewriteRule ^ - [L]
-
 # C. REACT ROUTER (FRONTEND)
 # Handle both main frontend and admin routes - all go to the same index.html
 # since this is a single React app with client-side routing
