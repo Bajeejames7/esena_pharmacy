@@ -1,0 +1,119 @@
+{
+  "short_name": "Esena Pharmacy",
+  "name": "Esena Pharmacy - Kenya's Trusted Pharmacy Chain",
+  "description": "Quality medicines, health supplements, pharmacist consultations, and fast delivery across Kenya",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "favicon-16x16.png",
+      "type": "image/png",
+      "sizes": "16x16"
+    },
+    {
+      "src": "favicon-32x32.png",
+      "type": "image/png",
+      "sizes": "32x32"
+    },
+    {
+      "src": "favicon-48x48.png",
+      "type": "image/png",
+      "sizes": "48x48"
+    },
+    {
+      "src": "android-chrome-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "android-chrome-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#A0D8F1",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en-US",
+  "categories": ["health", "medical", "pharmacy", "shopping"],
+  "shortcuts": [
+    {
+      "name": "Shop Medicines",
+      "short_name": "Shop",
+      "description": "Browse and purchase medicines",
+      "url": "/products",
+      "icons": [
+        {
+          "src": "cart.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Upload Prescription",
+      "short_name": "Prescription",
+      "description": "Upload your prescription for processing",
+      "url": "/upload-prescription",
+      "icons": [
+        {
+          "src": "favicon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Book Appointment",
+      "short_name": "Appointment",
+      "description": "Schedule a pharmacist consultation",
+      "url": "/book-appointment",
+      "icons": [
+        {
+          "src": "favicon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Contact Us",
+      "short_name": "Contact",
+      "description": "Get in touch with our pharmacy",
+      "url": "/contact",
+      "icons": [
+        {
+          "src": "favicon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "branding1.1.jpeg",
+      "type": "image/jpeg",
+      "sizes": "1280x720",
+      "form_factor": "wide"
+    },
+    {
+      "src": "branding1.2.jpeg",
+      "type": "image/jpeg",
+      "sizes": "720x1280",
+      "form_factor": "narrow"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  }
+}

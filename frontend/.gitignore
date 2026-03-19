@@ -87,14 +87,14 @@ storybook-static
 # Bundle analyzer
 bundle-analyzer-report.html
 
-# Service worker
-sw.js
-sw.js.map
-workbox-*.js
-workbox-*.js.map
+# Service worker (only at root, not in build/)
+/sw.js
+/sw.js.map
+/workbox-*.js
+/workbox-*.js.map
 
-# PWA
-manifest.json
+# PWA (only at root, not in build/)
+/manifest.json
 
 # Sentry
 .sentryclirc
