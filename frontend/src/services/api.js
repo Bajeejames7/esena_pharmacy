@@ -78,11 +78,11 @@ export const productsAPI = {
   getById: (id) => api.get(`/products/${id}`),
   create: (data) => {
     const isFormData = data instanceof FormData;
-    return api.post('/products', data, isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {});
+    return api.post('/products', data, isFormData ? { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 60000 } : {});
   },
   update: (id, data) => {
     const isFormData = data instanceof FormData;
-    return api.put(`/products/${id}`, data, isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {});
+    return api.put(`/products/${id}`, data, isFormData ? { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 60000 } : {});
   },
   delete: (id) => api.delete(`/products/${id}`),
 };
@@ -132,7 +132,7 @@ export const blogsAPI = {
   uploadImage: (file) => {
     const form = new FormData();
     form.append('image', file);
-    return api.post('/blogs/upload-image', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+    return api.post('/blogs/upload-image', form, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 60000 });
   },
 };
 
