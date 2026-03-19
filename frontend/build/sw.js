@@ -3,10 +3,10 @@
  * Implements advanced caching strategies for optimal performance
  */
 
-const CACHE_NAME = 'esena-pharmacy-v1.3';
-const STATIC_CACHE = 'esena-static-v1.3';
-const IMAGE_CACHE = 'esena-images-v1.3';
-const API_CACHE = 'esena-api-v1.3';
+const CACHE_NAME = 'esena-pharmacy-v1.4';
+const STATIC_CACHE = 'esena-static-v1.4';
+const IMAGE_CACHE = 'esena-images-v1.4';
+const API_CACHE = 'esena-api-v1.4';
 
 // Assets to cache immediately on install
 const STATIC_ASSETS = [
@@ -114,8 +114,10 @@ async function handleRequest(request) {
       return await imageStrategy(request);
     }
 
+    // API calls: never intercept — pass directly to network
+    // Caching API responses causes stale data; SW timeout causes ERR_FAILED
     if (isApiCall(url)) {
-      return await networkFirst(request, API_CACHE, 5000);
+      return await fetch(request);
     }
 
     if (isHtmlPage(url)) {
