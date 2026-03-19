@@ -12,7 +12,7 @@ RewriteRule ^(.*)$ https://esena.co.ke/$1 [L,R=301]
 
 # A. STATIC FILES - Serve directly with correct MIME types
 # Handle static assets first before any routing rules
-RewriteCond %{REQUEST_URI} \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ [NC]
+RewriteCond %{REQUEST_URI} \.(css|js|json|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|webp|mp4|pdf|txt|xml)$ [NC]
 RewriteRule ^(.*)$ - [L]
 
 # B. API PASSTHROUGH
@@ -25,7 +25,7 @@ RewriteRule ^api(/.*)?$ - [L,NC]
 # since this is a single React app with client-side routing
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_URI} !\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ [NC]
+RewriteCond %{REQUEST_URI} !\.(css|js|json|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|webp|mp4|pdf|txt|xml)$ [NC]
 RewriteRule . /index.html [L]
 
 # ----------------------------------------------------------------------
