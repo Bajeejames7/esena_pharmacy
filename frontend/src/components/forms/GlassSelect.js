@@ -8,10 +8,11 @@ const GlassSelect = forwardRef(({
   value,
   onChange,
   options = [],
+  children,
   error,
   label,
   helperText,
-  placeholder = 'Select an option',
+  placeholder,
   required = false,
   disabled = false,
   className = '',
@@ -81,16 +82,18 @@ const GlassSelect = forwardRef(({
               {placeholder}
             </option>
           )}
-          {options.map((option) => (
-            <option 
-              key={option.value} 
-              value={option.value}
-              disabled={option.disabled}
-              aria-label={option.description ? `${option.label} - ${option.description}` : option.label}
-            >
-              {option.label}
-            </option>
-          ))}
+          {children
+            ? children
+            : options.map((option) => (
+                <option
+                  key={option.value}
+                  value={option.value}
+                  disabled={option.disabled}
+                >
+                  {option.label}
+                </option>
+              ))
+          }
         </select>
         
         {/* Custom dropdown arrow */}

@@ -41,6 +41,7 @@ import ManageAppointments from './admin/ManageAppointments';
 import ManageBlogs from './admin/ManageBlogs';
 import ManagePrescriptions from './admin/ManagePrescriptions';
 import ManageEmployees from './admin/ManageEmployees';
+import AdminProfile from './admin/AdminProfile';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Page titles per route
@@ -260,6 +261,11 @@ function App() {
               <Route path="/admin/employees" element={
                 <ProtectedRoute>
                   <ManageEmployees />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/profile" element={
+                <ProtectedRoute>
+                  <AdminProfile />
                 </ProtectedRoute>
               } />
             </Routes>
