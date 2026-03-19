@@ -15,16 +15,21 @@ RewriteRule ^(.*)$ https://esena.co.ke/$1 [L,R=301]
 RewriteCond %{REQUEST_URI} \.(css|js|json|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|webp|mp4|pdf|txt|xml)$ [NC]
 RewriteRule ^(.*)$ - [L]
 
-# B. API PASSTHROUGH
-# Let Passenger handle any request starting with /api
-# This tells Apache: "Don't look for a file, just send this to the Node app"
-RewriteRule ^api(/.*)?$ - [L,NC]
+# B. API PASSTHROUGH - Handled by Passenger (cPanel Node.js app_uri=api)
+# Do NOT proxy /api here - Passenger routes it to the Node.js app automatically
+RewriteCond %{REQUEST_URI} ^/api [NC]
+RewriteRule ^ - [L]
+
+# C. UPLOADS PASSTHROUGH - Route through Node.js via /api (Passenger handles /api -> Node)
+RewriteCond %{REQUEST_URI} ^/uploads [NC]
+RewriteRule ^uploads/(.*)$ /api/uploads/$1 [R=301,L]
 
 # C. REACT ROUTER (FRONTEND)
 # Handle both main frontend and admin routes - all go to the same index.html
 # since this is a single React app with client-side routing
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !^/api [NC]
 RewriteCond %{REQUEST_URI} !\.(css|js|json|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|webp|mp4|pdf|txt|xml)$ [NC]
 RewriteRule . /index.html [L]
 
@@ -73,7 +78,7 @@ Header always set Referrer-Policy "strict-origin-when-cross-origin"
 # Advanced caching for optimal performance
 <IfModule mod_expires.c>
     ExpiresActive On
-    
+
     # Images - Cache for 1 year with immutable flag
     ExpiresByType image/jpeg "access plus 1 year"
     ExpiresByType image/jpg "access plus 1 year"
@@ -82,23 +87,23 @@ Header always set Referrer-Policy "strict-origin-when-cross-origin"
     ExpiresByType image/webp "access plus 1 year"
     ExpiresByType image/svg+xml "access plus 1 year"
     ExpiresByType image/x-icon "access plus 1 year"
-    
+
     # Fonts - Cache for 1 year
     ExpiresByType font/woff "access plus 1 year"
     ExpiresByType font/woff2 "access plus 1 year"
     ExpiresByType font/ttf "access plus 1 year"
     ExpiresByType font/eot "access plus 1 year"
-    
+
     # CSS and JavaScript - Cache for 1 month
     ExpiresByType text/css "access plus 1 month"
     ExpiresByType application/javascript "access plus 1 month"
-    
+
     # HTML - Short cache for dynamic content
     ExpiresByType text/html "access plus 1 hour"
-    
+
     # JSON - Cache for 1 day
     ExpiresByType application/json "access plus 1 day"
-    
+
     # Service Worker - No cache (always fresh)
     <Files "sw.js">
         ExpiresActive Off
@@ -115,22 +120,22 @@ Header always set Referrer-Policy "strict-origin-when-cross-origin"
     <FilesMatch "\.(jpg|jpeg|png|gif|webp|svg|ico)$">
         Header set Cache-Control "public, max-age=31536000, immutable"
     </FilesMatch>
-    
+
     # Fonts - Immutable cache
     <FilesMatch "\.(woff|woff2|ttf|eot)$">
         Header set Cache-Control "public, max-age=31536000, immutable"
     </FilesMatch>
-    
+
     # CSS and JS - Cache with revalidation
     <FilesMatch "\.(css|js)$">
         Header set Cache-Control "public, max-age=2592000, must-revalidate"
     </FilesMatch>
-    
+
     # HTML - Short cache
     <FilesMatch "\.html$">
         Header set Cache-Control "public, max-age=3600, must-revalidate"
     </FilesMatch>
-    
+
     # Service Worker - No cache
     <Files "sw.js">
         Header set Cache-Control "no-cache, no-store, must-revalidate"

@@ -309,13 +309,13 @@ const ManageProducts = () => {
   const getImageUrl = (filename) => {
     if (!filename) return null;
     if (filename.startsWith('http')) return filename;
-    return `${API_BASE}/uploads/products/${filename}`;
+    return `${API_BASE}/api/uploads/products/${filename}`;
   };
 
   const getVideoUrl = (filename) => {
     if (!filename) return null;
     if (filename.startsWith('http')) return filename;
-    return `${API_BASE}/uploads/videos/${filename}`;
+    return `${API_BASE}/api/uploads/videos/${filename}`;
   };
 
   return (

@@ -23,10 +23,10 @@ const ProductCard = ({
   // Build full image/video URL — backend stores just the filename
   const API_BASE = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace('/api', '');
   const imageUrl = product.image
-    ? (product.image.startsWith('http') ? product.image : `${API_BASE}/uploads/products/${product.image}`)
+    ? (product.image.startsWith('http') ? product.image : `${API_BASE}/api/uploads/products/${product.image}`)
     : null;
   const videoUrl = product.video
-    ? (product.video.startsWith('http') ? product.video : `${API_BASE}/uploads/videos/${product.video}`)
+    ? (product.video.startsWith('http') ? product.video : `${API_BASE}/api/uploads/videos/${product.video}`)
     : null;
 
   const handleAddToCart = (e) => {

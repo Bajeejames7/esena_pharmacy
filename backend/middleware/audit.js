@@ -6,7 +6,7 @@ const db = require('../config/db');
  * Implements Requirements 30.1, 30.2, 30.3, 30.4, 30.5, 30.6
  */
 
-// Create audit logs table if it doesn't exist
+// Create audit logs table if it doesn't exist, and migrate columns if needed
 const createAuditTable = async () => {
   try {
     await db.query(`
@@ -14,7 +14,7 @@ const createAuditTable = async () => {
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT,
         action VARCHAR(100) NOT NULL,
-        resource_type VARCHAR(50) NOT NULL,
+        resource_type VARCHAR(50),
         resource_id INT,
         old_values JSON,
         new_values JSON,
@@ -23,6 +23,33 @@ const createAuditTable = async () => {
         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Migrate: add old_values/new_values if the table was created with the old schema (details TEXT)
+    const [cols] = await db.query(`
+      SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'audit_logs'
+        AND COLUMN_NAME IN ('old_values', 'new_values', 'details')
+    `);
+    const colNames = cols.map(c => c.COLUMN_NAME);
+
+    if (!colNames.includes('old_values')) {
+      await db.query(`ALTER TABLE audit_logs ADD COLUMN old_values JSON AFTER resource_id`);
+      logger.info('audit_logs: added old_values column');
+    }
+    if (!colNames.includes('new_values')) {
+      await db.query(`ALTER TABLE audit_logs ADD COLUMN new_values JSON AFTER old_values`);
+      logger.info('audit_logs: added new_values column');
+    }
+    // Add user_agent if missing (old schema didn't have it)
+    const [uaCols] = await db.query(`
+      SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'audit_logs' AND COLUMN_NAME = 'user_agent'
+    `);
+    if (uaCols.length === 0) {
+      await db.query(`ALTER TABLE audit_logs ADD COLUMN user_agent TEXT AFTER ip_address`);
+      logger.info('audit_logs: added user_agent column');
+    }
+
     logger.info('audit_logs table ready');
   } catch (error) {
     logger.warn('Could not create audit_logs table: ' + error.message);
