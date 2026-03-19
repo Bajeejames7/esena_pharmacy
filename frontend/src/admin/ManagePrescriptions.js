@@ -286,9 +286,9 @@ const ManagePrescriptions = () => {
                     {selected.file_path ? (
                       <div className="space-y-3">
                         {/\.(jpg|jpeg|png)$/i.test(selected.file_path) && (
-                          <img src={`${API_BASE}/api/uploads/prescriptions/${selected.file_path}`} alt="Prescription" className="max-w-full rounded-lg border border-white/20 max-h-64 object-contain" />
+                          <img src={`${API_BASE}/uploads/prescriptions/${selected.file_path}`} alt="Prescription" className="max-w-full rounded-lg border border-white/20 max-h-64 object-contain" />
                         )}
-                        <a href={`${API_BASE}/api/uploads/prescriptions/${selected.file_path}`} target="_blank" rel="noopener noreferrer"
+                        <a href={`${API_BASE}/uploads/prescriptions/${selected.file_path}`} target="_blank" rel="noopener noreferrer"
                           className="inline-flex items-center space-x-2 px-4 py-2 bg-glass-blue/20 hover:bg-glass-blue/30 text-blue-700 dark:text-blue-300 rounded-lg transition-colors text-sm font-medium">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

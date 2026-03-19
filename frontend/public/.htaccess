@@ -20,9 +20,9 @@ RewriteRule ^(.*)$ - [L]
 RewriteCond %{REQUEST_URI} ^/api [NC]
 RewriteRule ^ - [L]
 
-# C. UPLOADS PASSTHROUGH - Route through Node.js via /api (Passenger handles /api -> Node)
+# C. UPLOADS PASSTHROUGH - Apache serves directly via symlink (ln -s /home/ohnokmqf/esenaapp/uploads /home/ohnokmqf/public_html/uploads)
 RewriteCond %{REQUEST_URI} ^/uploads [NC]
-RewriteRule ^uploads/(.*)$ /api/uploads/$1 [R=301,L]
+RewriteRule ^ - [L]
 
 # C. REACT ROUTER (FRONTEND)
 # Handle both main frontend and admin routes - all go to the same index.html

@@ -57,7 +57,6 @@ app.use(generalLimiter);
 
 // 5. STATIC FILES
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
 // 6. ROUTES - Dual path support for cPanel deployment
 app.use(["/auth", "/api/auth"], require("./routes/auth"));

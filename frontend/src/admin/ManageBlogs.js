@@ -373,7 +373,7 @@ const ManageBlogs = () => {
                     src={(() => {
                       const src = imagePreview || formData.image;
                       if (src && src.startsWith('/uploads/')) {
-                        return (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace('/api', '') + '/api' + src;
+                        return (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace('/api', '') + src;
                       }
                       return src;
                     })()}
