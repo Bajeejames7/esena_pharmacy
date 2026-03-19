@@ -68,6 +68,7 @@ const AdminDashboard = () => {
         productsInStock: data.productsInStock || 0,
         totalRevenue: data.totalRevenue || 0,
         loading: false,
+        storage: data.storage || null,
         systemStatus: data.systemStatus || {
           database: 'connected',
           emailService: 'operational',
@@ -363,8 +364,8 @@ const AdminDashboard = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <div className={`w-3 h-3 rounded-full ${
-                  stats.systemStatus?.fileStorage && parseInt(stats.systemStatus.fileStorage) < 80 ? 'bg-green-500' :
-                  stats.systemStatus?.fileStorage && parseInt(stats.systemStatus.fileStorage) < 95 ? 'bg-yellow-500' : 'bg-red-500'
+                  stats.storage?.percentage < 80 ? 'bg-green-500' :
+                  stats.storage?.percentage < 95 ? 'bg-yellow-500' : 'bg-red-500'
                 }`}></div>
                 <div>
                   <p className="text-sm font-medium text-gray-800 dark:text-gray-100">File Storage</p>
@@ -387,6 +388,46 @@ const AdminDashboard = () => {
               </div>
             </div>
           </GlassCard>
+
+          {/* Storage Usage */}
+          {stats.storage && (
+            <GlassCard className="p-6 mb-8">
+              <h2 className="text-gray-800 dark:text-gray-100 font-semibold mb-4">Storage Usage</h2>
+              <div className="mb-3">
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-600 dark:text-gray-300">
+                    {stats.storage.usedGB >= 1
+                      ? `${stats.storage.usedGB.toFixed(2)} GB used`
+                      : `${stats.storage.usedMB} MB used`}
+                  </span>
+                  <span className="text-gray-600 dark:text-gray-300">
+                    {stats.storage.quotaGB} GB total &mdash; {stats.storage.percentage}%
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                  <div
+                    className={`h-3 rounded-full transition-all duration-500 ${
+                      stats.storage.percentage < 70 ? 'bg-green-500' :
+                      stats.storage.percentage < 90 ? 'bg-yellow-500' : 'bg-red-500'
+                    }`}
+                    style={{ width: `${Math.min(stats.storage.percentage, 100)}%` }}
+                  />
+                </div>
+              </div>
+              <div className={`grid gap-3 mt-4 ${isMobile ? 'grid-cols-2' : 'grid-cols-4'}`}>
+                {Object.entries(stats.storage.breakdown).map(([folder, data]) => (
+                  <div key={folder} className="bg-white/10 dark:bg-slate-800/30 rounded-lg p-3 text-center">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 capitalize mb-1">{folder}</p>
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                      {data.mb >= 1024
+                        ? `${(data.mb / 1024).toFixed(2)} GB`
+                        : `${data.mb} MB`}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </GlassCard>
+          )}
 
           {/* Recent Activity */}
           <div className={`grid gap-6 ${

@@ -1,7 +1,59 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
+const path = require('path');
 const db = require('../config/db');
 const auth = require('../middleware/auth');
+
+/**
+ * Recursively sum file sizes in a directory
+ */
+function getDirSize(dirPath) {
+  let totalBytes = 0;
+  try {
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dirPath, entry.name);
+      if (entry.isDirectory()) {
+        totalBytes += getDirSize(fullPath);
+      } else if (entry.isFile()) {
+        try {
+          totalBytes += fs.statSync(fullPath).size;
+        } catch (_) {}
+      }
+    }
+  } catch (_) {}
+  return totalBytes;
+}
+
+/**
+ * Get real storage usage from uploads directory
+ */
+function getStorageStats() {
+  const uploadsBase = path.join(__dirname, '..', 'uploads');
+  const quotaGB = parseFloat(process.env.STORAGE_QUOTA_GB) || 45;
+  const quotaBytes = quotaGB * 1024 * 1024 * 1024;
+
+  const subfolders = ['products', 'prescriptions', 'blogs', 'videos'];
+  const breakdown = {};
+  let totalBytes = 0;
+
+  for (const folder of subfolders) {
+    const folderPath = path.join(uploadsBase, folder);
+    const bytes = getDirSize(folderPath);
+    breakdown[folder] = {
+      bytes,
+      mb: parseFloat((bytes / (1024 * 1024)).toFixed(2))
+    };
+    totalBytes += bytes;
+  }
+
+  const usedMB = parseFloat((totalBytes / (1024 * 1024)).toFixed(2));
+  const usedGB = parseFloat((totalBytes / (1024 * 1024 * 1024)).toFixed(4));
+  const percentage = parseFloat(((totalBytes / quotaBytes) * 100).toFixed(2));
+
+  return { usedBytes: totalBytes, usedMB, usedGB, quotaGB, percentage, breakdown };
+}
 
 /**
  * Get dashboard statistics
@@ -72,12 +124,11 @@ router.get('/stats', auth, async (req, res) => {
     const revenueTrend = previousRevenue > 0 ? 
       Math.round(((currentRevenue - previousRevenue) / previousRevenue) * 100) : 0;
 
-    // Get file storage usage (approximate)
-    const [uploadsResult] = await db.query(
-      'SELECT COUNT(*) as count FROM products WHERE image IS NOT NULL OR video IS NOT NULL'
-    );
-    const fileCount = uploadsResult[0].count;
-    const estimatedStorageUsage = Math.min(Math.round((fileCount / 100) * 100), 95); // Estimate based on file count
+    // Get real file storage usage from uploads directory
+    const storage = getStorageStats();
+    const storageLabel = storage.usedGB >= 1
+      ? `${storage.usedGB.toFixed(2)} GB / ${storage.quotaGB} GB (${storage.percentage}%)`
+      : `${storage.usedMB} MB / ${storage.quotaGB} GB (${storage.percentage}%)`;
 
     const stats = {
       pendingOrders,
@@ -105,9 +156,10 @@ router.get('/stats', auth, async (req, res) => {
       systemStatus: {
         database: 'connected',
         emailService: 'operational',
-        fileStorage: `${estimatedStorageUsage}% Used`,
+        fileStorage: storageLabel,
         api: 'healthy'
-      }
+      },
+      storage
     };
 
     res.json(stats);
