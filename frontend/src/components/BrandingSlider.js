@@ -58,7 +58,14 @@ const BrandingSlider = () => {
                   className="block w-full cursor-pointer group"
                   aria-label={`Navigate to ${image.description}`}
                 >
-                  <div className="relative w-full overflow-hidden" style={{ height: desktopHeight }}>
+                  {/* Fixed aspect ratio container prevents CLS */}
+                  <div
+                    className="relative w-full overflow-hidden"
+                    style={{
+                      height: desktopHeight,
+                      backgroundColor: '#e5e7eb' /* placeholder bg while image loads */
+                    }}
+                  >
                     <LazyImage
                       src={image.src}
                       alt={image.alt}
