@@ -245,4 +245,65 @@ router.post('/test-login', async (req, res) => {
   }
 });
 
+// Diagnostics: check env, db, logs directory
+router.post('/diagnose', async (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  const results = [];
+
+  // 1. Check key env vars
+  results.push({ type: process.env.DB_USER ? 'success' : 'error', message: `DB_USER: ${process.env.DB_USER || '❌ NOT SET'}` });
+  results.push({ type: process.env.DB_NAME ? 'success' : 'error', message: `DB_NAME: ${process.env.DB_NAME || '❌ NOT SET'}` });
+  results.push({ type: process.env.DB_PASSWORD ? 'success' : 'error', message: `DB_PASSWORD: ${process.env.DB_PASSWORD ? '✅ SET' : '❌ NOT SET (empty)'}` });
+  results.push({ type: process.env.JWT_SECRET ? 'success' : 'error', message: `JWT_SECRET: ${process.env.JWT_SECRET ? '✅ SET' : '❌ NOT SET'}` });
+  results.push({ type: 'info', message: `NODE_ENV: ${process.env.NODE_ENV || 'not set'}` });
+  results.push({ type: 'info', message: `Node version: ${process.version}` });
+  results.push({ type: 'info', message: `CWD: ${process.cwd()}` });
+  results.push({ type: 'info', message: `__dirname: ${__dirname}` });
+
+  // 2. Check logs directory
+  const logsDir = path.join(__dirname, '../logs');
+  results.push({ type: 'info', message: `Logs dir path: ${logsDir}` });
+  try {
+    if (!fs.existsSync(logsDir)) {
+      fs.mkdirSync(logsDir, { recursive: true });
+      results.push({ type: 'info', message: '📁 Logs dir created (did not exist)' });
+    } else {
+      results.push({ type: 'success', message: '✅ Logs dir exists' });
+    }
+    // Test write
+    const testFile = path.join(logsDir, 'test-write.tmp');
+    fs.writeFileSync(testFile, 'test');
+    fs.unlinkSync(testFile);
+    results.push({ type: 'success', message: '✅ Logs dir is writable' });
+  } catch (err) {
+    results.push({ type: 'error', message: `❌ Logs dir not writable: ${err.message}` });
+  }
+
+  // 3. List existing log files
+  try {
+    const files = fs.readdirSync(logsDir).filter(f => f.endsWith('.log'));
+    if (files.length === 0) {
+      results.push({ type: 'info', message: 'No .log files found yet' });
+    } else {
+      files.forEach(f => {
+        const size = fs.statSync(path.join(logsDir, f)).size;
+        results.push({ type: 'success', message: `📄 ${f} (${size} bytes)` });
+      });
+    }
+  } catch (err) {
+    results.push({ type: 'error', message: `Failed to list logs: ${err.message}` });
+  }
+
+  // 4. Test DB connection
+  try {
+    await db.query('SELECT 1');
+    results.push({ type: 'success', message: '✅ Database connection OK' });
+  } catch (err) {
+    results.push({ type: 'error', message: `❌ Database connection FAILED: ${err.message}` });
+  }
+
+  res.json({ title: '🔍 Full Diagnostics', results });
+});
+
 module.exports = router;
