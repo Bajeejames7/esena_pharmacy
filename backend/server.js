@@ -176,14 +176,14 @@ const server = app.listen(PORT, () => {
   console.log(`Server listening on ${bind}`);
 });
 
-// Catch the EADDRINUSE error so the app doesn't crash the selector
+// Catch the EADDRINUSE error — log and exit cleanly (let Passenger restart us)
 server.on('error', (error) => {
   if (error.code === 'EADDRINUSE') {
-    console.error(`Port ${PORT} is busy. Retrying on a dynamic port...`);
-    setTimeout(() => {
-      server.close();
-      app.listen(0); // This tells the OS to pick ANY free port
-    }, 1000);
+    console.error(`Port ${PORT} is already in use. Exiting.`);
+    process.exit(1);
+  } else {
+    console.error('Server error:', error);
+    process.exit(1);
   }
 });
 
