@@ -21,7 +21,8 @@ const ProductCard = ({
   const touchStartX = useRef(null);
 
   // Build full image/video URL — backend stores just the filename
-  const API_BASE = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace('/api', '');
+  // Use /api/uploads/ path since Passenger routes /api to Node on cPanel
+  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
   const imageUrl = product.image
     ? (product.image.startsWith('http') ? product.image : `${API_BASE}/uploads/products/${product.image}`)
     : null;

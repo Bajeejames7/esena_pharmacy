@@ -39,8 +39,8 @@ const Blog = () => {
   const resolveImage = (src) => {
     if (!src) return src;
     if (src.startsWith('/uploads/')) {
-      const base = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace('/api', '');
-      return base + src;
+      const base = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      return base + src; // becomes /api/uploads/blogs/filename
     }
     return src;
   };

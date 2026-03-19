@@ -60,7 +60,7 @@ const resolveImageUrl = (item) => {
   if (item.imageUrl) return item.imageUrl;
   if (!item.image) return null;
   if (item.image.startsWith('http')) return item.image;
-  const API_BASE = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace('/api', '');
+  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
   return `${API_BASE}/uploads/products/${item.image}`;
 };
 

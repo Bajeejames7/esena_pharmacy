@@ -11,7 +11,7 @@ import GlassTextarea from '../components/forms/GlassTextarea';
 import ThemeToggle from '../components/ThemeToggle';
 import { prescriptionsAPI } from '../services/api';
 
-const API_BASE = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5000';
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const STATUS_OPTIONS = [
   { value: '', label: 'All Statuses' },

@@ -304,7 +304,7 @@ const ManageProducts = () => {
     setCurrentPage(1);
   };
 
-  const API_BASE = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace('/api', '');
+  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   const getImageUrl = (filename) => {
     if (!filename) return null;

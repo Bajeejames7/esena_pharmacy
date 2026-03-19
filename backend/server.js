@@ -55,8 +55,10 @@ app.use('/auth', authLimiter);
 app.use('/', apiLimiter);
 app.use(generalLimiter);
 
-// 5. STATIC FILES
+// 5. STATIC FILES - served under both /uploads and /api/uploads
+// /api/uploads is guaranteed to work via Passenger routing on cPanel
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
 // 6. ROUTES - Dual path support for cPanel deployment
 app.use(["/auth", "/api/auth"], require("./routes/auth"));
