@@ -74,7 +74,28 @@ const storeAuditLog = async (auditData) => {
       auditData.userAgent
     ]);
   } catch (error) {
-    logger.error('Failed to store audit log in database', error);
+    // If old_values/new_values columns don't exist yet, fall back to details column
+    if (error.message && error.message.includes("Unknown column 'old_values'")) {
+      try {
+        await db.query(`
+          INSERT INTO audit_logs 
+          (user_id, action, resource_type, resource_id, ip_address)
+          VALUES (?, ?, ?, ?, ?)
+        `, [
+          auditData.userId,
+          auditData.action,
+          auditData.resourceType,
+          auditData.resourceId,
+          auditData.ipAddress
+        ]);
+        // Trigger migration now since we know it's needed
+        createAuditTable().catch(() => {});
+      } catch (fallbackError) {
+        logger.error('Failed to store audit log (fallback also failed)', fallbackError);
+      }
+    } else {
+      logger.error('Failed to store audit log in database', error);
+    }
   }
 };
 

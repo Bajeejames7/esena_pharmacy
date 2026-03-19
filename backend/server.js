@@ -23,6 +23,10 @@ const app = express();
 console.log('--- Esena Backend Starting ---');
 console.log('NODE_ENV:', process.env.NODE_ENV || 'production');
 
+// Trust the first proxy (required for cPanel/Passenger reverse proxy)
+// Must be set BEFORE rate limiters to avoid ERR_ERL_UNEXPECTED_X_FORWARDED_FOR
+app.set('trust proxy', 1);
+
 // 1. GLOBAL MIDDLEWARE
 app.use(requestSizeLimit);
 app.use(requestLogger);
@@ -124,7 +128,6 @@ app.get("/db-test", async (req, res) => {
 const startBackgroundTasks = async () => {
   try {
     logger.info("Starting background database maintenance...");
-    await createAuditTable();
     await initializeDatabase();
     logger.info("Background tasks completed successfully");
   } catch (error) {
@@ -135,9 +138,17 @@ const startBackgroundTasks = async () => {
 
 // Verify DB and Start Tasks
 db.query("SELECT 1")
-  .then(() => {
+  .then(async () => {
     logger.info("Database connection verified.");
-    setTimeout(startBackgroundTasks, 5000); // 5s delay to let server settle
+    // Run audit table migration immediately (before requests hit)
+    try {
+      await createAuditTable();
+      logger.info("Audit table migration completed");
+    } catch (e) {
+      logger.error("Audit table migration error: " + e.message);
+    }
+    // Then run the rest of the background tasks after a short delay
+    setTimeout(startBackgroundTasks, 3000);
   })
   .catch((err) => {
     logger.error("Initial Database connection failed", err);

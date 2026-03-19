@@ -69,7 +69,7 @@ const createIndexes = async () => {
     ['idx_appointments_token',      'appointments', 'token'],
     ['idx_appointments_email',      'appointments', 'email'],
     ['idx_appointments_status',     'appointments', 'status'],
-    ['idx_appointments_date',       'appointments', 'appointment_date'],
+    ['idx_appointments_date',       'appointments', 'date'],
     ['idx_appointments_service',    'appointments', 'service'],
     ['idx_products_category',       'products',     'category'],
     ['idx_products_name',           'products',     'name'],
