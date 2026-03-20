@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const { logActivity } = require("../utils/activityLog");
 
 /**
  * Get all published blogs for public viewing
@@ -109,7 +110,17 @@ exports.createBlog = async (req, res) => {
       "INSERT INTO blogs (title, slug, excerpt, content, image, author, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [title, slug, excerpt, content, image, author || 'Esena Pharmacy', status || 'draft']
     );
-    
+
+    await logActivity({
+      userId: req.user?.userId,
+      userName: req.user?.username,
+      action: 'BLOG_CREATED',
+      resourceType: 'blog',
+      resourceId: result.insertId,
+      description: `Blog "${title}" created as ${status || 'draft'}`,
+      ip: req.ip
+    });
+
     res.status(201).json({ 
       id: result.insertId,
       slug,
@@ -172,7 +183,17 @@ exports.updateBlog = async (req, res) => {
         id
       ]
     );
-    
+
+    await logActivity({
+      userId: req.user?.userId,
+      userName: req.user?.username,
+      action: 'BLOG_UPDATED',
+      resourceType: 'blog',
+      resourceId: parseInt(id),
+      description: `Blog "${title || existingBlogs[0].title}" updated`,
+      ip: req.ip
+    });
+
     res.json({ 
       slug,
       message: "Blog post updated successfully" 
@@ -198,7 +219,17 @@ exports.deleteBlog = async (req, res) => {
     }
     
     await db.query("DELETE FROM blogs WHERE id = ?", [id]);
-    
+
+    await logActivity({
+      userId: req.user?.userId,
+      userName: req.user?.username,
+      action: 'BLOG_DELETED',
+      resourceType: 'blog',
+      resourceId: parseInt(id),
+      description: `Blog "${existingBlogs[0].title}" deleted`,
+      ip: req.ip
+    });
+
     res.json({ message: "Blog post deleted successfully" });
   } catch (error) {
     console.error("Delete blog error:", error);
@@ -223,7 +254,19 @@ exports.toggleBlogStatus = async (req, res) => {
     const newStatus = blogs[0].status === 'published' ? 'draft' : 'published';
     
     await db.query("UPDATE blogs SET status = ? WHERE id = ?", [newStatus, id]);
-    
+
+    await logActivity({
+      userId: req.user?.userId,
+      userName: req.user?.username,
+      action: 'BLOG_STATUS_CHANGED',
+      resourceType: 'blog',
+      resourceId: parseInt(id),
+      description: `Blog ${newStatus === 'published' ? 'published' : 'set to draft'}`,
+      oldValue: { status: blogs[0].status },
+      newValue: { status: newStatus },
+      ip: req.ip
+    });
+
     res.json({ 
       status: newStatus,
       message: `Blog post ${newStatus === 'published' ? 'published' : 'saved as draft'}` 

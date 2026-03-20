@@ -78,43 +78,13 @@ app.use(["/appointments", "/api/appointments", "/admin/appointments", "/api/admi
 app.use(["/contact", "/api/contact"], require("./routes/contact"));
 app.use(["/blogs", "/api/blogs"], require("./routes/blogs"));
 app.use(["/admin/dashboard", "/api/admin/dashboard"], require("./routes/dashboard"));
-app.use(["/fix-auth", "/api/fix-auth"], require("./routes/fix-auth"));
 app.use(["/bot", "/api/bot"], require("./routes/bot"));
 app.use(["/settings", "/api/settings"], require("./routes/settings"));
 app.use(["/prescriptions", "/api/prescriptions", "/admin/prescriptions", "/api/admin/prescriptions"], require("./routes/prescriptions"));
 app.use(["/admin/logs", "/api/admin/logs"], require("./routes/logs"));
 app.use(["/admin/employees", "/api/admin/employees"], require("./routes/employees"));
 
-// 6.1. EXPLICIT ADMIN ROUTES (Fallback for cPanel routing issues)
-// These handle the exact paths the frontend is calling
-app.use("/api/admin/orders", require("./routes/orders"));
-app.use("/api/admin/appointments", require("./routes/appointments"));
-app.use("/api/admin/dashboard", require("./routes/dashboard"));
-
-// 7. DEBUG ROUTES (Remove after fixing)
-app.get("/debug/routes", (req, res) => {
-  const routes = [];
-  app._router.stack.forEach((middleware) => {
-    if (middleware.route) {
-      routes.push({
-        path: middleware.route.path,
-        methods: Object.keys(middleware.route.methods)
-      });
-    } else if (middleware.name === 'router') {
-      middleware.handle.stack.forEach((handler) => {
-        if (handler.route) {
-          routes.push({
-            path: handler.route.path,
-            methods: Object.keys(handler.route.methods)
-          });
-        }
-      });
-    }
-  });
-  res.json({ routes, message: "Available routes" });
-});
-
-// 8. DB TEST ROUTE
+// 7. DB TEST ROUTE (remove in production if desired)
 app.get("/db-test", async (req, res) => {
   try {
     const [result] = await db.query("SELECT 1 as test");

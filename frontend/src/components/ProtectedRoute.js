@@ -11,7 +11,17 @@ const ProtectedRoute = ({ children }) => {
   const navigate = useNavigate();
   const token = localStorage.getItem('adminToken');
 
-  const handleTimeout = useCallback(() => {
+  const handleTimeout = useCallback(async () => {
+    const token = localStorage.getItem('adminToken');
+    if (token) {
+      try {
+        await fetch(`${process.env.REACT_APP_API_URL || 'https://esena.co.ke/api'}/auth/logout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ reason: 'idle_timeout' })
+        });
+      } catch (_) {}
+    }
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminUser');
     navigate('/admin/login', { state: { from: location, sessionExpired: true }, replace: true });

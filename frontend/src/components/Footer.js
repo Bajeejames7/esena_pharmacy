@@ -15,7 +15,7 @@ const Footer = () => {
             <div className="lg:col-span-2">
               <div className="mb-4">
                 <img 
-                  src="/full_logo.jpeg" 
+                  src="/full_logo.webp" 
                   alt="Esena Pharmacy Logo" 
                   className="h-12 w-auto object-contain"
                 />

@@ -41,6 +41,7 @@ import ManageAppointments from './admin/ManageAppointments';
 import ManageBlogs from './admin/ManageBlogs';
 import ManagePrescriptions from './admin/ManagePrescriptions';
 import ManageEmployees from './admin/ManageEmployees';
+import ActivityLog from './admin/ActivityLog';
 import AdminProfile from './admin/AdminProfile';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -261,6 +262,11 @@ function App() {
               <Route path="/admin/employees" element={
                 <ProtectedRoute>
                   <ManageEmployees />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/activity-log" element={
+                <ProtectedRoute>
+                  <ActivityLog />
                 </ProtectedRoute>
               } />
               <Route path="/admin/profile" element={

@@ -22,7 +22,10 @@ async function logActivity({ userId, userName, action, resourceType, resourceId,
     );
   } catch (e) {
     // Non-fatal — don't break the main operation
-    console.error('Activity log error:', e.message);
+    console.error('[ActivityLog] FAILED to write log entry:');
+    console.error('  message:', e.message);
+    console.error('  code:', e.code);
+    console.error('  sql:', e.sql || '(no sql)');
   }
 }
 

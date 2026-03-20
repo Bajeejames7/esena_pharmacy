@@ -21,6 +21,11 @@ const AdminProfile = () => {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
+  const userInfo = (() => {
+    try { return JSON.parse(localStorage.getItem('adminUser') || '{}'); } catch { return {}; }
+  })();
+  const isAdmin = userInfo.role === 'admin';
+
   useEffect(() => {
     try {
       const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
@@ -41,7 +46,11 @@ const AdminProfile = () => {
     }
     setLoading(true); setError(''); setSuccess('');
     try {
-      const body = { username: form.username, email: form.email };
+      const body = {};
+      if (isAdmin) {
+        body.username = form.username;
+        body.email = form.email;
+      }
       if (form.current_password) body.current_password = form.current_password;
       if (form.new_password) body.new_password = form.new_password;
 
@@ -76,23 +85,32 @@ const AdminProfile = () => {
 
             <GlassCard className="p-6">
               <form onSubmit={handleSubmit} className="space-y-4">
-                <GlassInput
-                  label="Username"
-                  value={form.username}
-                  onChange={set('username')}
-                  required
-                  placeholder="admin"
-                />
-                <GlassInput
-                  label="Email"
-                  type="email"
-                  value={form.email}
-                  onChange={set('email')}
-                  placeholder="admin@example.com"
-                />
+                {isAdmin && (
+                  <>
+                    <GlassInput
+                      label="Username"
+                      value={form.username}
+                      onChange={set('username')}
+                      required
+                      placeholder="admin"
+                    />
+                    <GlassInput
+                      label="Email"
+                      type="email"
+                      value={form.email}
+                      onChange={set('email')}
+                      placeholder="admin@example.com"
+                    />
+                  </>
+                )}
+                {!isAdmin && (
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Username and email can only be changed by an admin.</p>
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{form.username}</p>
+                  </div>
+                )}
 
                 <hr className="border-white/20 dark:border-slate-700 my-2" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">Leave password fields blank to keep your current password.</p>
 
                 <GlassInput
                   label="Current Password"

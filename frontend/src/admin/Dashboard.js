@@ -14,6 +14,9 @@ import ThemeToggle from '../components/ThemeToggle';
 const AdminDashboard = () => {
   const { breakpoint } = useBreakpoint();
   const [sidebarOpen, setSidebarOpen] = useState(breakpoint !== 'mobile');
+
+  const adminUser = (() => { try { return JSON.parse(localStorage.getItem('adminUser') || '{}'); } catch { return {}; } })();
+  const isAdmin = adminUser.role === 'admin';
   const [stats, setStats] = useState({
     pendingOrders: 0,
     pendingAppointments: 0,
@@ -120,7 +123,7 @@ const AdminDashboard = () => {
     try {
       const [ordersRes, appointmentsRes, activityRes] = await Promise.allSettled([
         fetch(`${apiBase}/orders?limit=5&sort=created_at&order=desc`, { headers: authHeaders }),
-        fetch(`${apiBase}/appointments?limit=4&sort=created_at&order=desc`, { headers: authHeaders }),
+        fetch(`${apiBase}/appointments?limit=5&sort=created_at&order=desc`, { headers: authHeaders }),
         fetch(`${apiBase}/admin/dashboard/activity`, { headers: authHeaders })
       ]);
 
@@ -234,7 +237,7 @@ const AdminDashboard = () => {
 
           {/* Statistics Cards */}
           <div className={`grid gap-6 mb-8 ${
-            isMobile ? 'grid-cols-2' : 'grid-cols-2 lg:grid-cols-4'
+            isMobile ? 'grid-cols-2' : isAdmin ? 'grid-cols-2 lg:grid-cols-4' : 'grid-cols-2 lg:grid-cols-3'
           }`}>
             <StatCard
               icon={
@@ -278,6 +281,7 @@ const AdminDashboard = () => {
               trendValue={stats.trends?.products?.value}
             />
 
+            {isAdmin && (
             <StatCard
               icon={
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -291,6 +295,7 @@ const AdminDashboard = () => {
               trend={stats.trends?.revenue?.trend}
               trendValue={stats.trends?.revenue?.value}
             />
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -434,7 +439,7 @@ const AdminDashboard = () => {
             <GlassCard className="p-6 mb-8">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-gray-800 dark:text-gray-100 font-semibold">Recent Activity</h2>
-                <Link to="/admin/employees" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">
+                <Link to="/admin/activity-log" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">
                   Full Log →
                 </Link>
               </div>

@@ -115,7 +115,7 @@ const Header = () => {
           >
             <div className="flex flex-col items-center">
               <img 
-                src="/full_logo.jpeg" 
+                src="/full_logo.webp" 
                 alt="Esena Pharmacy logo OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA NAIROBI pharmacy" 
                 className="h-10 w-auto object-contain"
               />

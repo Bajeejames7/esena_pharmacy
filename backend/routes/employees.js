@@ -18,6 +18,6 @@ router.post('/', auth, adminOnly, createEmployee);
 router.put('/:id', auth, adminOnly, updateEmployee);
 router.delete('/:id', auth, adminOnly, deleteEmployee);
 router.post('/:id/resend-otp', auth, adminOnly, resendOTP);
-router.get('/activity-log', auth, adminOnly, getActivityLog);
+router.get('/activity-log', auth, getActivityLog);
 
 module.exports = router;

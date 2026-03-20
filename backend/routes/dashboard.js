@@ -180,7 +180,7 @@ router.get('/activity', auth, async (req, res) => {
   try {
     const [logs] = await db.query(
       `SELECT id, user_name, action, resource_type, resource_id, description, created_at
-       FROM activity_log ORDER BY created_at DESC LIMIT 15`
+       FROM activity_log ORDER BY created_at DESC LIMIT 7`
     );
     res.json({ logs });
   } catch (error) {

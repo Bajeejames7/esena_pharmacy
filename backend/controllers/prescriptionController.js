@@ -1,6 +1,7 @@
 const db = require('../config/db');
 const path = require('path');
 const fs = require('fs');
+const { logActivity } = require('../utils/activityLog');
 const {
   sendEmail,
   prescriptionReceivedTemplate,
@@ -94,6 +95,18 @@ exports.updateStatus = async (req, res) => {
     }
 
     await db.query('UPDATE prescriptions SET status = ? WHERE id = ?', [status, id]);
+
+    await logActivity({
+      userId: req.user?.userId,
+      userName: req.user?.username,
+      action: 'PRESCRIPTION_STATUS_UPDATED',
+      resourceType: 'prescription',
+      resourceId: parseInt(id),
+      description: `Prescription #${id} status changed to ${status}`,
+      oldValue: { status: rows[0].status },
+      newValue: { status },
+      ip: req.ip
+    });
 
     // Notify patient on meaningful status changes
     if (['reviewed', 'completed', 'cancelled'].includes(status)) {
@@ -192,6 +205,17 @@ exports.createOrderFromPrescription = async (req, res) => {
 
     // Mark prescription as completed
     await connection.query(`UPDATE prescriptions SET status = 'completed' WHERE id = ?`, [id]);
+
+    await logActivity({
+      userId: req.user?.userId,
+      userName: req.user?.username,
+      action: 'PRESCRIPTION_ORDER_CREATED',
+      resourceType: 'prescription',
+      resourceId: parseInt(id),
+      description: `Order #${orderId} created from prescription for ${prescription.name}`,
+      newValue: { orderId, total },
+      ip: req.ip
+    });
 
     await connection.commit();
 

@@ -3,8 +3,10 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const {
   login,
+  logout,
   setupPassword,
   requestPasswordReset,
+  verifyOTP,
   confirmPasswordReset,
   updateProfile,
   setup2FA,
@@ -13,8 +15,10 @@ const {
 } = require('../controllers/authController');
 
 router.post('/login', login);
+router.post('/logout', auth, logout);
 router.post('/setup-password', setupPassword);
 router.post('/forgot-password', requestPasswordReset);
+router.post('/verify-otp', verifyOTP);
 router.post('/reset-password', confirmPasswordReset);
 
 // Protected routes (require auth token)

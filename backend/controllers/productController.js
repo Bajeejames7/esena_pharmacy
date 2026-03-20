@@ -1,5 +1,6 @@
 const db = require("../config/db");
 const { logger } = require("../utils/logger");
+const { logActivity } = require("../utils/activityLog");
 
 const { VALID_CATEGORIES } = require("../utils/categories");
 
@@ -155,10 +156,17 @@ exports.createProduct = async (req, res) => {
     };
     
     // Log successful product creation
-    logger.audit('PRODUCT_CREATED', {
-      productId: result.insertId,
-      productData: newProduct
-    }, req);
+    try { logger.audit('PRODUCT_CREATED', { productId: result.insertId, productData: newProduct }, req); } catch (_) {}
+    await logActivity({
+      userId: req.user?.userId,
+      userName: req.user?.username,
+      action: 'PRODUCT_CREATED',
+      resourceType: 'product',
+      resourceId: result.insertId,
+      description: `Product "${name}" added (${category}, KSH ${price}, stock: ${stock})`,
+      ip: req.ip
+    });
+    console.log('[ActivityLog] PRODUCT_CREATED logged for user', req.user?.username, 'product id', result.insertId);
     
     res.status(201).json({ 
       id: result.insertId, 
@@ -217,7 +225,17 @@ exports.updateProduct = async (req, res) => {
     params.push(req.params.id);
     
     await db.query(updateQuery, params);
-    
+
+    await logActivity({
+      userId: req.user?.userId,
+      userName: req.user?.username,
+      action: 'PRODUCT_UPDATED',
+      resourceType: 'product',
+      resourceId: parseInt(req.params.id),
+      description: `Product "${name}" updated`,
+      ip: req.ip
+    });
+
     res.json({ 
       message: "Product updated successfully",
       productId: parseInt(req.params.id)
@@ -239,7 +257,17 @@ exports.deleteProduct = async (req, res) => {
     
     // Delete product
     await db.query("DELETE FROM products WHERE id = ?", [req.params.id]);
-    
+
+    await logActivity({
+      userId: req.user?.userId,
+      userName: req.user?.username,
+      action: 'PRODUCT_DELETED',
+      resourceType: 'product',
+      resourceId: parseInt(req.params.id),
+      description: `Product deleted`,
+      ip: req.ip
+    });
+
     res.json({ 
       message: "Product deleted successfully",
       productId: parseInt(req.params.id)

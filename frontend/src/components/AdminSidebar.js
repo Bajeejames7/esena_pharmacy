@@ -89,10 +89,26 @@ const AdminSidebar = ({ isOpen, onToggle }) => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
       )
-    }] : [])
+    }] : []),
+    {
+      path: '/admin/activity-log',
+      label: 'Activity Log',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+        </svg>
+      )
+    }
   ];
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch(`${process.env.REACT_APP_API_URL || 'https://esena.co.ke/api'}/auth/logout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('adminToken')}` },
+        body: JSON.stringify({ reason: 'manual' })
+      });
+    } catch (_) {}
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminUser');
     navigate('/admin/login');
@@ -200,7 +216,7 @@ const SidebarContent = ({
         <div className="flex justify-center">
           {(!isCollapsed || shouldUseOverlay) && (
             <img 
-              src="/full_logo.jpeg" 
+              src="/full_logo.webp" 
               alt="Esena Pharmacy" 
               className="h-12 w-auto object-contain max-w-[180px]"
             />
@@ -208,7 +224,7 @@ const SidebarContent = ({
           
           {isCollapsed && !shouldUseOverlay && (
             <img 
-              src="/full_logo.jpeg" 
+              src="/full_logo.webp" 
               alt="Esena Pharmacy" 
               className="h-8 w-8 object-cover rounded-full"
             />
@@ -217,7 +233,7 @@ const SidebarContent = ({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1">
+      <nav className="flex-1 overflow-y-auto min-h-0">
         <ul className="space-y-2">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
