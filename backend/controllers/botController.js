@@ -186,11 +186,15 @@ const sendMessage = async (req, res) => {
       systemInstruction,
     });
 
-    // Convert history to Gemini format
-    const chatHistory = history.map(msg => ({
+    // Convert history to Gemini format, ensuring it starts with a 'user' message
+    const rawHistory = history.map(msg => ({
       role: msg.role === 'user' ? 'user' : 'model',
       parts: [{ text: msg.content }],
     }));
+
+    // Gemini requires history to start with 'user' role — drop leading model messages
+    const firstUserIndex = rawHistory.findIndex(m => m.role === 'user');
+    const chatHistory = firstUserIndex > 0 ? rawHistory.slice(firstUserIndex) : rawHistory;
 
     const chat = model.startChat({ history: chatHistory });
     const result = await chat.sendMessage(message.trim());
