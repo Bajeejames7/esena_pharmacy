@@ -85,7 +85,7 @@ const FocusManager = ({ children }) => {
     const pageTitle = match ? PAGE_TITLES[match] : null;
     document.title = pageTitle
       ? `${pageTitle} | Esena Pharmacy`
-      : 'Esena Pharmacy | Kenya\'s Trusted Online Pharmacy';
+      : 'Esena Pharmacy | Kenya\'s Trusted Pharmacy';
 
     // Focus the main content area when route changes
     const mainContent = document.getElementById('main-content');

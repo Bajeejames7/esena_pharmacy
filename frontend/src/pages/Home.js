@@ -468,9 +468,9 @@ const Home = () => {
             </h2>
             <div className="grid md:grid-cols-2 gap-8">
               <div>
-                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">Kenya's Trusted Online Pharmacy</h3>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">Kenya's Trusted Pharmacy</h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  As Kenya's leading online pharmacy with multiple locations nationwide, we've been serving communities across the country for over 5 years with reliable healthcare services and quality medications delivered to your doorstep.
+                  As one of Kenya's leading pharmacies with multiple locations nationwide, we've been serving communities across the country for over 5 years with reliable healthcare services and quality medications delivered to your doorstep.
                 </p>
                 <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">Professional Pharmacist Consultations</h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
