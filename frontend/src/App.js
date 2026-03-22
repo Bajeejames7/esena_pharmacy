@@ -44,6 +44,7 @@ import ManageEmployees from './admin/ManageEmployees';
 import ActivityLog from './admin/ActivityLog';
 import AdminProfile from './admin/AdminProfile';
 import ProtectedRoute from './components/ProtectedRoute';
+import NotFound from './pages/NotFound';
 
 // Page titles per route
 const PAGE_TITLES = {
@@ -228,6 +229,7 @@ function App() {
               <Route path="/terms" element={<TermsOfUse />} />
               
               {/* Admin Routes */}
+              <Route path="/admin" element={<AdminLogin />} />
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin/dashboard" element={
                 <ProtectedRoute>
@@ -274,6 +276,9 @@ function App() {
                   <AdminProfile />
                 </ProtectedRoute>
               } />
+
+              {/* 404 catch-all */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
             </MainContentWrapper>
             <ConditionalFooter />

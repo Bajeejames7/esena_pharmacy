@@ -36,7 +36,7 @@ const sendMessage = async (req, res) => {
     }
 
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash-lite',
+      model: 'gemini-3-flash-preview',
       systemInstruction,
     });
 

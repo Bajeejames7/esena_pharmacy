@@ -27,7 +27,7 @@ const IvoBot = () => {
       setMessages([{
         id: 1,
         type: 'bot',
-        content: "Hello! I'm Ivo, your Esena Pharmacy assistant. How can I help you today? 😊\n\nI can help you with:\n• Finding products and medicines\n• Uploading prescriptions\n• Booking appointments\n• Delivery information\n• General health questions",
+        content: "Hi! I'm Ivo, your Esena Pharmacy assistant. How can I help you today? 😊",
         timestamp: new Date().toISOString(),
         showQuickActions: true
       }]);
@@ -128,7 +128,7 @@ const IvoBot = () => {
     setMessages([{
       id: 1,
       type: 'bot',
-      content: "Chat cleared! How can I help you today? 😊\n\nI can help you with:\n• Finding products and medicines\n• Uploading prescriptions\n• Booking appointments\n• Delivery information\n• General health questions",
+      content: "Chat cleared! How can I help you today? 😊",
       timestamp: new Date().toISOString(),
       showQuickActions: true
     }]);
@@ -147,8 +147,8 @@ const IvoBot = () => {
 
   return (
     <>
-      {/* Chat Button */}
-      <div className="fixed right-6 bottom-44 z-50">
+      {/* Chat Button — left side, same height as WhatsApp button */}
+      <div className="fixed left-6 z-50" style={{ bottom: '6rem' }}>
         <button
           onClick={handleToggleChat}
           className="group relative"
@@ -195,22 +195,28 @@ const IvoBot = () => {
             </div>
           </GlassCard>
           
-          {/* Enhanced Tooltip */}
-          <div className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none">
+          {/* Tooltip */}
+          <div className="absolute left-full ml-3 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none">
             <div className="bg-gray-800 dark:bg-gray-700 text-white text-sm px-3 py-2 rounded-lg whitespace-nowrap shadow-lg">
               <div className="font-semibold">💬 Chat with Ivo</div>
               <div className="text-xs opacity-75">AI Pharmacy Assistant</div>
-              {/* Arrow */}
-              <div className="absolute left-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-4 border-r-0 border-t-4 border-b-4 border-transparent border-l-gray-800 dark:border-l-gray-700"></div>
+              {/* Arrow pointing left */}
+              <div className="absolute right-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-r-4 border-t-4 border-b-4 border-transparent border-r-gray-800 dark:border-r-gray-700"></div>
             </div>
           </div>
         </button>
       </div>
 
-      {/* Chat Window */}
+      {/* Chat Window — left side, fixed between header and bottom */}
       {isOpen && (
-        <div className="fixed right-4 bottom-60 z-50 w-[28rem] h-[36rem] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-8rem)] sm:w-96 sm:h-[32rem]">
-          <GlassCard className="h-full flex flex-col" blur="lg">
+        <div
+          className="fixed left-4 z-50 w-80 sm:w-96 flex flex-col"
+          style={{
+            top: '4.5rem',
+            bottom: '10rem',
+          }}
+        >
+          <GlassCard className="flex flex-col overflow-hidden h-full" blur="lg">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/20 dark:border-gray-600/30">
               <div className="flex items-center space-x-3">
@@ -249,7 +255,7 @@ const IvoBot = () => {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0">
               {messages.map((message) => (
                 <div
                   key={message.id}
