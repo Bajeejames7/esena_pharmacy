@@ -60,7 +60,7 @@ const Home = () => {
         <div className="max-w-6xl mx-auto">
           <GlassCard className="p-8 md:p-12 text-center">
             <h1 className="text-3xl md:text-5xl font-bold mb-4 text-gray-800 dark:text-white">
-              Order Medicines Online in Kenya
+              Your Trusted Pharmacy in Kenya
             </h1>
             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8">
               Fast Delivery • Genuine Medicines • Licensed Pharmacy
