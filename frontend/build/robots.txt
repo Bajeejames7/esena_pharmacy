@@ -5,4 +5,5 @@ Allow: /
 Disallow: /admin/
 Disallow: /admin
 
-Sitemap: https://www.esenapharmacy.co.ke/sitemap.xml
+# Updated Sitemap location
+Sitemap: https://esena.co.ke/sitemap.xml
