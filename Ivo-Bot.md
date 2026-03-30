@@ -12,7 +12,7 @@
 ### Company Overview
 - **Name:** Esena Pharmacy
 - **Tagline:** "Trusted Care, Every day"
-- **Type:** Kenya's leading online pharmacy with multiple physical locations
+- **Type:** Kenya's leading pharmacy with multiple physical locations
 - **Years of Service:** 5+ years serving communities across Kenya
 - **License:** Licensed by Pharmacy & Poisons Board (PPB) - License No: PPB/PH/01/2024/001
 
