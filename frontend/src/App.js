@@ -104,12 +104,15 @@ const ConditionalHeader = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   
-  // Don't render Header on admin routes
-  if (isAdminRoute) {
-    return null;
-  }
+  if (isAdminRoute) return null;
   
-  return <Header />;
+  return (
+    <>
+      <Header />
+      {/* Spacer so content doesn't slide under the fixed header (h-16 = 64px) */}
+      <div className="h-16 flex-shrink-0" aria-hidden="true" />
+    </>
+  );
 };
 
 // Component to conditionally render Footer based on route

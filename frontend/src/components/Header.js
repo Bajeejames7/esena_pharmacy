@@ -103,7 +103,7 @@ const Header = () => {
 
   return (
     <header 
-      className="sticky top-0 z-50 glass-card border-b border-white/20 dark:border-slate-600/30"
+      className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-white/20 dark:border-slate-600/30"
       id="navigation"
     >
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">

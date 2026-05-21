@@ -316,11 +316,14 @@ const SalesReport = () => {
 </body>
 </html>`;
 
-    const win = window.open('', '_blank', 'width=900,height=700');
+    const win = window.open('', '_blank', 'width=1,height=1,left=-9999,top=-9999');
     win.document.write(html);
     win.document.close();
     win.focus();
-    setTimeout(() => { win.print(); }, 400);
+    setTimeout(() => {
+      win.print();
+      win.close();
+    }, 400);
   };
 
   const periodLabel = PERIODS.find(p => p.value === period)?.label || period;

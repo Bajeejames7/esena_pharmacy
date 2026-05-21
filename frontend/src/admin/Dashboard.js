@@ -168,19 +168,19 @@ const AdminDashboard = () => {
   };
 
   const StatCard = ({ icon, title, value, loading, color = 'from-glass-blue to-glass-green', trend, trendValue }) => (
-    <GlassCard className="p-6 text-center">
-      <div className={`w-12 h-12 bg-gradient-to-br ${color} rounded-full flex items-center justify-center mx-auto mb-3`}>
+    <GlassCard className="p-4 sm:p-6 text-center">
+      <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${color} rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3`}>
         {icon}
       </div>
       {loading ? (
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-6 sm:h-8 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+          <div className="h-3 sm:h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
         </div>
       ) : (
         <>
-          <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-1">{value}</h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-2">{title}</p>
+          <h3 className="text-lg sm:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-1">{value}</h3>
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-1 leading-tight">{title}</p>
           {trend && trendValue && (
             <div className={`flex items-center justify-center space-x-1 text-xs ${
               trend === 'up' ? 'text-green-600 dark:text-green-400' : trend === 'down' ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'
@@ -215,21 +215,18 @@ const AdminDashboard = () => {
           onToggle={() => setSidebarOpen(!sidebarOpen)} 
         />
         
-        <div className={`flex-1 transition-all duration-300 ${
+        <div className={`flex-1 transition-all duration-300 min-w-0 ${
           !shouldShowMenuButton && sidebarOpen ? 'ml-64' : !shouldShowMenuButton ? 'ml-16' : ''
         }`}>
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-4">
-              {/* Remove mobile menu button since it's now in AdminHeader */}
-              <div>
-                <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 lg:block hidden">Dashboard</h1>
-                <p className="text-gray-600 dark:text-gray-300">Welcome back! Here's what's happening today.</p>
-              </div>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 lg:block hidden">Dashboard</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Welcome back! Here's what's happening today.</p>
             </div>
             
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="hidden lg:block">
                 <ThemeToggle showLabel={true} />
               </div>
@@ -248,8 +245,8 @@ const AdminDashboard = () => {
           </div>
 
           {/* Statistics Cards */}
-          <div className={`grid gap-6 mb-8 ${
-            isMobile ? 'grid-cols-2' : isAdmin ? 'grid-cols-2 lg:grid-cols-4' : 'grid-cols-2 lg:grid-cols-3'
+          <div className={`grid gap-3 sm:gap-6 mb-6 sm:mb-8 ${
+            isAdmin ? 'grid-cols-2 lg:grid-cols-4' : 'grid-cols-2 lg:grid-cols-3'
           }`}>
             <StatCard
               icon={
@@ -327,7 +324,7 @@ const AdminDashboard = () => {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   <div className="bg-gradient-to-br from-blue-500/15 to-blue-600/5 border border-blue-200 dark:border-blue-800/40 rounded-xl p-4">
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">This week <span className="text-gray-400 dark:text-gray-500">({revenueData.this_week.label})</span></p>
                     <p className="text-lg font-bold text-gray-800 dark:text-gray-100">
@@ -388,7 +385,7 @@ const AdminDashboard = () => {
             </GlassCard>
           )}
 
-          <div className={`grid gap-6 mb-8 ${
+          <div className={`grid gap-4 sm:gap-6 mb-6 sm:mb-8 ${
             isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-3'
           }`}>
             <Link to="/admin/products">
@@ -431,7 +428,7 @@ const AdminDashboard = () => {
           {/* System Status */}
           <GlassCard className="p-6 mb-8">
             <h2 className="text-gray-800 dark:text-gray-100 font-semibold mb-4">System Status</h2>
-            <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2 lg:grid-cols-4'}`}>
+            <div className={`grid gap-3 sm:gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2 lg:grid-cols-4'}`}>
               <div className="flex items-center space-x-3">
                 <div className={`w-3 h-3 rounded-full ${
                   stats.systemStatus?.database === 'connected' ? 'bg-green-500' : 
@@ -565,7 +562,7 @@ const AdminDashboard = () => {
           )}
 
           {/* Recent Orders & Appointments */}
-          <div className={`grid gap-6 ${
+          <div className={`grid gap-4 sm:gap-6 ${
             isMobile ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'
           }`}>
             {/* Recent Orders */}

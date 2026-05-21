@@ -30,31 +30,33 @@ const AdminHeader = ({ onMenuToggle, showMenuButton = true }) => {
   };
 
   return (
-    <header className={`${shouldShowHeader ? 'block' : 'hidden'} sticky top-0 z-40 glass-card border-b border-white/20 dark:border-slate-600/30`}>
-      <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex items-center space-x-3">
-          {showMenuButton && (
-            <button
-              onClick={onMenuToggle}
-              className="p-2 rounded-lg bg-white/10 dark:bg-slate-700/50 hover:bg-white/20 dark:hover:bg-slate-600/50 transition-colors"
-              aria-label="Open menu"
-            >
-              <svg className="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          )}
-          
+    <>
+      <header className={`${shouldShowHeader ? 'block' : 'hidden'} fixed top-0 left-0 right-0 z-40 glass-card border-b border-white/20 dark:border-slate-600/30`}>
+        <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center space-x-3">
-            <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{getPageTitle()}</h1>
+            {showMenuButton && (
+              <button
+                onClick={onMenuToggle}
+                className="p-2 rounded-lg bg-white/10 dark:bg-slate-700/50 hover:bg-white/20 dark:hover:bg-slate-600/50 transition-colors"
+                aria-label="Open menu"
+              >
+                <svg className="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            )}
+            <div className="flex items-center space-x-3">
+              <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{getPageTitle()}</h1>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <ThemeToggle showLabel={false} />
           </div>
         </div>
-
-        <div className="flex items-center space-x-2">
-          <ThemeToggle showLabel={false} />
-        </div>
-      </div>
-    </header>
+      </header>
+      {/* Spacer so content doesn't slide under the fixed header on mobile/tablet */}
+      {shouldShowHeader && <div className="h-[52px] flex-shrink-0" aria-hidden="true" />}
+    </>
   );
 };
 
