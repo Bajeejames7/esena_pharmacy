@@ -11,6 +11,14 @@ const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 const Products = () => {
   const location = useLocation();
   const [products, setProducts] = useState([]);
+
+  // Set page title and meta description for SEO
+  useEffect(() => {
+    document.title = 'Products | Esena Pharmacy — Medications, Supplements & Healthcare, Nairobi';
+    let meta = document.querySelector('meta[name="description"]');
+    if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
+    meta.content = 'Shop medications, vitamins, supplements, personal care and healthcare products at Esena Pharmacy, Outering Road, Ruaraka, Nairobi. Fast delivery across Kenya.';
+  }, []);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);       // true only on first load
   const [searching, setSearching] = useState(false);  // true on subsequent fetches
@@ -153,6 +161,13 @@ const Products = () => {
     return (
       <div className="pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4">
+          {/* Keep heading visible during load so Google sees content */}
+          <GlassCard className="p-8 text-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Our Products</h1>
+            <p className="text-gray-600 dark:text-gray-300">
+              Browse our comprehensive selection of medications, supplements, and healthcare products available at Esena Pharmacy, Nairobi.
+            </p>
+          </GlassCard>
           <GlassCard className="p-12 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-600 dark:text-gray-300">Loading products...</p>
