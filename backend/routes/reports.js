@@ -52,19 +52,28 @@ router.get('/sales', auth, async (req, res) => {
     const summaryWhere = 'WHERE ' + summaryConditions.join(' AND ');
 
     // ── Summary (completed orders only) ──────────────────────
+    // Use separate queries to avoid JOIN inflation on SUM(total)
     const [[summary]] = await db.query(
       `SELECT
-         COUNT(DISTINCT o.id)                                        AS total_orders,
-         COALESCE(SUM(o.total), 0)                                   AS total_revenue,
-         COALESCE(SUM(o.total - COALESCE(o.shipping_cost, 0)), 0)    AS total_subtotal,
-         COALESCE(SUM(o.shipping_cost), 0)                           AS total_shipping,
-         COALESCE(SUM(oi.quantity), 0)                               AS total_units_sold,
-         COALESCE(AVG(o.total), 0)                                   AS avg_order_value
+         COUNT(*)                                                     AS total_orders,
+         COALESCE(SUM(total), 0)                                      AS total_revenue,
+         COALESCE(SUM(total - COALESCE(shipping_cost, 0)), 0)         AS total_subtotal,
+         COALESCE(SUM(shipping_cost), 0)                              AS total_shipping,
+         COALESCE(AVG(total), 0)                                      AS avg_order_value
        FROM orders o
-       LEFT JOIN order_items oi ON oi.order_id = o.id
        ${summaryWhere}`,
       summaryParams
     );
+
+    // Units sold in a separate query to avoid row multiplication from JOIN
+    const [[unitsSold]] = await db.query(
+      `SELECT COALESCE(SUM(oi.quantity), 0) AS total_units_sold
+       FROM order_items oi
+       JOIN orders o ON o.id = oi.order_id
+       ${summaryWhere}`,
+      summaryParams
+    );
+    summary.total_units_sold = unitsSold.total_units_sold;
 
     // ── Top selling products (completed orders only) ──────────
     const [topProducts] = await db.query(
@@ -87,12 +96,12 @@ router.get('/sales', auth, async (req, res) => {
     // ── Revenue by day (completed orders only, for chart) ─────
     const [dailyRevenue] = await db.query(
       `SELECT
-         DATE(o.created_at)                            AS date,
+         DATE_FORMAT(o.created_at, '%Y-%m-%d')         AS date,
          COUNT(DISTINCT o.id)                          AS orders,
          COALESCE(SUM(o.total), 0)                     AS revenue
        FROM orders o
        ${summaryWhere}
-       GROUP BY DATE(o.created_at)
+       GROUP BY DATE_FORMAT(o.created_at, '%Y-%m-%d')
        ORDER BY date ASC`,
       summaryParams
     );
