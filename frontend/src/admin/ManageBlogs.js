@@ -33,6 +33,7 @@ const ManageBlogs = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [dateFilter, setDateFilter] = useState('all');
 
   const isMobile = breakpoint === 'mobile';
   const isTablet = breakpoint === 'tablet';
@@ -459,6 +460,20 @@ const ManageBlogs = () => {
               ]}
             />
           </div>
+          <div className="sm:w-44">
+            <GlassSelect
+              value={dateFilter}
+              onChange={e => setDateFilter(e.target.value)}
+              options={[
+                { value: 'all', label: 'All time' },
+                { value: 'today', label: 'Today' },
+                { value: 'week', label: 'Last 7 days' },
+                { value: 'last_week', label: 'Previous week' },
+                { value: 'month', label: 'Last 30 days' },
+                { value: 'last_month', label: 'Previous month' },
+              ]}
+            />
+          </div>
         </div>
         <DataTable
           data={blogs.filter(b => {
@@ -467,7 +482,26 @@ const ManageBlogs = () => {
               (b.title || '').toLowerCase().includes(term) ||
               (b.author || '').toLowerCase().includes(term);
             const matchesStatus = !statusFilter || b.status === statusFilter;
-            return matchesSearch && matchesStatus;
+            const now = new Date();
+            let matchesDate = true;
+            if (dateFilter === 'today') {
+              matchesDate = new Date(b.created_at).toDateString() === now.toDateString();
+            } else if (dateFilter === 'week') {
+              const cutoff = new Date(now); cutoff.setDate(now.getDate() - 7);
+              matchesDate = new Date(b.created_at) >= cutoff;
+            } else if (dateFilter === 'last_week') {
+              const end = new Date(now); end.setDate(now.getDate() - 7);
+              const start = new Date(now); start.setDate(now.getDate() - 14);
+              const d = new Date(b.created_at); matchesDate = d >= start && d < end;
+            } else if (dateFilter === 'month') {
+              const cutoff = new Date(now); cutoff.setDate(now.getDate() - 30);
+              matchesDate = new Date(b.created_at) >= cutoff;
+            } else if (dateFilter === 'last_month') {
+              const end = new Date(now); end.setDate(now.getDate() - 30);
+              const start = new Date(now); start.setDate(now.getDate() - 60);
+              const d = new Date(b.created_at); matchesDate = d >= start && d < end;
+            }
+            return matchesSearch && matchesStatus && matchesDate;
           })}
           columns={columns}
           emptyMessage="No blog posts found"

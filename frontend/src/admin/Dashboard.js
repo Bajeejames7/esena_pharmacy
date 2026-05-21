@@ -31,6 +31,8 @@ const AdminDashboard = () => {
     }
   });
 
+  const [revenueData, setRevenueData] = useState(null);
+
   const isMobile = breakpoint === 'mobile';
   const isTablet = breakpoint === 'tablet';
   const shouldShowMenuButton = isMobile || isTablet;
@@ -45,9 +47,9 @@ const AdminDashboard = () => {
   }, [isMobile]);
 
   useEffect(() => {
-    // Load dashboard statistics
     loadDashboardStats();
     loadRecentData();
+    if (isAdmin) loadRevenueData();
   }, []);
 
   const loadDashboardStats = async () => {
@@ -70,6 +72,7 @@ const AdminDashboard = () => {
         pendingAppointments: data.pendingAppointments || 0,
         productsInStock: data.productsInStock || 0,
         totalRevenue: data.totalRevenue || 0,
+        revenueMonthLabel: data.revenueMonthLabel || '',
         loading: false,
         storage: data.storage || null,
         systemStatus: data.systemStatus || {
@@ -107,6 +110,15 @@ const AdminDashboard = () => {
         }
       });
     }
+  };
+
+  const loadRevenueData = async () => {
+    try {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/admin/dashboard/revenue`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+      });
+      if (res.ok) setRevenueData(await res.json());
+    } catch { /* non-fatal */ }
   };
 
   const [recentOrders, setRecentOrders] = useState([]);
@@ -288,17 +300,94 @@ const AdminDashboard = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                 </svg>
               }
-              title="Total Revenue"
+              title="Revenue"
               value={stats.loading ? '...' : `KSH ${stats.totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
               loading={stats.loading}
               color="from-glass-green-dark to-glass-green"
-              trend={stats.trends?.revenue?.trend}
-              trendValue={stats.trends?.revenue?.value}
+              trend="neutral"
+              trendValue={stats.revenueMonthLabel || ''}
             />
             )}
           </div>
 
-          {/* Quick Actions */}
+          {/* Revenue Comparison — admin only */}
+          {isAdmin && (
+            <GlassCard className="p-5 mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold text-gray-800 dark:text-gray-100">Revenue (completed orders)</h2>
+                <Link to="/admin/reports" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium">
+                  Full Report →
+                </Link>
+              </div>
+
+              {!revenueData ? (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="animate-pulse h-20 bg-white/20 dark:bg-slate-700/30 rounded-xl" />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div className="bg-gradient-to-br from-blue-500/15 to-blue-600/5 border border-blue-200 dark:border-blue-800/40 rounded-xl p-4">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">This week <span className="text-gray-400 dark:text-gray-500">({revenueData.this_week.label})</span></p>
+                    <p className="text-lg font-bold text-gray-800 dark:text-gray-100">
+                      KSh {revenueData.this_week.revenue.toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{revenueData.this_week.orders} orders</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-slate-500/10 to-slate-600/5 border border-slate-200 dark:border-slate-700/40 rounded-xl p-4">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Last week <span className="text-gray-400 dark:text-gray-500">({revenueData.last_week.label})</span></p>
+                    <p className="text-lg font-bold text-gray-800 dark:text-gray-100">
+                      KSh {revenueData.last_week.revenue.toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    </p>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{revenueData.last_week.orders} orders</p>
+                      {revenueData.week_change !== 0 && (
+                        <span className={`text-xs font-semibold ml-auto ${revenueData.week_change > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
+                          {revenueData.week_change > 0 ? '▲' : '▼'} {Math.abs(revenueData.week_change)}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-green-500/15 to-green-600/5 border border-green-200 dark:border-green-800/40 rounded-xl p-4">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">This month <span className="text-gray-400 dark:text-gray-500">({revenueData.this_month.label})</span></p>
+                    <p className="text-lg font-bold text-gray-800 dark:text-gray-100">
+                      KSh {revenueData.this_month.revenue.toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{revenueData.this_month.orders} orders</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-slate-500/10 to-slate-600/5 border border-slate-200 dark:border-slate-700/40 rounded-xl p-4">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Last month <span className="text-gray-400 dark:text-gray-500">({revenueData.last_month.label})</span></p>
+                    <p className="text-lg font-bold text-gray-800 dark:text-gray-100">
+                      KSh {revenueData.last_month.revenue.toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    </p>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{revenueData.last_month.orders} orders</p>
+                      {revenueData.month_change !== 0 && (
+                        <span className={`text-xs font-semibold ml-auto ${revenueData.month_change > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
+                          {revenueData.month_change > 0 ? '▲' : '▼'} {Math.abs(revenueData.month_change)}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {revenueData && (
+                <div className="mt-3 pt-3 border-t border-white/20 dark:border-slate-700/30 flex items-center justify-between text-sm">
+                  <span className="text-gray-500 dark:text-gray-400">All-time (completed orders)</span>
+                  <span className="font-semibold text-gray-800 dark:text-gray-100">
+                    KSh {revenueData.all_time.revenue.toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">· {revenueData.all_time.orders} orders</span>
+                  </span>
+                </div>
+              )}
+            </GlassCard>
+          )}
+
           <div className={`grid gap-6 mb-8 ${
             isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-3'
           }`}>

@@ -94,6 +94,12 @@ exports.cancelOrder = async (req, res) => {
     const [items] = await connection.query("SELECT * FROM order_items WHERE order_id = ?", [id]);
     for (const item of items) {
       await connection.query("UPDATE products SET stock = stock + ? WHERE id = ?", [item.quantity, item.product_id]);
+      await connection.query(
+        `INSERT INTO stock_movements (product_id, type, quantity, note, reference_id, performed_by, performed_by_name)
+         VALUES (?, 'return', ?, ?, ?, ?, ?)`,
+        [item.product_id, item.quantity, `Order #${id} cancelled by admin`, id,
+         req.user?.userId || null, req.user?.username || 'Admin']
+      );
     }
     await connection.query("UPDATE orders SET status = 'cancelled' WHERE id = ?", [id]);
     await connection.commit();
@@ -144,6 +150,11 @@ exports.cancelOrderByToken = async (req, res) => {
     const [items] = await connection.query("SELECT * FROM order_items WHERE order_id = ?", [order.id]);
     for (const item of items) {
       await connection.query("UPDATE products SET stock = stock + ? WHERE id = ?", [item.quantity, item.product_id]);
+      await connection.query(
+        `INSERT INTO stock_movements (product_id, type, quantity, note, reference_id, performed_by_name)
+         VALUES (?, 'return', ?, ?, ?, 'Customer Cancellation')`,
+        [item.product_id, item.quantity, `Order #${order.id} cancelled by customer`, order.id]
+      );
     }
     await connection.query("UPDATE orders SET status = 'cancelled' WHERE id = ?", [order.id]);
     await connection.commit();
@@ -229,7 +240,7 @@ exports.createOrder = async (req, res) => {
     
     const orderId = orderResult.insertId;
     
-    // Insert order items and decrement stock in database transaction (Req 5.7)
+    // Insert order items, decrement stock, and log movements (Req 5.7)
     for (const item of items) {
       await connection.query(
         "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)",
@@ -239,6 +250,12 @@ exports.createOrder = async (req, res) => {
       await connection.query(
         "UPDATE products SET stock = GREATEST(stock - ?, 0) WHERE id = ?",
         [item.quantity, item.product_id]
+      );
+      // Log stock movement
+      await connection.query(
+        `INSERT INTO stock_movements (product_id, type, quantity, note, reference_id, performed_by_name)
+         VALUES (?, 'sale', ?, ?, ?, 'Customer Order')`,
+        [item.product_id, -item.quantity, `Order #${orderId}`, orderId]
       );
     }
     

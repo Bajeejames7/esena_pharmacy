@@ -43,6 +43,7 @@ import ManagePrescriptions from './admin/ManagePrescriptions';
 import ManageEmployees from './admin/ManageEmployees';
 import ActivityLog from './admin/ActivityLog';
 import AdminProfile from './admin/AdminProfile';
+import SalesReport from './admin/SalesReport';
 import ProtectedRoute from './components/ProtectedRoute';
 import NotFound from './pages/NotFound';
 
@@ -274,6 +275,11 @@ function App() {
               <Route path="/admin/profile" element={
                 <ProtectedRoute>
                   <AdminProfile />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/reports" element={
+                <ProtectedRoute>
+                  <SalesReport />
                 </ProtectedRoute>
               } />
 

@@ -249,7 +249,7 @@ const Header = () => {
                 aria-label={`Shopping cart with ${totalItems} items`}
               >
                 <img 
-                  src="/cart.png" 
+                  src="/cart.webp" 
                   alt="Shopping Cart" 
                   className="w-6 h-6"
                 />

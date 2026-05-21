@@ -146,4 +146,24 @@ export const prescriptionsAPI = {
   createOrder: (id, data) => api.post(`/prescriptions/${id}/create-order`, data),
 };
 
+// Inventory API methods
+export const inventoryAPI = {
+  getSummary: (period = 'all') => api.get(`/inventory/summary?period=${period}`),
+  getMovements: (productId, period = 'all', page = 1) =>
+    api.get(`/inventory/${productId}/movements?period=${period}&page=${page}`),
+  addMovement: (productId, data) => api.post(`/inventory/${productId}/movements`, data),
+};
+
+// Reports API methods
+export const reportsAPI = {
+  getSales: (params = {}) => {
+    const query = new URLSearchParams();
+    if (params.period) query.set('period', params.period);
+    if (params.date_from) query.set('date_from', params.date_from);
+    if (params.date_to) query.set('date_to', params.date_to);
+    if (params.status) query.set('status', params.status);
+    return api.get(`/reports/sales?${query.toString()}`);
+  },
+};
+
 export default api;

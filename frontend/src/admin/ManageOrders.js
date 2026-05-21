@@ -23,6 +23,7 @@ const ManageOrders = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [dateFilter, setDateFilter] = useState('all');
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [editShipping, setEditShipping] = useState('');
@@ -59,7 +60,7 @@ const ManageOrders = () => {
 
   useEffect(() => {
     loadOrders();
-  }, [currentPage, searchTerm, statusFilter]);
+  }, [currentPage, searchTerm, statusFilter, dateFilter]);
 
   const loadOrders = async () => {
     setLoading(true);
@@ -67,6 +68,24 @@ const ManageOrders = () => {
     try {
       const response = await ordersAPI.getAll();
       let allOrders = response.data?.orders || [];
+      const now = new Date();
+      if (dateFilter === 'today') {
+        allOrders = allOrders.filter(o => new Date(o.created_at).toDateString() === now.toDateString());
+      } else if (dateFilter === 'week') {
+        const cutoff = new Date(now); cutoff.setDate(now.getDate() - 7);
+        allOrders = allOrders.filter(o => new Date(o.created_at) >= cutoff);
+      } else if (dateFilter === 'last_week') {
+        const end = new Date(now); end.setDate(now.getDate() - 7);
+        const start = new Date(now); start.setDate(now.getDate() - 14);
+        allOrders = allOrders.filter(o => { const d = new Date(o.created_at); return d >= start && d < end; });
+      } else if (dateFilter === 'month') {
+        const cutoff = new Date(now); cutoff.setDate(now.getDate() - 30);
+        allOrders = allOrders.filter(o => new Date(o.created_at) >= cutoff);
+      } else if (dateFilter === 'last_month') {
+        const end = new Date(now); end.setDate(now.getDate() - 30);
+        const start = new Date(now); start.setDate(now.getDate() - 60);
+        allOrders = allOrders.filter(o => { const d = new Date(o.created_at); return d >= start && d < end; });
+      }
       if (searchTerm) {
         const term = searchTerm.toLowerCase();
         allOrders = allOrders.filter(o =>
@@ -197,11 +216,23 @@ const ManageOrders = () => {
             </div>
 
             <GlassCard className="p-6 mb-6">
-              <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-3'}`}>
+              <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-4'}`}>
                 <div className="md:col-span-2">
                   <GlassInput placeholder="Search orders by ID, customer name, or email..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} />
                 </div>
                 <GlassSelect options={statusOptions} value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }} />
+                <GlassSelect
+                  options={[
+                    { value: 'all', label: 'All time' },
+                    { value: 'today', label: 'Today' },
+                    { value: 'week', label: 'Last 7 days' },
+                    { value: 'last_week', label: 'Previous week' },
+                    { value: 'month', label: 'Last 30 days' },
+                    { value: 'last_month', label: 'Previous month' },
+                  ]}
+                  value={dateFilter}
+                  onChange={(e) => { setDateFilter(e.target.value); setCurrentPage(1); }}
+                />
               </div>
             </GlassCard>
 

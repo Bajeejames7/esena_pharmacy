@@ -30,6 +30,7 @@ const ManageAppointments = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [serviceFilter, setServiceFilter] = useState('');
+  const [dateFilter, setDateFilter] = useState('all');
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [showReschedule, setShowReschedule] = useState(false);
   const [rescheduleData, setRescheduleData] = useState({ date: '', time: '' });
@@ -67,7 +68,7 @@ const ManageAppointments = () => {
 
   useEffect(() => {
     loadAppointments();
-  }, [currentPage, searchTerm, statusFilter, serviceFilter]);
+  }, [currentPage, searchTerm, statusFilter, serviceFilter, dateFilter]);
 
   const loadAppointments = async () => {
     setLoading(true);
@@ -76,6 +77,25 @@ const ManageAppointments = () => {
     try {
       const response = await appointmentsAPI.getAll();
       let all = response.data?.appointments || [];
+
+      const now = new Date();
+      if (dateFilter === 'today') {
+        all = all.filter(a => new Date(a.created_at).toDateString() === now.toDateString());
+      } else if (dateFilter === 'week') {
+        const cutoff = new Date(now); cutoff.setDate(now.getDate() - 7);
+        all = all.filter(a => new Date(a.created_at) >= cutoff);
+      } else if (dateFilter === 'last_week') {
+        const end = new Date(now); end.setDate(now.getDate() - 7);
+        const start = new Date(now); start.setDate(now.getDate() - 14);
+        all = all.filter(a => { const d = new Date(a.created_at); return d >= start && d < end; });
+      } else if (dateFilter === 'month') {
+        const cutoff = new Date(now); cutoff.setDate(now.getDate() - 30);
+        all = all.filter(a => new Date(a.created_at) >= cutoff);
+      } else if (dateFilter === 'last_month') {
+        const end = new Date(now); end.setDate(now.getDate() - 30);
+        const start = new Date(now); start.setDate(now.getDate() - 60);
+        all = all.filter(a => { const d = new Date(a.created_at); return d >= start && d < end; });
+      }
 
       if (searchTerm) {
         const term = searchTerm.toLowerCase();
@@ -296,23 +316,23 @@ const ManageAppointments = () => {
 
           {/* Search and Filters */}
           <GlassCard className="p-4 mb-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
               <div className="sm:col-span-2">
-                <GlassInput
-                  placeholder="Search by ID, name or email..."
-                  value={searchTerm}
-                  onChange={handleSearch}
-                />
+                <GlassInput placeholder="Search by ID, name or email..." value={searchTerm} onChange={handleSearch} />
               </div>
+              <GlassSelect options={statusOptions} value={statusFilter} onChange={handleStatusFilter} />
+              <GlassSelect options={serviceOptions} value={serviceFilter} onChange={handleServiceFilter} />
               <GlassSelect
-                options={statusOptions}
-                value={statusFilter}
-                onChange={handleStatusFilter}
-              />
-              <GlassSelect
-                options={serviceOptions}
-                value={serviceFilter}
-                onChange={handleServiceFilter}
+                options={[
+                  { value: 'all', label: 'All time' },
+                  { value: 'today', label: 'Today' },
+                  { value: 'week', label: 'Last 7 days' },
+                  { value: 'last_week', label: 'Previous week' },
+                  { value: 'month', label: 'Last 30 days' },
+                  { value: 'last_month', label: 'Previous month' },
+                ]}
+                value={dateFilter}
+                onChange={e => { setDateFilter(e.target.value); setCurrentPage(1); }}
               />
             </div>
           </GlassCard>

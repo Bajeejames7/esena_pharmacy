@@ -83,6 +83,8 @@ app.use(["/settings", "/api/settings"], require("./routes/settings"));
 app.use(["/prescriptions", "/api/prescriptions", "/admin/prescriptions", "/api/admin/prescriptions"], require("./routes/prescriptions"));
 app.use(["/admin/logs", "/api/admin/logs"], require("./routes/logs"));
 app.use(["/admin/employees", "/api/admin/employees"], require("./routes/employees"));
+app.use(["/inventory", "/api/inventory"], require("./routes/inventory"));
+app.use(["/reports", "/api/reports"], require("./routes/reports"));
 
 // 7. DB TEST ROUTE (remove in production if desired)
 app.get("/db-test", async (req, res) => {
