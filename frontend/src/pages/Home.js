@@ -505,12 +505,11 @@ const Home = () => {
           </div>
 
           {/* Gallery: portrait hero left, 3 landscape images stacked right */}
-          {/* The container height is driven by the portrait (3:4 ratio on its half-width) */}
-          <div className="flex gap-4" style={{ height: 'calc(50vw * 4/3)' }}>
+          <div className="flex gap-4" style={{ height: '600px' }}>
 
             {/* Left: portrait image fills full height */}
             <a href="/esena_pharmacy_images/image_4_pharmacy.webp" target="_blank" rel="noopener noreferrer"
-              className="group flex-1 block">
+              className="group flex-1 min-w-0 block">
               <GlassCard className="overflow-hidden p-0 h-full">
                 <img
                   src="/esena_pharmacy_images/image_4_pharmacy.webp"
@@ -522,13 +521,13 @@ const Home = () => {
             </a>
 
             {/* Right: 3 images each take 1/3 of the total height */}
-            <div className="flex-1 flex flex-col gap-4">
+            <div className="flex-1 min-w-0 flex flex-col gap-4">
               {[
                 { src: '/esena_pharmacy_images/image_1_pharmacy.webp', alt: 'Esena Pharmacy entrance' },
                 { src: '/esena_pharmacy_images/image_2_pharmacy.webp', alt: 'Esena Pharmacy interior' },
                 { src: '/esena_pharmacy_images/image_5_pharmacy.webp', alt: 'Esena Pharmacy team' },
               ].map((img, i) => (
-                <a key={i} href={img.src} target="_blank" rel="noopener noreferrer" className="group flex-1 block">
+                <a key={i} href={img.src} target="_blank" rel="noopener noreferrer" className="group flex-1 min-h-0 block">
                   <GlassCard className="overflow-hidden p-0 h-full">
                     <img
                       src={img.src}
