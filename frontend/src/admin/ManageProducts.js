@@ -76,12 +76,9 @@ const ManageProducts = () => {
   ];
   const categoryFormOptions = CATEGORIES.map(c => ({ value: c.value, label: c.label }));
 
-  useEffect(() => { setSidebarOpen(!isMobile); }, [isMobile]);
-  useEffect(() => { loadProducts(); }, [currentPage, searchTerm, categoryFilter]);
-
   const PER_PAGE = 10;
 
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -101,7 +98,10 @@ const ManageProducts = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchTerm, categoryFilter]);
+
+  useEffect(() => { setSidebarOpen(!isMobile); }, [isMobile]);
+  useEffect(() => { loadProducts(); }, [loadProducts]);
 
   const loadMovements = useCallback(async (product, period) => {
     setMovementsLoading(true);
