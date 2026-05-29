@@ -74,7 +74,7 @@ export const authAPI = {
 
 // Products API methods
 export const productsAPI = {
-  getAll: () => api.get('/products'),
+  getAll: (params = {}) => api.get('/products', { params }),
   getById: (id) => api.get(`/products/${id}`),
   create: (data) => {
     const isFormData = data instanceof FormData;

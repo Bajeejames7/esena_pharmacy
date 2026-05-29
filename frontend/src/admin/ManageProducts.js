@@ -79,21 +79,23 @@ const ManageProducts = () => {
   useEffect(() => { setSidebarOpen(!isMobile); }, [isMobile]);
   useEffect(() => { loadProducts(); }, [currentPage, searchTerm, categoryFilter]);
 
+  const PER_PAGE = 10;
+
   const loadProducts = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await productsAPI.getAll();
-      let all = Array.isArray(response.data) ? response.data : (response.data?.products || []);
-      if (categoryFilter) all = all.filter(p => p.category === categoryFilter);
-      if (searchTerm) all = all.filter(p =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      const perPage = 10;
-      const start = (currentPage - 1) * perPage;
-      setProducts(all.slice(start, start + perPage));
-      setTotalPages(Math.max(1, Math.ceil(all.length / perPage)));
+      const params = {
+        limit: PER_PAGE,
+        offset: (currentPage - 1) * PER_PAGE,
+      };
+      if (categoryFilter) params.category = categoryFilter;
+      if (searchTerm) params.search = searchTerm;
+
+      const response = await productsAPI.getAll(params);
+      const { products: items, total } = response.data;
+      setProducts(items || []);
+      setTotalPages(Math.max(1, Math.ceil(total / PER_PAGE)));
     } catch (err) {
       setError('Failed to load products. Please try again.');
     } finally {
