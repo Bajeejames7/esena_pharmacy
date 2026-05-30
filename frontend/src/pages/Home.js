@@ -545,8 +545,8 @@ const Home = () => {
           {/* Row 2: 2 new inside images side by side */}
           <div className="flex gap-4 mb-4" style={{ height: '380px' }}>
             {[
-              { src: '/esena_pharmacy_images/inside_esena_image1.jpeg', alt: 'Inside Esena Pharmacy' },
-              { src: '/esena_pharmacy_images/inside_esena_image2.jpeg', alt: 'Inside Esena Pharmacy' },
+              { src: '/esena_pharmacy_images/inside_esena_image1.webp', alt: 'Inside Esena Pharmacy' },
+              { src: '/esena_pharmacy_images/inside_esena_image2.webp', alt: 'Inside Esena Pharmacy' },
             ].map((img, i) => (
               <a key={i} href={img.src} target="_blank" rel="noopener noreferrer" className="group flex-1 min-w-0 block">
                 <GlassCard className="overflow-hidden p-0 h-full">
@@ -570,7 +570,7 @@ const Home = () => {
               controls
               playsInline
               preload="metadata"
-              poster="/esena_pharmacy_images/inside_esena_image1.jpeg"
+              poster="/esena_pharmacy_images/inside_esena_image1.webp"
             >
               Your browser does not support the video tag.
             </video>
