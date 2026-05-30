@@ -504,8 +504,8 @@ const Home = () => {
             </p>
           </div>
 
-          {/* Gallery: portrait hero left, 3 landscape images stacked right */}
-          <div className="flex gap-4" style={{ height: '600px' }}>
+          {/* Row 1: portrait hero left, 3 original images stacked right */}
+          <div className="flex gap-4 mb-4" style={{ height: '600px' }}>
 
             {/* Left: portrait image fills full height */}
             <a href="/esena_pharmacy_images/image_4_pharmacy.webp" target="_blank" rel="noopener noreferrer"
@@ -520,7 +520,7 @@ const Home = () => {
               </GlassCard>
             </a>
 
-            {/* Right: 3 images each take 1/3 of the total height */}
+            {/* Right: 3 original images stacked */}
             <div className="flex-1 min-w-0 flex flex-col gap-4">
               {[
                 { src: '/esena_pharmacy_images/image_1_pharmacy.webp', alt: 'Esena Pharmacy entrance' },
@@ -541,6 +541,40 @@ const Home = () => {
             </div>
 
           </div>
+
+          {/* Row 2: 2 new inside images side by side */}
+          <div className="flex gap-4 mb-4" style={{ height: '380px' }}>
+            {[
+              { src: '/esena_pharmacy_images/inside_esena_image1.jpeg', alt: 'Inside Esena Pharmacy' },
+              { src: '/esena_pharmacy_images/inside_esena_image2.jpeg', alt: 'Inside Esena Pharmacy' },
+            ].map((img, i) => (
+              <a key={i} href={img.src} target="_blank" rel="noopener noreferrer" className="group flex-1 min-w-0 block">
+                <GlassCard className="overflow-hidden p-0 h-full">
+                  <img
+                    src={img.src}
+                    alt={img.alt}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                </GlassCard>
+              </a>
+            ))}
+          </div>
+
+          {/* Row 3: video spanning full width */}
+          <GlassCard className="overflow-hidden p-0 w-full">
+            <video
+              src="/esena_pharmacy_images/inside_esena.mp4"
+              className="w-full object-cover"
+              style={{ maxHeight: '420px' }}
+              controls
+              playsInline
+              preload="metadata"
+              poster="/esena_pharmacy_images/inside_esena_image1.jpeg"
+            >
+              Your browser does not support the video tag.
+            </video>
+          </GlassCard>
         </div>
       </section>
 
