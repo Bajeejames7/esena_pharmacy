@@ -1,9 +1,0 @@
-User-agent: *
-Allow: /
-
-# Block admin area from indexing
-Disallow: /admin/
-Disallow: /admin
-
-# Updated Sitemap location
-Sitemap: https://esena.co.ke/sitemap.xml

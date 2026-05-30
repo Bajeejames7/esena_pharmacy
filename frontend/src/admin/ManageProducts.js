@@ -94,7 +94,20 @@ const ManageProducts = () => {
       setProducts(items || []);
       setTotalPages(Math.max(1, Math.ceil(total / PER_PAGE)));
     } catch (err) {
-      setError('Failed to load products. Please try again.');
+      const status = err.response?.status;
+      const msg = err.response?.data?.message || err.message || 'Unknown error';
+      if (status === 429) {
+        setError('Rate limit reached. Please wait a moment and retry.');
+      } else if (status === 401 || status === 403) {
+        setError(`Authentication error (${status}). Please log out and log back in.`);
+      } else if (status >= 500) {
+        setError(`Server error (${status}): ${msg}`);
+      } else if (!err.response) {
+        setError(`Network error — could not reach the server. (${msg})`);
+      } else {
+        setError(`Failed to load products (${status}): ${msg}`);
+      }
+      console.error('loadProducts error:', err.response || err);
     } finally {
       setLoading(false);
     }
