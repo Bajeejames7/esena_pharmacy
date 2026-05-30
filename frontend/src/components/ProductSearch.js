@@ -69,10 +69,31 @@ const ProductSearch = ({
               className="glass-input w-full"
             >
               <option value="">All Categories</option>
-              {categories.map((cat) => {
-                if (typeof cat === 'string') return <option key={cat} value={cat}>{cat}</option>;
-                return <option key={cat.value} value={cat.value}>{cat.label}</option>;
-              })}
+              {(() => {
+                // If categories have groups, render as <optgroup>
+                const hasGroups = categories.some(c => c.group);
+                if (!hasGroups) {
+                  return categories.map((cat) =>
+                    typeof cat === 'string'
+                      ? <option key={cat} value={cat}>{cat}</option>
+                      : <option key={cat.value} value={cat.value}>{cat.label}</option>
+                  );
+                }
+                // Group them
+                const groups = {};
+                categories.forEach((cat) => {
+                  const g = cat.group || 'Other';
+                  if (!groups[g]) groups[g] = [];
+                  groups[g].push(cat);
+                });
+                return Object.entries(groups).map(([groupName, cats]) => (
+                  <optgroup key={groupName} label={groupName}>
+                    {cats.map((cat) => (
+                      <option key={cat.value} value={cat.value}>{cat.label}</option>
+                    ))}
+                  </optgroup>
+                ));
+              })()}
             </select>
           </div>
 

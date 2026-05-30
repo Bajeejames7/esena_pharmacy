@@ -72,9 +72,9 @@ const ManageProducts = () => {
 
   const categoryFilterOptions = [
     { value: '', label: 'All Categories' },
-    ...CATEGORIES.map(c => ({ value: c.value, label: c.label }))
+    ...CATEGORIES
   ];
-  const categoryFormOptions = CATEGORIES.map(c => ({ value: c.value, label: c.label }));
+  const categoryFormOptions = CATEGORIES;
 
   const PER_PAGE = 10;
 

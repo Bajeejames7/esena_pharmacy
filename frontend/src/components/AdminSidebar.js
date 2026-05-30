@@ -250,7 +250,7 @@ const SidebarContent = ({
               <li key={item.path}>
                 <Link
                   to={item.path}
-                  onClick={shouldUseOverlay ? onToggle : undefined}
+                  onClick={onToggle}
                   className={`flex items-center ${isCollapsed && !shouldUseOverlay ? 'justify-center' : 'space-x-3'} px-3 py-2 rounded-lg transition-colors ${
                     isActive
                       ? 'bg-gradient-to-r from-glass-blue/20 to-glass-green/20 text-blue-700 dark:text-blue-300'
@@ -303,7 +303,7 @@ const SidebarContent = ({
         {/* Profile link */}
         <Link
           to="/admin/profile"
-          onClick={shouldUseOverlay ? onToggle : undefined}
+          onClick={onToggle}
           className="w-full flex items-center space-x-3 px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-slate-700/50 rounded-lg transition-colors mb-1"
           title={isCollapsed && !shouldUseOverlay ? 'My Profile' : undefined}
         >

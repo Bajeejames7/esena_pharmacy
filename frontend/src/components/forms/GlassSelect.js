@@ -84,15 +84,31 @@ const GlassSelect = forwardRef(({
           )}
           {children
             ? children
-            : options.map((option) => (
-                <option
-                  key={option.value}
-                  value={option.value}
-                  disabled={option.disabled}
-                >
-                  {option.label}
-                </option>
-              ))
+            : options.length > 0 && options[0]?.group
+              // Grouped options — render as <optgroup>
+              ? (() => {
+                  const groups = {};
+                  options.forEach((opt) => {
+                    const g = opt.group || 'Other';
+                    if (!groups[g]) groups[g] = [];
+                    groups[g].push(opt);
+                  });
+                  return Object.entries(groups).map(([groupName, opts]) => (
+                    <optgroup key={groupName} label={groupName}>
+                      {opts.map((option) => (
+                        <option key={option.value} value={option.value} disabled={option.disabled}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ));
+                })()
+              // Flat options
+              : options.map((option) => (
+                  <option key={option.value} value={option.value} disabled={option.disabled}>
+                    {option.label}
+                  </option>
+                ))
           }
         </select>
         
