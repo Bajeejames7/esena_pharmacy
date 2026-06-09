@@ -123,7 +123,7 @@ const ProductCard = ({
             <LazyImage
               src={imageUrl}
               alt={`${product.name} - ${product.category || 'Product'} priced at KSh ${parseFloat(product.price).toFixed(2)}`}
-              className="absolute inset-0 w-full h-full"
+              className="absolute inset-0 w-full h-full rotate-90"
               srcSet={generateSrcSet(imageUrl)}
               sizes={layout === 'grid' ? '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw' : '96px'}
             />
@@ -244,7 +244,7 @@ const ProductCard = ({
             >
               {product.description}
             </p>
-            {product.description.length > 80 && (
+            {layout === 'list' && product.description.length > 80 && (
               <button
                 type="button"
                 onClick={(e) => {
