@@ -18,6 +18,7 @@ const ProductCard = ({
 }) => {
   const { addToCart, isInCart, getItemQuantity } = useCart();
   const [mediaIndex, setMediaIndex] = useState(0); // 0 = image, 1 = video
+  const [expandedDescription, setExpandedDescription] = useState(false);
   const touchStartX = useRef(null);
 
   // Build full image/video URL — backend stores just the filename
@@ -234,9 +235,30 @@ const ProductCard = ({
 
         {/* Description */}
         {product.description && (
-          <p className="text-gray-600 dark:text-gray-300 text-sm mb-3 line-clamp-2" aria-label={`Description: ${product.description}`}>
-            {product.description}
-          </p>
+          <div className="mb-2">
+            <p
+              className={`text-gray-600 dark:text-gray-300 text-sm transition-all duration-300 ${
+                expandedDescription ? '' : 'line-clamp-3'
+              }`}
+              aria-label={`Description: ${product.description}`}
+            >
+              {product.description}
+            </p>
+            {product.description.length > 80 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpandedDescription((prev) => !prev);
+                }}
+                className="text-xs font-semibold text-glass-blue hover:text-glass-blue-dark mt-1 focus:outline-none focus:underline"
+                aria-expanded={expandedDescription}
+                aria-label={expandedDescription ? 'Show less description' : 'Read more description'}
+              >
+                {expandedDescription ? '↑ Show less' : '↓ Read more'}
+              </button>
+            )}
+          </div>
         )}
 
         {/* Stock badge */}
