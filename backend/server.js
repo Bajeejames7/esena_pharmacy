@@ -67,6 +67,13 @@ const uploadCacheOptions = {
   etag: true,
   lastModified: true
 };
+const frontendProductImagesDir = path.join(__dirname, "..", "frontend", "product_images");
+
+// Seeded product images live in frontend/product_images, so expose them on the
+// same URL path the storefront already uses for product thumbnails.
+app.use("/uploads/products", express.static(frontendProductImagesDir, uploadCacheOptions));
+app.use("/api/uploads/products", express.static(frontendProductImagesDir, uploadCacheOptions));
+
 app.use("/uploads", express.static(path.join(__dirname, "uploads"), uploadCacheOptions));
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads"), uploadCacheOptions));
 
