@@ -82,7 +82,7 @@ dist
 
 # Gatsby files
 .cache/
-public
+# public - commented out to allow frontend/public with product images
 
 # Vuepress build output
 .vuepress/dist
@@ -110,7 +110,7 @@ public
 .pnp.*
 
 # Build directories
-# build/ - commented out to allow frontend build folder
+build/ 
 dist/
 
 # Logs
