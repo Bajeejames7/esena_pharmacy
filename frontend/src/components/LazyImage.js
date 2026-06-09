@@ -147,7 +147,7 @@ const LazyImage = ({
             width: '100%',
             height: '100%',
             objectFit: 'contain',
-            transform: 'translate(-50%, -50%) rotate(90deg)',
+            transform: 'translate(-50%, -50%) rotate(90deg) scale(1.33)',
           }}
           {...props}
         />
