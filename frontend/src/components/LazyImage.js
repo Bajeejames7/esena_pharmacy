@@ -121,7 +121,7 @@ const LazyImage = ({
         <img
           src={placeholder}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover filter blur-sm"
+          className="absolute inset-0 w-full h-full object-contain filter blur-sm"
           aria-hidden="true"
         />
       )}
@@ -137,9 +137,18 @@ const LazyImage = ({
           decoding="async"
           onLoad={handleLoad}
           onError={handleError}
-          className={`w-full h-full object-cover transition-opacity duration-300 ${
+          className={`transition-opacity duration-300 ${
             isLoaded ? 'opacity-100' : 'opacity-0'
           }`}
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            transform: 'translate(-50%, -50%) rotate(90deg)',
+          }}
           {...props}
         />
       )}

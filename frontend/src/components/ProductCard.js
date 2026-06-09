@@ -113,7 +113,7 @@ const ProductCard = ({
     >
       {/* Media viewer — swipeable image/video within the card */}
       <div
-        className={`${imageClasses[layout]} bg-gradient-to-br from-glass-blue/20 to-glass-green/20 rounded-lg ${layout === 'grid' ? 'mb-4' : 'mr-0'} relative overflow-hidden select-none`}
+        className={`${imageClasses[layout]} bg-white dark:bg-gray-800 rounded-lg ${layout === 'grid' ? 'mb-4' : 'mr-0'} relative overflow-hidden select-none`}
         onTouchStart={totalSlides > 1 ? handleTouchStart : undefined}
         onTouchEnd={totalSlides > 1 ? handleTouchEnd : undefined}
       >
@@ -123,7 +123,7 @@ const ProductCard = ({
             <LazyImage
               src={imageUrl}
               alt={`${product.name} - ${product.category || 'Product'} priced at KSh ${parseFloat(product.price).toFixed(2)}`}
-              className="absolute inset-0 w-full h-full rotate-90"
+              className="absolute inset-0 w-full h-full"
               srcSet={generateSrcSet(imageUrl)}
               sizes={layout === 'grid' ? '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw' : '96px'}
             />
