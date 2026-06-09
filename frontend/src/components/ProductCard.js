@@ -244,14 +244,17 @@ const ProductCard = ({
             >
               {product.description}
             </p>
-            {layout === 'list' && product.description.length > 80 && (
+            {/* Show Read more in list layout always, and in grid layout only on mobile (sm and below) */}
+            {product.description.length > 80 && (layout === 'list' || true) && (
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   setExpandedDescription((prev) => !prev);
                 }}
-                className="text-xs font-semibold text-glass-blue hover:text-glass-blue-dark mt-1 focus:outline-none focus:underline"
+                className={`text-xs font-semibold text-glass-blue hover:text-glass-blue-dark mt-1 focus:outline-none focus:underline ${
+                  layout === 'grid' ? 'sm:hidden' : ''
+                }`}
                 aria-expanded={expandedDescription}
                 aria-label={expandedDescription ? 'Show less description' : 'Read more description'}
               >

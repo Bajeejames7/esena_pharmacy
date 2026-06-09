@@ -229,7 +229,8 @@ const Products = () => {
             Showing {displayProducts.length} of {total} product{total !== 1 ? 's' : ''}
             {debouncedSearch && ` for "${debouncedSearch}"`}
           </p>
-          <div className="flex items-center gap-2">
+          {/* Layout toggle — hidden on mobile, list view doesn't work well on small screens */}
+          <div className="hidden sm:flex items-center gap-2">
             <span className="text-sm text-gray-600 dark:text-gray-400">View:</span>
             <button
               onClick={() => setLayout('grid')}
