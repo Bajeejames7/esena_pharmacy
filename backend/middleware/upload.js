@@ -109,6 +109,7 @@ const uploadWithSizeLimits = (req, res, next) => {
         const tempPath = imageFile.path + ".tmp";
         try {
           await sharp(imageFile.path)
+            .rotate() // auto-corrects EXIF orientation from phone cameras
             .resize(800, 800, { fit: "inside", withoutEnlargement: true })
             .webp({ quality: 82 })
             .toFile(tempPath);
