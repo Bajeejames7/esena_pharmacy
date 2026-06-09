@@ -113,6 +113,7 @@ const ProductCard = ({
         hover={!!onProductClick}
         onClick={onProductClick ? handleCardClick : undefined}
         onKeyDown={onProductClick ? handleKeyDown : undefined}
+        onMouseLeave={() => { clearTimeout(hoverTimer.current); setZoomOpen(false); }}
         tabIndex={onProductClick ? 0 : -1}
         role={onProductClick ? 'button' : 'article'}
         aria-label={onProductClick ? `View details for ${product.name}` : undefined}
@@ -128,8 +129,7 @@ const ProductCard = ({
               hoverTimer.current = setTimeout(() => setZoomOpen(true), 500);
             }
           }}
-          onMouseLeave={() => clearTimeout(hoverTimer.current)}
-        >
+          onMouseLeave={() => clearTimeout(hoverTimer.current)}        >
           {/* Image slide */}
           {currentSlide === 'image' && (
             imageUrl ? (
@@ -314,7 +314,7 @@ const ProductCard = ({
       {/* Zoom overlay — shown on hover (desktop) or tap (mobile) */}
       {zoomOpen && imageUrl && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fadeIn"
           onClick={() => setZoomOpen(false)}
           role="dialog"
           aria-modal="true"

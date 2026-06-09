@@ -31,6 +31,15 @@ module.exports = {
         'glass': '0 8px 32px rgba(0, 0, 0, 0.1)',
         'glass-hover': '0 12px 40px rgba(0, 0, 0, 0.15)',
       },
+      animation: {
+        'fadeIn': 'fadeIn 0.15s ease-out',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+      },
       screens: {
         'mobile': {'max': '767px'},
         'tablet': {'min': '768px', 'max': '1024px'},
