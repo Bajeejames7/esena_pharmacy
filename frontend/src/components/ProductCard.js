@@ -4,10 +4,6 @@ import GlassCard from './GlassCard';
 import LazyImage from './LazyImage';
 import { generateSrcSet } from '../utils/performance';
 
-/**
- * Product card component with glassmorphism styling, accessibility, and performance optimizations
- * Implements Requirements 3.3, 3.4, 3.5, 25.4, 29.1, 29.2, 29.3
- */
 const ProductCard = ({ 
   product, 
   layout = 'grid', 
@@ -21,9 +17,23 @@ const ProductCard = ({
   const [expandedDescription, setExpandedDescription] = useState(false);
   const [zoomOpen, setZoomOpen] = useState(false);
   const touchStartX = useRef(null);
-  const hoverTimer = useRef(null);
+  const openTimer = useRef(null);   // delay before opening
+  const closeTimer = useRef(null);  // grace period before closing
 
-  // Close zoom on Escape key
+  const openZoom = () => {
+    clearTimeout(closeTimer.current);
+    openTimer.current = setTimeout(() => setZoomOpen(true), 600);
+  };
+
+  const closeZoom = () => {
+    clearTimeout(openTimer.current);
+    // 400ms grace period — prevents accidental close when moving to the overlay
+    closeTimer.current = setTimeout(() => setZoomOpen(false), 400);
+  };
+
+  const cancelClose = () => clearTimeout(closeTimer.current);
+
+  // Close on Escape
   const handleKeyUp = useCallback((e) => {
     if (e.key === 'Escape') setZoomOpen(false);
   }, []);
@@ -52,9 +62,7 @@ const ProductCard = ({
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
-    if (product.stock > 0) {
-      addToCart({ ...product, imageUrl }, 1);
-    }
+    if (product.stock > 0) addToCart({ ...product, imageUrl }, 1);
   };
 
   const handleCardClick = () => {
@@ -62,10 +70,7 @@ const ProductCard = ({
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleCardClick();
-    }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick(); }
   };
 
   const inCart = isInCart(product.id);
@@ -85,16 +90,11 @@ const ProductCard = ({
     setMediaIndex(Math.max(0, Math.min(idx, totalSlides - 1)));
   };
 
-  const handleTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
+  const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
   const handleTouchEnd = (e) => {
     if (touchStartX.current === null) return;
     const delta = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(delta) > 40) {
-      goTo(delta > 0 ? mediaIndex + 1 : mediaIndex - 1, null);
-    }
+    if (Math.abs(delta) > 40) goTo(delta > 0 ? mediaIndex + 1 : mediaIndex - 1, null);
     touchStartX.current = null;
   };
 
@@ -108,12 +108,12 @@ const ProductCard = ({
 
   return (
     <>
-      <GlassCard 
+      <GlassCard
         className={`${layoutClasses[layout]} ${className} ${layout === 'list' ? 'p-0 overflow-hidden' : 'p-4'} ${onProductClick ? 'cursor-pointer focus:ring-2 focus:ring-glass-blue focus:outline-none' : ''}`}
         hover={!!onProductClick}
         onClick={onProductClick ? handleCardClick : undefined}
         onKeyDown={onProductClick ? handleKeyDown : undefined}
-        onMouseLeave={() => { clearTimeout(hoverTimer.current); setZoomOpen(false); }}
+        onMouseLeave={closeZoom}
         tabIndex={onProductClick ? 0 : -1}
         role={onProductClick ? 'button' : 'article'}
         aria-label={onProductClick ? `View details for ${product.name}` : undefined}
@@ -125,11 +125,9 @@ const ProductCard = ({
           onTouchStart={totalSlides > 1 ? handleTouchStart : undefined}
           onTouchEnd={totalSlides > 1 ? handleTouchEnd : undefined}
           onMouseEnter={() => {
-            if (imageUrl && currentSlide === 'image') {
-              hoverTimer.current = setTimeout(() => setZoomOpen(true), 500);
-            }
+            if (imageUrl && currentSlide === 'image') openZoom();
           }}
-          onMouseLeave={() => clearTimeout(hoverTimer.current)}        >
+        >
           {/* Image slide */}
           {currentSlide === 'image' && (
             imageUrl ? (
@@ -141,7 +139,7 @@ const ProductCard = ({
                   srcSet={generateSrcSet(imageUrl)}
                   sizes={layout === 'grid' ? '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw' : '96px'}
                 />
-                {/* Zoom hint — appears on hover */}
+                {/* Zoom hint */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
                   <div className="bg-black/50 rounded-full p-2">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -170,85 +168,53 @@ const ProductCard = ({
             />
           )}
 
-          {/* Dot indicators + arrow nav */}
+          {/* Arrow nav + dots */}
           {totalSlides > 1 && (
             <>
               {mediaIndex > 0 && (
-                <button
-                  onClick={(e) => goTo(mediaIndex - 1, e)}
-                  className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center transition-colors z-10"
-                  aria-label="Previous media"
-                >
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
-                  </svg>
+                <button onClick={(e) => goTo(mediaIndex - 1, e)} className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center transition-colors z-10" aria-label="Previous media">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
                 </button>
               )}
               {mediaIndex < totalSlides - 1 && (
-                <button
-                  onClick={(e) => goTo(mediaIndex + 1, e)}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center transition-colors z-10"
-                  aria-label="Next media"
-                >
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
-                  </svg>
+                <button onClick={(e) => goTo(mediaIndex + 1, e)} className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center transition-colors z-10" aria-label="Next media">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
                 </button>
               )}
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
                 {slides.map((s, i) => (
-                  <button
-                    key={s}
-                    onClick={(e) => goTo(i, e)}
-                    className={`w-1.5 h-1.5 rounded-full transition-colors ${i === mediaIndex ? 'bg-white' : 'bg-white/40'}`}
-                    aria-label={s === 'video' ? 'Switch to video' : 'Switch to image'}
-                  />
+                  <button key={s} onClick={(e) => goTo(i, e)} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === mediaIndex ? 'bg-white' : 'bg-white/40'}`} aria-label={s === 'video' ? 'Switch to video' : 'Switch to image'} />
                 ))}
               </div>
               {currentSlide === 'video' && (
                 <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full z-10 flex items-center gap-1">
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
-                  </svg>
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" /></svg>
                   Video
                 </div>
               )}
             </>
           )}
 
-          {/* Stock status badge */}
+          {/* Badges */}
           {isOutOfStock && (
-            <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full z-10" role="status" aria-label="Out of stock">
-              Out of Stock
-            </div>
+            <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full z-10" role="status">Out of Stock</div>
           )}
-
-          {/* In cart badge */}
           {inCart && (
-            <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full z-10" role="status" aria-label={`${quantity} items in cart`}>
-              In Cart ({quantity})
-            </div>
+            <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full z-10" role="status">In Cart ({quantity})</div>
           )}
         </div>
 
         {/* Product Content */}
         <div className={contentClasses[layout]}>
-          <h3 className="font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2">
-            {product.name}
-          </h3>
+          <h3 className="font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2">{product.name}</h3>
 
           {product.category && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2" aria-label={`Category: ${product.category}`}>
-              {product.category}
-            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{product.category}</p>
           )}
 
           {product.description && (
             <div className="mb-2">
-              <p
-                className={`text-gray-600 dark:text-gray-300 text-sm transition-all duration-300 ${expandedDescription ? '' : 'line-clamp-3'}`}
-                aria-label={`Description: ${product.description}`}
-              >
+              <p className={`text-gray-600 dark:text-gray-300 text-sm transition-all duration-300 ${expandedDescription ? '' : 'line-clamp-3'}`}>
                 {product.description}
               </p>
               {layout === 'grid' && product.description.length > 80 && (
@@ -257,7 +223,6 @@ const ProductCard = ({
                   onClick={(e) => { e.stopPropagation(); setExpandedDescription((prev) => !prev); }}
                   className="text-xs font-semibold text-glass-blue hover:text-glass-blue-dark mt-1 focus:outline-none focus:underline"
                   aria-expanded={expandedDescription}
-                  aria-label={expandedDescription ? 'Show less description' : 'Read more description'}
                 >
                   {expandedDescription ? '↑ Show less' : '↓ Read more'}
                 </button>
@@ -265,7 +230,6 @@ const ProductCard = ({
             </div>
           )}
 
-          {/* Stock badge */}
           <div className="mb-3" role="status">
             {isOutOfStock ? (
               <span className="inline-block bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs font-medium px-2 py-1 rounded-full">Out of Stock</span>
@@ -278,14 +242,13 @@ const ProductCard = ({
             )}
           </div>
 
-          {/* Price and Actions */}
           <div className={`flex items-center mt-auto ${layout === 'list' ? 'flex-col items-start gap-2 sm:flex-row sm:justify-between sm:items-center' : 'justify-between'}`}>
             <div className="flex flex-col" role="group" aria-label="Product pricing">
-              <span className="text-lg font-bold text-gray-800 dark:text-white" aria-label={`Current price: KSh ${parseFloat(product.price).toFixed(2)}`}>
+              <span className="text-lg font-bold text-gray-800 dark:text-white">
                 KSh {parseFloat(product.price).toFixed(2)}
               </span>
               {product.originalPrice && parseFloat(product.originalPrice) > parseFloat(product.price) && (
-                <span className="text-sm text-gray-500 dark:text-gray-400 line-through" aria-label={`Original price: KSh ${parseFloat(product.originalPrice).toFixed(2)}`}>
+                <span className="text-sm text-gray-500 dark:text-gray-400 line-through">
                   KSh {parseFloat(product.originalPrice).toFixed(2)}
                 </span>
               )}
@@ -296,13 +259,7 @@ const ProductCard = ({
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
                 className={`glass-button-primary min-h-[44px] min-w-[44px] ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 transform transition-transform focus:ring-2 focus:ring-glass-blue focus:outline-none'}`}
-                aria-label={
-                  isOutOfStock
-                    ? `${product.name} is out of stock`
-                    : inCart
-                      ? `Add another ${product.name} to cart (currently ${quantity} in cart)`
-                      : `Add ${product.name} to cart for KSh ${parseFloat(product.price).toFixed(2)}`
-                }
+                aria-label={isOutOfStock ? `${product.name} is out of stock` : inCart ? `Add another ${product.name} to cart` : `Add ${product.name} to cart`}
               >
                 {isOutOfStock ? 'Out of Stock' : inCart ? 'Add More' : 'Add to Cart'}
               </button>
@@ -311,11 +268,13 @@ const ProductCard = ({
         </div>
       </GlassCard>
 
-      {/* Zoom overlay — shown on hover (desktop) or tap (mobile) */}
+      {/* Zoom overlay */}
       {zoomOpen && imageUrl && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fadeIn"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fadeIn"
           onClick={() => setZoomOpen(false)}
+          onMouseLeave={closeZoom}
+          onMouseEnter={cancelClose}
           role="dialog"
           aria-modal="true"
           aria-label={`Zoomed view of ${product.name}`}
@@ -331,11 +290,16 @@ const ProductCard = ({
             </svg>
           </button>
 
-          {/* Zoomed image */}
+          {/* Zoomed image — scales up from nothing for natural feel */}
           <div
             className="relative bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-2xl"
-            style={{ width: 'min(90vw, 600px)', height: 'min(90vh, 600px)' }}
+            style={{
+              width: 'min(90vw, 600px)',
+              height: 'min(90vh, 600px)',
+              animation: 'zoomIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            }}
             onClick={(e) => e.stopPropagation()}
+            onMouseEnter={cancelClose}
           >
             <img
               src={imageUrl}
@@ -352,7 +316,6 @@ const ProductCard = ({
             />
           </div>
 
-          {/* Product name below image */}
           <p className="absolute bottom-6 left-0 right-0 text-center text-white text-sm font-medium px-4 drop-shadow">
             {product.name}
           </p>
