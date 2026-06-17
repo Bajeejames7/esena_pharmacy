@@ -37,6 +37,18 @@ const Header = () => {
     setActiveDropdown(null);
   }, [location.pathname, location.search]);
 
+  // Close mobile menu when resizing to desktop width
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsMobileMenuOpen(false);
+        setActiveDropdown(null);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(prev => !prev);
     setActiveDropdown(null);
