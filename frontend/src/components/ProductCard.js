@@ -22,7 +22,7 @@ const ProductCard = ({
 
   const openZoom = () => {
     clearTimeout(closeTimer.current);
-    openTimer.current = setTimeout(() => setZoomOpen(true), 600);
+    openTimer.current = setTimeout(() => setZoomOpen(true), 3000);
   };
 
   const closeZoom = () => {
