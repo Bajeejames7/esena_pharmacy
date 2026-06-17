@@ -217,7 +217,7 @@ const ProductCard = ({
               <p className={`text-gray-600 dark:text-gray-300 text-sm transition-all duration-300 ${expandedDescription ? '' : 'line-clamp-3'}`}>
                 {product.description}
               </p>
-              {layout === 'grid' && product.description.length > 80 && (
+              {layout === 'grid' && product.description.length > 150 && (
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); setExpandedDescription((prev) => !prev); }}
