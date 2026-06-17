@@ -35,13 +35,32 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem('adminToken');
-      localStorage.removeItem('adminUser');
-      
-      // Redirect to login if not already there
-      if (!window.location.pathname.includes('/admin/login')) {
-        window.location.href = '/admin/login';
+      // Only clear session if the token is actually expired or structurally invalid.
+      // A transient 401 (server restart, cold start) should NOT log the user out.
+      const token = localStorage.getItem('adminToken');
+      let tokenExpired = false;
+      if (token) {
+        try {
+          const parts = token.split('.');
+          if (parts.length === 3) {
+            const payload = JSON.parse(atob(parts[1]));
+            tokenExpired = payload.exp && payload.exp < Date.now() / 1000;
+          } else {
+            tokenExpired = true; // malformed
+          }
+        } catch {
+          tokenExpired = true;
+        }
+      } else {
+        tokenExpired = true; // no token at all
+      }
+
+      if (tokenExpired) {
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminUser');
+        if (!window.location.pathname.includes('/admin/login')) {
+          window.location.href = '/admin/login';
+        }
       }
     }
     return Promise.reject(error);
