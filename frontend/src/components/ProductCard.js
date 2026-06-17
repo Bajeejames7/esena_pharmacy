@@ -100,7 +100,7 @@ const ProductCard = ({
 
   const layoutClasses = { grid: 'flex flex-col', list: 'flex flex-row' };
   const imageClasses = {
-    grid: 'aspect-square w-full',
+    grid: 'aspect-[3/4] w-full',
     list: 'w-40 sm:w-56 flex-shrink-0 self-stretch min-h-[140px]'
   };
   const contentClasses = { grid: 'flex-1', list: 'flex-1 min-w-0 p-4' };
