@@ -15,7 +15,6 @@ const LazyImage = ({
   loading = 'lazy',
   priority = false,
   preload = false,
-  rotate = false,  // set true for product images that need 90deg rotation
   onLoad,
   onError,
   ...props
@@ -147,10 +146,8 @@ const LazyImage = ({
             left: '50%',
             width: '100%',
             height: '100%',
-            objectFit: rotate ? 'contain' : 'cover',
-            transform: rotate
-              ? 'translate(-50%, -50%) rotate(90deg) scale(1.33)'
-              : 'translate(-50%, -50%)',
+            objectFit: 'cover',
+            transform: 'translate(-50%, -50%)',
           }}
           {...props}
         />

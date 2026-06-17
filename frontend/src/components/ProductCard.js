@@ -138,7 +138,6 @@ const ProductCard = ({
                   className="absolute inset-0 w-full h-full"
                   srcSet={generateSrcSet(imageUrl)}
                   sizes={layout === 'grid' ? '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw' : '96px'}
-                  rotate={true}
                 />
                 {/* Zoom hint */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
@@ -312,7 +311,7 @@ const ProductCard = ({
                 width: '100%',
                 height: '100%',
                 objectFit: 'contain',
-                transform: 'translate(-50%, -50%) rotate(90deg) scale(1.33)',
+                transform: 'translate(-50%, -50%)',
               }}
             />
           </div>

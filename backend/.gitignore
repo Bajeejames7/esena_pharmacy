@@ -41,8 +41,14 @@ dist/
 *.sqlite
 *.sqlite3
 
-# File uploads directory
-uploads/
+# File uploads directory - allow products images
+# Note: negation must come after the ignore rule
+uploads/products/
+uploads/products/**
+# Ignore everything else in uploads
+uploads/blogs/
+uploads/prescriptions/
+uploads/videos/
 public/uploads/
 
 # SSL certificates and keys

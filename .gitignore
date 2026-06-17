@@ -112,6 +112,8 @@ dist
 # Build directories
 build/ 
 dist/
+!frontend/build/
+!frontend/build/**
 
 # Logs
 logs
@@ -142,8 +144,11 @@ temp/
 *.sqlite
 *.sqlite3
 
-# Uploads directory (for file uploads)
+# Uploads directory (for file uploads) - allow products images
 uploads/
+!backend/uploads/
+!backend/uploads/products/
+!backend/uploads/products/**
 
 # SSL certificates
 *.pem

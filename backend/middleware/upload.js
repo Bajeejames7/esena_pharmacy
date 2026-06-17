@@ -108,8 +108,12 @@ const uploadWithSizeLimits = (req, res, next) => {
 
         const tempPath = imageFile.path + ".tmp";
         try {
+          // .rotate() with no arguments reads the EXIF orientation tag and physically rotates
+          // the pixels to match, then strips the tag. This ensures photos taken on phones
+          // (which store pixels sideways and rely on EXIF to display correctly) come out
+          // upright after conversion — since WebP output has no EXIF orientation tag.
           await sharp(imageFile.path)
-            .rotate() // auto-corrects EXIF orientation from phone cameras
+            .rotate()  // auto-rotate based on EXIF orientation, then strip the tag
             .resize(800, 800, { fit: "inside", withoutEnlargement: true })
             .webp({ quality: 82 })
             .toFile(tempPath);
