@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import useIdleTimeout from '../hooks/useIdleTimeout';
 
@@ -11,21 +11,27 @@ const ProtectedRoute = ({ children }) => {
   const navigate = useNavigate();
   const token = localStorage.getItem('adminToken');
 
+  // Keep location in a ref so handleTimeout always has the latest value
+  // without being a useCallback dependency — this prevents useIdleTimeout
+  // from resetting the timer on every navigation.
+  const locationRef = useRef(location);
+  locationRef.current = location;
+
   const handleTimeout = useCallback(async () => {
-    const token = localStorage.getItem('adminToken');
-    if (token) {
+    const currentToken = localStorage.getItem('adminToken');
+    if (currentToken) {
       try {
         await fetch(`${process.env.REACT_APP_API_URL || 'https://esena.co.ke/api'}/auth/logout`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${currentToken}` },
           body: JSON.stringify({ reason: 'idle_timeout' })
         });
       } catch (_) {}
     }
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminUser');
-    navigate('/admin/login', { state: { from: location, sessionExpired: true }, replace: true });
-  }, [navigate, location]);
+    navigate('/admin/login', { state: { from: locationRef.current, sessionExpired: true }, replace: true });
+  }, [navigate]); // location removed from deps — stable callback, timer never resets on navigation
 
   useIdleTimeout(handleTimeout);
   
