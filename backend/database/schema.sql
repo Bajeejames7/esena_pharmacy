@@ -171,3 +171,25 @@ CREATE TABLE IF NOT EXISTS mpesa_payments (
   INDEX idx_order_id (order_id),
   INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Customer Accounts (regular users / patients)
+CREATE TABLE IF NOT EXISTS customers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  firebase_uid VARCHAR(128) UNIQUE NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  phone VARCHAR(20),
+  delivery_address TEXT,
+  city VARCHAR(100),
+  county VARCHAR(100),
+  auth_provider ENUM('google','email') DEFAULT 'email',
+  profile_picture VARCHAR(500),
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_email (email),
+  INDEX idx_firebase_uid (firebase_uid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Link customer accounts to their orders
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_id INT DEFAULT NULL AFTER id;

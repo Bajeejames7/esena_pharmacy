@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
+import { useCustomerAuth } from '../contexts/CustomerAuthContext';
 import ThemeToggle from './ThemeToggle';
 
 /**
@@ -12,6 +13,7 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const { itemCount } = useCart();
+  const { customer, firebaseUser, logout } = useCustomerAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
@@ -273,6 +275,50 @@ const Header = () => {
               </Link>
             </div>
 
+            {/* Customer account / login */}
+            <div className="order-2 lg:order-3 hidden lg:block">
+              {firebaseUser ? (
+                <div className="relative group">
+                  <button className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-white/10 dark:hover:bg-slate-700/40 transition-colors">
+                    {customer?.profile_picture || firebaseUser.photoURL ? (
+                      <img
+                        src={customer?.profile_picture || firebaseUser.photoURL}
+                        alt=""
+                        className="w-7 h-7 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">
+                        {(customer?.name || firebaseUser.displayName || 'U').charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200 max-w-[80px] truncate">
+                      {customer?.name?.split(' ')[0] || 'Account'}
+                    </span>
+                    <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {/* Dropdown */}
+                  <div className="absolute right-0 top-full mt-1 w-44 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border border-white/30 dark:border-gray-600/50 rounded-xl shadow-xl py-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-150 z-50">
+                    <Link to="/account" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-lg mx-1">My Account</Link>
+                    <Link to="/account" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-lg mx-1">My Orders</Link>
+                    <hr className="my-1 border-gray-200 dark:border-gray-700" />
+                    <button onClick={() => logout().then(() => navigate('/'))} className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg mx-1">Sign Out</button>
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 dark:bg-blue-500/20 dark:hover:bg-blue-500/30 text-blue-700 dark:text-blue-300 text-sm font-medium transition-colors border border-blue-200/40 dark:border-blue-500/30"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Sign In
+                </Link>
+              )}
+            </div>
+
             {/* Mobile menu button */}
             <div className="lg:hidden order-3 relative z-50">
               <button
@@ -472,6 +518,41 @@ const Header = () => {
                 <div className="flex justify-center">
                   <ThemeToggle showLabel={false} />
                 </div>
+              </div>
+
+              {/* Account section in mobile */}
+              <div className="mt-3">
+                {firebaseUser ? (
+                  <>
+                    <Link
+                      to="/account"
+                      className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-200 bg-white/10 dark:bg-slate-700/30 hover:bg-white/20 dark:hover:bg-slate-600/40 rounded-lg font-medium mb-2"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">
+                        {(customer?.name || 'U').charAt(0).toUpperCase()}
+                      </div>
+                      {customer?.name?.split(' ')[0] || 'My Account'}
+                    </Link>
+                    <button
+                      onClick={() => { logout(); setIsMobileMenuOpen(false); navigate('/'); }}
+                      className="w-full px-4 py-3 text-left text-red-600 dark:text-red-400 bg-white/10 dark:bg-slate-700/30 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg font-medium text-sm"
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-500/10 hover:bg-blue-500/20 text-blue-700 dark:text-blue-300 rounded-lg font-medium text-sm border border-blue-200/40 dark:border-blue-500/30"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Sign In / Create Account
+                  </Link>
+                )}
               </div>
             </div>
           </div>

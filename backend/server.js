@@ -105,6 +105,8 @@ app.use(["/admin/employees", "/api/admin/employees"], require("./routes/employee
 app.use(["/inventory", "/api/inventory"], require("./routes/inventory"));
 app.use(["/reports", "/api/reports"], require("./routes/reports"));
 app.use(["/mpesa", "/api/mpesa"], require("./routes/mpesa"));
+app.use(["/customers", "/api/customers"], require("./routes/customers"));
+app.use(["/admin/customers", "/api/admin/customers"], require("./routes/customers"));
 
 // 7. DB TEST ROUTE (remove in production if desired)
 app.get("/db-test", async (req, res) => {

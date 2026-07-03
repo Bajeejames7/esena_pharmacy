@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { CartProvider } from './contexts/CartContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { CustomerAuthProvider } from './contexts/CustomerAuthContext';
 import { initPerformanceMonitoring } from './utils/performance';
 import { cacheManager } from './utils/cacheManager';
 import { compatibilityManager } from './utils/browserCompat';
@@ -33,6 +34,9 @@ import TermsOfUse from './pages/TermsOfUse';
 import UploadPrescription from './pages/UploadPrescription';
 import Delivery from './pages/Delivery';
 import WhatsAppOrder from './pages/WhatsAppOrder';
+import CustomerLogin from './pages/CustomerLogin';
+import CustomerAccount from './pages/CustomerAccount';
+import CompleteProfile from './pages/CompleteProfile';
 import AdminLogin from './admin/Login';
 import AdminDashboard from './admin/Dashboard';
 import ManageProducts from './admin/ManageProducts';
@@ -41,6 +45,7 @@ import ManageAppointments from './admin/ManageAppointments';
 import ManageBlogs from './admin/ManageBlogs';
 import ManagePrescriptions from './admin/ManagePrescriptions';
 import ManageEmployees from './admin/ManageEmployees';
+import ManageCustomers from './admin/ManageCustomers';
 import ActivityLog from './admin/ActivityLog';
 import AdminProfile from './admin/AdminProfile';
 import SalesReport from './admin/SalesReport';
@@ -181,6 +186,7 @@ function App() {
     <ErrorBoundary>
       <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || ''}>
         <ThemeProvider>
+          <CustomerAuthProvider>
           <CartProvider>
           <Router>
           {/* Skip Links for keyboard navigation */}
@@ -226,6 +232,10 @@ function App() {
               <Route path="/track-order" element={<TrackOrder />} />
               <Route path="/track-appointment/:token" element={<TrackAppointment />} />
               <Route path="/track-appointment" element={<TrackAppointment />} />
+              {/* Customer auth */}
+              <Route path="/login" element={<CustomerLogin />} />
+              <Route path="/account" element={<CustomerAccount />} />
+              <Route path="/complete-profile" element={<CompleteProfile />} />
               <Route path="/delivery" element={<Delivery />} />
               <Route path="/upload-prescription" element={<UploadPrescription />} />
               <Route path="/whatsapp-order" element={<WhatsAppOrder />} />
@@ -268,6 +278,11 @@ function App() {
               <Route path="/admin/employees" element={
                 <ProtectedRoute>
                   <ManageEmployees />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/customers" element={
+                <ProtectedRoute>
+                  <ManageCustomers />
                 </ProtectedRoute>
               } />
               <Route path="/admin/activity-log" element={
@@ -331,6 +346,7 @@ function App() {
         </FocusManager>
       </Router>
     </CartProvider>
+    </CustomerAuthProvider>
   </ThemeProvider>
   </GoogleReCaptchaProvider>
   </ErrorBoundary>

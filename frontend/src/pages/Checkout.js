@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
+import { useCustomerAuth } from '../contexts/CustomerAuthContext';
 import { validateOrderForm, validateField } from '../utils/validation';
 import { ordersAPI } from '../services/api';
 import GlassCard from '../components/GlassCard';
@@ -15,12 +16,22 @@ const PICKUP_ADDRESS = 'Esena Pharmacy, Outering Road, Behind Eastmart Supermark
 const Checkout = () => {
   const { items, total, itemCount, clearCart } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { customer } = useCustomerAuth();
+
+  // Prefill from saved customer profile or reorder draft
+  const prefill = location.state?.prefill || {};
 
   const [formData, setFormData] = useState({
-    name: '', email: '', phone: '',
-    deliveryType: 'delivery', // 'delivery' | 'pickup'
-    deliveryZone: 'nairobi',  // 'nairobi' | 'outside_nairobi'
-    address: '', city: '', state: '', landmark: '',
+    name:          prefill.customer_name  || customer?.name             || '',
+    email:         prefill.email          || customer?.email            || '',
+    phone:         prefill.phone          || customer?.phone            || '',
+    deliveryType:  prefill.delivery_type  || 'delivery',
+    deliveryZone:  prefill.delivery_zone  || 'nairobi',
+    address:       prefill.delivery_address?.split(',')[0]?.trim() || customer?.delivery_address || '',
+    city:          prefill.city           || customer?.city             || '',
+    state:         prefill.county         || customer?.county           || '',
+    landmark:      '',
     paymentMethod: 'mpesa'
   });
 

@@ -6,19 +6,22 @@ import GlassInput from '../components/forms/GlassInput';
 import GlassSelect from '../components/forms/GlassSelect';
 import GlassTextarea from '../components/forms/GlassTextarea';
 import GlassButton from '../components/forms/GlassButton';
+import { useCustomerAuth } from '../contexts/CustomerAuthContext';
 
 /**
  * Appointment booking page
  * Implements Requirements 8.1, 8.2, 8.3, 8.4, 8.5, 8.13
  */
 const BookAppointment = () => {
+  const { customer } = useCustomerAuth();
+
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
+    name:    customer?.name    || '',
+    email:   customer?.email   || '',
+    phone:   customer?.phone   || '',
     service: '',
-    date: '',
-    time: '',
+    date:    '',
+    time:    '',
     message: ''
   });
   
