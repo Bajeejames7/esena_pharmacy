@@ -83,7 +83,7 @@ exports.getAllProducts = async (req, res) => {
 
     const [[{ total }]] = await db.query(`SELECT COUNT(*) as total FROM products${where}`, params);
     const [products] = await db.query(
-      `SELECT * FROM products${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      `SELECT * FROM products${where} ORDER BY (stock > 0) DESC, created_at DESC LIMIT ? OFFSET ?`,
       [...params, pageLimit, pageOffset]
     );
 

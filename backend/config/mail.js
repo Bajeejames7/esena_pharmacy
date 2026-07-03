@@ -136,8 +136,15 @@ const orderConfirmationTemplate = (order, items = []) => {
             
             <a href="${FRONTEND_URL}/track/${order.token}" class="button">Track Your Order</a>
             
+            <div style="background:#e8f5e9;border-left:4px solid #27ae60;padding:16px;margin:20px 0;border-radius:4px;">
+              <p style="margin:0 0 8px 0;font-weight:bold;color:#1a7a3a;font-size:15px;">Complete Your M-Pesa Payment Anytime</p>
+              <p style="margin:0 0 8px 0;font-size:13px;color:#333;">If you did not complete your M-Pesa payment, you can do so at any time by clicking the button below:</p>
+              <a href="${FRONTEND_URL}/track-order" style="display:inline-block;background:#27ae60;color:white;padding:10px 24px;text-decoration:none;border-radius:5px;font-size:13px;font-weight:bold;">Pay Now via Track Order</a>
+              <p style="margin:10px 0 0 0;font-size:12px;color:#555;">Use your tracking token <strong>${order.token}</strong> to find your order, then click <strong>"Pay with M-Pesa"</strong>.</p>
+            </div>
+
             <div style="background:#fff3cd;border-left:4px solid #ffc107;padding:12px 16px;margin:16px 0;font-size:13px;border-radius:4px;">
-              🔒 <strong>Privacy Notice:</strong> Your tracking token is personal and gives access to your order details. Please keep it secure and do not share it with anyone.
+              <strong>Privacy Notice:</strong> Your tracking token is personal and gives access to your order details. Please keep it secure and do not share it with anyone.
             </div>
             
             <p>For assistance, contact us at <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a> or call 0768103599.</p>
@@ -241,7 +248,7 @@ const orderAdminNotificationTemplate = (order, items) => {
  */
 const paymentRequestTemplate = (order) => {
   return {
-    subject: "Payment Request - Esena Pharmacy",
+    subject: "Complete Your Payment - Esena Pharmacy",
     html: `
       <!DOCTYPE html>
       <html>
@@ -253,36 +260,34 @@ const paymentRequestTemplate = (order) => {
           .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
           .amount-box { background: white; padding: 20px; text-align: center; border: 2px solid #f39c12; margin: 20px 0; border-radius: 5px; }
           .amount { font-size: 32px; color: #f39c12; font-weight: bold; }
+          .pay-box { background: #e8f5e9; border-left: 4px solid #27ae60; padding: 20px; margin: 20px 0; border-radius: 4px; }
+          .pay-button { display: inline-block; background: #27ae60; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; margin: 12px 0; }
           .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
         </style>
       </head>
       <body>
         <div class="container">
           <div class="header">
-            <h1>💳 Payment Request</h1>
+            <h1>Payment Requested</h1>
           </div>
           <div class="content">
             <p>Dear ${order.customer_name},</p>
-            <p>Your order is ready for payment. Please complete the payment to proceed with your order.</p>
+            <p>Your order is ready. Please complete your M-Pesa payment to confirm it.</p>
             
             <div class="amount-box">
               <p style="margin: 0; font-size: 14px; color: #666;">Amount Due</p>
               <div class="amount">KSH ${parseFloat(order.total || 0).toFixed(2)}</div>
+              <p style="margin: 8px 0 0 0; font-size: 13px; color: #888;">Order Token: <strong>${order.token}</strong></p>
+            </div>
+
+            <div class="pay-box">
+              <p style="margin: 0 0 8px 0; font-weight: bold; color: #1a7a3a; font-size: 15px;">Pay via Track Order</p>
+              <p style="margin: 0 0 12px 0; font-size: 13px; color: #333;">Click the button below to go to your order and complete your M-Pesa payment — an STK Push will be sent directly to your phone.</p>
+              <a href="${FRONTEND_URL}/track-order" class="pay-button">Complete M-Pesa Payment</a>
+              <p style="margin: 12px 0 0 0; font-size: 12px; color: #555;">Enter your tracking token <strong>${order.token}</strong>, then click <strong>"Pay with M-Pesa"</strong>.</p>
             </div>
             
-            <p><strong>Order Token:</strong> ${order.token}</p>
-            <p><strong>Payment Instructions:</strong></p>
-            <ol>
-              <li>Go to M-PESA on your phone</li>
-              <li>Select Lipa Na M-PESA</li>
-              <li>Select Pay Bill</li>
-              <li>Enter Business Number: [TO BE CONFIGURED]</li>
-              <li>Enter Account Number: ${order.token}</li>
-              <li>Enter Amount: ${parseFloat(order.total || 0).toFixed(2)}</li>
-              <li>Enter your M-PESA PIN and confirm</li>
-            </ol>
-            
-            <p>Once payment is confirmed, we'll process your order immediately.</p>
+            <p>Once payment is received, we'll process your order immediately.</p>
             <p>For assistance, contact us at <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a> or call 0768103599.</p>
           </div>
           <div class="footer">

@@ -130,3 +130,44 @@ INSERT INTO blogs (title, slug, excerpt, content, status) VALUES
 
 ('The Importance of Preventive Healthcare', 'preventive-healthcare-importance', 'Discover why prevention is better than cure and how to stay ahead of health issues.', 
 '<h2>What is Preventive Healthcare?</h2><p>Preventive healthcare involves taking proactive steps to prevent illness and disease before they occur. This approach is not only better for your health but also more cost-effective in the long run.</p><h2>Types of Preventive Care</h2><ul><li>Regular check-ups and screenings</li><li>Vaccinations</li><li>Healthy lifestyle choices</li><li>Early detection programs</li></ul><h2>Benefits</h2><p>Regular preventive care can help detect health issues early when they''re most treatable, reduce healthcare costs, and improve quality of life.</p>', 'published');
+
+-- Activity Log (audit trail for all system actions)
+CREATE TABLE IF NOT EXISTS activity_log (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT,
+  user_name VARCHAR(255),
+  action VARCHAR(100) NOT NULL,
+  resource_type VARCHAR(50),
+  resource_id INT,
+  description TEXT,
+  old_value TEXT,
+  new_value TEXT,
+  ip_address VARCHAR(45),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_action (action),
+  INDEX idx_resource (resource_type, resource_id),
+  INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- M-Pesa Payments
+CREATE TABLE IF NOT EXISTS mpesa_payments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  order_id INT NOT NULL,
+  checkout_request_id VARCHAR(100) UNIQUE NOT NULL,
+  merchant_request_id VARCHAR(100) NOT NULL,
+  phone_number VARCHAR(20) NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  mpesa_receipt_number VARCHAR(50) UNIQUE,
+  transaction_date DATETIME,
+  result_code INT,
+  result_desc VARCHAR(255),
+  status ENUM('pending','success','failed','cancelled') DEFAULT 'pending',
+  expires_at DATETIME,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+  INDEX idx_checkout_request (checkout_request_id),
+  INDEX idx_mpesa_receipt (mpesa_receipt_number),
+  INDEX idx_order_id (order_id),
+  INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -195,14 +195,19 @@ exports.initiateSTKPush = async (req, res) => {
     const token = await getMpesaToken();
 
     // Prepare STK Push request
+    // Sandbox uses CustomerPayBillOnline (Paybill), Production uses CustomerBuyGoodsOnline (Till)
+    const transactionType = MPESA_CONFIG.environment === 'sandbox' 
+      ? 'CustomerPayBillOnline' 
+      : 'CustomerBuyGoodsOnline';
+
     const stkData = {
       BusinessShortCode: MPESA_CONFIG.businessShortCode,
       Password: password,
       Timestamp: timestamp,
-      TransactionType: 'CustomerBuyGoodsOnline', // For Till Number
+      TransactionType: transactionType,
       Amount: requestedAmount,
       PartyA: formattedPhone, // Customer phone
-      PartyB: MPESA_CONFIG.businessShortCode, // Till Number
+      PartyB: MPESA_CONFIG.businessShortCode, // Till Number or Test Shortcode
       PhoneNumber: formattedPhone,
       CallBackURL: MPESA_CONFIG.callbackUrl,
       AccountReference: `Order-${orderId}`,
@@ -290,7 +295,17 @@ exports.initiateSTKPush = async (req, res) => {
 // POST /api/mpesa/callback
 // ==========================================
 exports.handleCallback = async (req, res) => {
-  const connection = await db.getConnection();
+  // Always acknowledge Safaricom immediately — if we crash they retry
+  // but we also need to process. So we respond 200 first, process async.
+  let connection;
+
+  try {
+    connection = await db.getConnection();
+  } catch (dbErr) {
+    logger.error('Callback DB connection failed', { error: dbErr.message });
+    // Still ack so Safaricom doesn't retry
+    return res.status(200).json({ ResultCode: 0, ResultDescription: 'Accepted' });
+  }
 
   try {
     const callbackData = req.body?.Body?.stkCallback;
@@ -346,23 +361,77 @@ exports.handleCallback = async (req, res) => {
       const transactionDate = metadata.find(item => item.Name === 'TransactionDate')?.Value;
       const phoneNumber = metadata.find(item => item.Name === 'PhoneNumber')?.Value;
 
-      // Check for duplicate receipt (idempotency)
+      // ── VERIFICATION 1: Receipt number must be present ──────────────────
+      if (!mpesaReceiptNumber) {
+        logger.error('Callback missing receipt number — rejecting', { CheckoutRequestID });
+        await connection.rollback();
+        return res.status(200).json({ ResultCode: 0, ResultDescription: 'Accepted' });
+      }
+
+      // ── VERIFICATION 2: Amount must match what we requested ──────────────
+      const expectedAmount = Math.round(parseFloat(payment.amount));
+      const receivedAmount = Math.round(parseFloat(amount));
+      if (receivedAmount !== expectedAmount) {
+        logger.error('Amount mismatch — rejecting payment', {
+          orderId,
+          expected: expectedAmount,
+          received: receivedAmount,
+          receipt: mpesaReceiptNumber
+        });
+        // Mark as failed with reason
+        await connection.query(
+          `UPDATE mpesa_payments SET result_code = ?, result_desc = ?, status = 'failed' WHERE id = ?`,
+          [ResultCode, `Amount mismatch: expected ${expectedAmount}, received ${receivedAmount}`, payment.id]
+        );
+        await connection.commit();
+        return res.status(200).json({ ResultCode: 0, ResultDescription: 'Accepted' });
+      }
+
+      // ── VERIFICATION 3: Receipt must not already exist (idempotency) ─────
       const [existingReceipt] = await connection.query(
         'SELECT id FROM mpesa_payments WHERE mpesa_receipt_number = ? AND id != ?',
         [mpesaReceiptNumber, payment.id]
       );
-
       if (existingReceipt.length > 0) {
-        logger.warn('Duplicate M-Pesa receipt detected', {
+        logger.warn('Duplicate M-Pesa receipt detected — ignoring', {
           receipt: mpesaReceiptNumber,
           orderId
         });
         await connection.rollback();
-        return res.status(200).json({
-          ResultCode: 0,
-          ResultDescription: 'Duplicate receipt already processed'
-        });
+        return res.status(200).json({ ResultCode: 0, ResultDescription: 'Duplicate receipt already processed' });
       }
+
+      // ── VERIFICATION 4: Payment must still be in pending state ───────────
+      if (payment.status !== 'pending') {
+        logger.warn('Payment already processed — ignoring duplicate callback', {
+          paymentId: payment.id,
+          currentStatus: payment.status,
+          receipt: mpesaReceiptNumber
+        });
+        await connection.rollback();
+        return res.status(200).json({ ResultCode: 0, ResultDescription: 'Already processed' });
+      }
+
+      // ── VERIFICATION 5: Order must still be in a payable state ───────────
+      const [currentOrder] = await connection.query(
+        'SELECT status FROM orders WHERE id = ?', [orderId]
+      );
+      if (!currentOrder.length || !['pending', 'payment_requested'].includes(currentOrder[0].status)) {
+        logger.warn('Order not in payable state — ignoring callback', {
+          orderId,
+          orderStatus: currentOrder[0]?.status,
+          receipt: mpesaReceiptNumber
+        });
+        await connection.rollback();
+        return res.status(200).json({ ResultCode: 0, ResultDescription: 'Order not payable' });
+      }
+
+      // ── ALL CHECKS PASSED: Mark payment as successful ────────────────────
+      logger.info('All payment verifications passed', {
+        orderId,
+        receipt: mpesaReceiptNumber,
+        amount: receivedAmount
+      });
 
       // Update payment record
       await connection.query(

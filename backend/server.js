@@ -17,6 +17,18 @@ const {
 // Load environment variables
 dotenv.config();
 
+// ==========================================
+// GLOBAL CRASH GUARDS — prevent server dying on unhandled errors
+// ==========================================
+process.on('uncaughtException', (error) => {
+  console.error('UNCAUGHT EXCEPTION — server kept alive:', error.message);
+  console.error(error.stack);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('UNHANDLED REJECTION — server kept alive:', reason);
+});
+
 const app = express();
 
 // --- STARTUP LOGS ---

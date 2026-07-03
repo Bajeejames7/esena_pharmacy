@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Convert all JPG/JPEG/PNG images in product_images to small WebP format,
+Convert all JPG/JPEG/PNG images in backend/uploads/products to WebP,
+applying EXIF orientation correction + 90° counter-clockwise rotation,
 then delete the originals.
 """
 
@@ -8,23 +9,25 @@ import os
 from pathlib import Path
 from PIL import Image, ImageOps
 
-# Config
-IMAGES_DIR = Path(__file__).parent / "product_images"
-QUALITY = 75        # WebP quality (0-100), 75 is a good balance
-MAX_SIZE = (800, 800)  # Max width/height — images will be scaled down if larger
+IMAGES_DIR = Path(__file__).parent / "uploads" / "products"
+QUALITY = 75
+MAX_SIZE = (800, 800)
 
 def convert_image(src_path: Path):
     webp_path = src_path.with_suffix(".webp")
 
     try:
         with Image.open(src_path) as img:
-            # Respect EXIF orientation from the source image before converting.
+            # Fix EXIF orientation first
             img = ImageOps.exif_transpose(img)
 
-            # Convert to RGB (handles RGBA, palette, etc.)
+            # Rotate 90° counter-clockwise (left) as required for correct display
+            img = img.rotate(90, expand=True)
+
+            # Ensure RGB (handles RGBA, palette, etc.)
             img = img.convert("RGB")
 
-            # Resize if larger than MAX_SIZE, preserving aspect ratio
+            # Resize if larger than MAX_SIZE
             img.thumbnail(MAX_SIZE, Image.LANCZOS)
 
             img.save(webp_path, format="WEBP", quality=QUALITY, method=6)
@@ -33,10 +36,9 @@ def convert_image(src_path: Path):
         webp_size = webp_path.stat().st_size
         reduction = (1 - webp_size / original_size) * 100
 
-        print(f"✓ {src_path.name}")
-        print(f"  {original_size // 1024} KB → {webp_size // 1024} KB ({reduction:.0f}% smaller)")
+        print(f"✓ {src_path.name}  |  {original_size // 1024} KB → {webp_size // 1024} KB  ({reduction:.0f}% smaller)")
 
-        # Delete original
+        # Remove original
         src_path.unlink()
 
     except Exception as e:
@@ -51,11 +53,12 @@ def main():
         return
 
     print(f"Found {len(images)} images to convert...\n")
-
+    converted = 0
     for img_path in sorted(images):
         convert_image(img_path)
+        converted += 1
 
-    print(f"\nDone. Converted {len(images)} images to WebP.")
+    print(f"\nDone. Converted {converted} images to WebP.")
 
 if __name__ == "__main__":
     main()

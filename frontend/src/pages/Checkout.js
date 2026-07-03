@@ -120,21 +120,27 @@ const Checkout = () => {
       };
 
       const response = await ordersAPI.create(orderPayload);
-      clearCart();
+      const orderData = response.data; // Axios wraps response in .data
+
+      // Validate response contains required fields
+      if (!orderData || !orderData.orderId || !orderData.token) {
+        throw new Error('Server returned incomplete order data. Please try again.');
+      }
 
       // If customer chose M-Pesa, show the STK Push payment modal
       if (formData.paymentMethod === 'mpesa') {
         setMpesaModal({
           show: true,
-          orderId: response.orderId,
-          orderToken: response.token,
+          orderId: orderData.orderId,
+          orderToken: orderData.token,
           amount: finalTotal
         });
         setIsSubmitting(false);
         return;
       }
 
-      // For non-M-Pesa methods, go straight to success page
+      // For non-M-Pesa methods, clear cart and go to success page
+      clearCart();
       navigate('/order-success', {
         state: {
           orderData: {
@@ -143,8 +149,8 @@ const Checkout = () => {
             subtotal: safeTotal,
             shipping: shippingCost,
             total: finalTotal,
-            orderId: response.orderId,
-            trackingToken: response.token,
+            orderId: orderData.orderId,
+            trackingToken: orderData.token,
             deliveryType: formData.deliveryType,
             deliveryZone: formData.deliveryZone,
             timestamp: new Date().toISOString()
@@ -159,7 +165,8 @@ const Checkout = () => {
     }
   };
 
-  const handleMpesaSuccess = ({ orderId, orderToken }) => {
+  const handleMpesaSuccess = ({ orderId, orderToken, receipt }) => {
+    clearCart();
     navigate('/order-success', {
       state: {
         orderData: {
@@ -179,7 +186,8 @@ const Checkout = () => {
     });
   };
 
-  if (itemCount === 0) {
+  // If M-Pesa modal is open, keep showing it even if cart was cleared
+  if (itemCount === 0 && !mpesaModal.show) {
     return (
       <div className="pt-24 pb-16">
         <div className="max-w-4xl mx-auto px-4">
@@ -210,8 +218,8 @@ const Checkout = () => {
           defaultPhone={formData.phone}
           onSuccess={handleMpesaSuccess}
           onClose={() => {
+            clearCart();
             setMpesaModal(prev => ({ ...prev, show: false }));
-            // Navigate to success/tracking page so customer can track the order
             navigate('/order-success', {
               state: {
                 orderData: {
@@ -225,6 +233,7 @@ const Checkout = () => {
                   deliveryType: formData.deliveryType,
                   deliveryZone: formData.deliveryZone,
                   paymentMethod: 'mpesa',
+                  paymentStatus: 'pending',   // payment NOT completed
                   timestamp: new Date().toISOString()
                 }
               }
@@ -372,7 +381,7 @@ const Checkout = () => {
                   {formData.paymentMethod === 'mpesa' && (
                     <div className="mt-3 p-3 bg-green-50/60 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
                       <p className="text-sm text-green-800 dark:text-green-300">
-                        💚 After placing your order you will receive an <strong>M-Pesa STK Push</strong> on your phone. Enter your PIN to complete payment to Till <strong>3611027</strong>.
+                        After placing your order you will receive an M-Pesa STK Push on your phone. Enter your PIN to complete payment to Till <strong>3611027</strong>.
                       </p>
                     </div>
                   )}

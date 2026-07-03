@@ -4,6 +4,8 @@ import { useBreakpoint } from '../utils/responsive';
 import GlassCard from '../components/GlassCard';
 import GlassInput from '../components/forms/GlassInput';
 import GlassButton from '../components/forms/GlassButton';
+import MpesaPaymentModal from '../components/MpesaPaymentModal';
+import PaymentReceipt from '../components/PaymentReceipt';
 
 /**
  * Track Order page with enhanced UI and status timeline
@@ -20,6 +22,19 @@ const TrackOrder = () => {
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState('');
   const [cancelled, setCancelled] = useState(false);
+
+  // M-Pesa retry payment
+  const [showMpesaModal, setShowMpesaModal] = useState(false);
+
+  const handleMpesaSuccess = ({ receipt }) => {
+    setShowMpesaModal(false);
+    setOrderData(prev => ({
+      ...prev,
+      status: 'paid',
+      mpesa_receipt: receipt,
+      payment_method: 'mpesa'
+    }));
+  };
 
   const handleCancelOrder = async () => {
     if (!window.confirm('Are you sure you want to cancel this order?')) return;
@@ -46,6 +61,7 @@ const TrackOrder = () => {
   };
 
   // Auto-track if token is provided in URL
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (token) {
       handleTrackOrder();
@@ -135,6 +151,17 @@ const TrackOrder = () => {
 
   return (
     <div className="pt-24 pb-16">
+      {/* M-Pesa payment modal — available from track order page */}
+      {showMpesaModal && orderData && (
+        <MpesaPaymentModal
+          orderId={orderData.id}
+          orderToken={orderData.token}
+          amount={orderData.total}
+          defaultPhone={orderData.phone}
+          onSuccess={handleMpesaSuccess}
+          onClose={() => setShowMpesaModal(false)}
+        />
+      )}
       <div className="max-w-6xl mx-auto px-4">
         {/* Page Header */}
         <GlassCard className="p-8 text-center mb-8">
@@ -244,8 +271,44 @@ const TrackOrder = () => {
                   </div>
                   <div>
                     <p className="text-gray-600 dark:text-gray-400 text-sm">Payment Method</p>
-                    <p className="text-gray-800 dark:text-white capitalize">{orderData.notes || 'N/A'}</p>                  </div>
+                    <p className="text-gray-800 dark:text-white capitalize">{orderData.notes || 'N/A'}</p>
+                  </div>
                 </div>
+
+                {/* M-Pesa pay now button — shown when payment is still pending */}
+                {['pending', 'payment_requested'].includes(orderData.status) && (
+                  <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl">
+                    <div className="flex items-center justify-between gap-4 flex-wrap">
+                      <div>
+                        <p className="font-semibold text-gray-800 dark:text-white text-sm">Payment not yet received</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-xs mt-0.5">
+                          Total due: <span className="font-bold text-gray-800 dark:text-white">KSh {parseFloat(orderData.total).toFixed(2)}</span>
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setShowMpesaModal(true)}
+                        className="px-5 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 whitespace-nowrap"
+                      >
+                        Pay with M-Pesa
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* M-Pesa receipt — shown when paid via M-Pesa */}
+                {orderData.status === 'paid' && orderData.mpesa_receipt && (
+                  <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl">
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">M-Pesa Receipt</p>
+                        <p className="font-mono font-bold text-green-700 dark:text-green-400 tracking-wider">
+                          {orderData.mpesa_receipt}
+                        </p>
+                      </div>
+                      <PaymentReceipt order={orderData} />
+                    </div>
+                  </div>
+                )}
 
                 {/* Status Timeline */}
                 <div className="space-y-4">

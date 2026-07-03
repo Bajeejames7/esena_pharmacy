@@ -11,11 +11,19 @@ const MpesaPaymentModal = ({ orderId, orderToken, amount, defaultPhone, onSucces
   const [step, setStep] = useState('enter_phone'); // 'enter_phone' | 'waiting' | 'success' | 'failed'
   const [phone, setPhone] = useState(defaultPhone || '');
   const [error, setError] = useState('');
-  const [checkoutRequestId, setCheckoutRequestId] = useState(null);
+  const [, setCheckoutRequestId] = useState(null);
   const [countdown, setCountdown] = useState(120); // 2 minutes
   const [mpesaReceipt, setMpesaReceipt] = useState('');
   const [pollIntervalRef] = useState({ current: null });
   const [countdownIntervalRef] = useState({ current: null });
+
+  // Validate required props on mount
+  useEffect(() => {
+    if (!orderId || !amount) {
+      setError('System error: Missing payment information. Please contact support.');
+      setStep('failed');
+    }
+  }, [orderId, amount]);
 
   // Cleanup intervals on unmount
   useEffect(() => {
@@ -131,8 +139,8 @@ const MpesaPaymentModal = ({ orderId, orderToken, amount, defaultPhone, onSucces
       aria-labelledby="mpesa-modal-title"
     >
       <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md p-8">
-        {/* Close button — only available before payment starts */}
-        {step !== 'waiting' && (
+        {/* Close button — only available before payment starts or after final result */}
+        {(step === 'enter_phone' || step === 'success' || step === 'failed') && step !== 'waiting' && (
           <button
             onClick={onClose}
             aria-label="Close M-Pesa payment dialog"
@@ -146,8 +154,10 @@ const MpesaPaymentModal = ({ orderId, orderToken, amount, defaultPhone, onSucces
         {step === 'enter_phone' && (
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-2xl">
-                📱
+              <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                <svg className="w-6 h-6 text-green-700 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
               </div>
               <div>
                 <h2
@@ -205,7 +215,7 @@ const MpesaPaymentModal = ({ orderId, orderToken, amount, defaultPhone, onSucces
               onClick={handleSendSTK}
               className="w-full py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold text-lg transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
             >
-              Send Payment Request 💚
+              Send Payment Request
             </button>
           </div>
         )}
@@ -227,7 +237,7 @@ const MpesaPaymentModal = ({ orderId, orderToken, amount, defaultPhone, onSucces
 
             <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-3 mb-6">
               <p className="text-sm text-amber-800 dark:text-amber-300">
-                ⏱ Expires in{' '}
+                Expires in{' '}
                 <span className={`font-bold ${countdown <= 30 ? 'text-red-600' : 'text-amber-700 dark:text-amber-300'}`}>
                   {formatCountdown(countdown)}
                 </span>
@@ -285,8 +295,10 @@ const MpesaPaymentModal = ({ orderId, orderToken, amount, defaultPhone, onSucces
         {/* ── STEP 4: Failed ─────────────────────────────── */}
         {step === 'failed' && (
           <div className="text-center">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center text-4xl">
-              ❌
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+              <svg className="w-10 h-10 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </div>
 
             <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-2">
@@ -310,7 +322,7 @@ const MpesaPaymentModal = ({ orderId, orderToken, amount, defaultPhone, onSucces
                 onClick={onClose}
                 className="w-full py-3 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
-                Use Another Payment Method
+                Pay Later / Track My Order
               </button>
             </div>
           </div>
