@@ -8,6 +8,7 @@ import { countyOptions, getTownOptions } from '../utils/kenyaLocations';
 import GlassInput from '../components/forms/GlassInput';
 import GlassSelect from '../components/forms/GlassSelect';
 import GlassButton from '../components/forms/GlassButton';
+import MpesaPaymentModal from '../components/MpesaPaymentModal';
 
 const PICKUP_ADDRESS = 'Esena Pharmacy, Outering Road, Behind Eastmart Supermarket, Ruaraka, Nairobi';
 
@@ -31,6 +32,14 @@ const Checkout = () => {
     pickup_cost: 0
   });
   const [loadingPrices, setLoadingPrices] = useState(true);
+
+  // M-Pesa modal state
+  const [mpesaModal, setMpesaModal] = useState({
+    show: false,
+    orderId: null,
+    orderToken: null,
+    amount: 0
+  });
 
   const paymentOptions = [
     { value: 'mpesa', label: 'M-Pesa' },
@@ -112,6 +121,20 @@ const Checkout = () => {
 
       const response = await ordersAPI.create(orderPayload);
       clearCart();
+
+      // If customer chose M-Pesa, show the STK Push payment modal
+      if (formData.paymentMethod === 'mpesa') {
+        setMpesaModal({
+          show: true,
+          orderId: response.orderId,
+          orderToken: response.token,
+          amount: finalTotal
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // For non-M-Pesa methods, go straight to success page
       navigate('/order-success', {
         state: {
           orderData: {
@@ -136,6 +159,26 @@ const Checkout = () => {
     }
   };
 
+  const handleMpesaSuccess = ({ orderId, orderToken }) => {
+    navigate('/order-success', {
+      state: {
+        orderData: {
+          ...formData,
+          items,
+          subtotal: safeTotal,
+          shipping: shippingCost,
+          total: finalTotal,
+          orderId,
+          trackingToken: orderToken,
+          deliveryType: formData.deliveryType,
+          deliveryZone: formData.deliveryZone,
+          paymentMethod: 'mpesa',
+          timestamp: new Date().toISOString()
+        }
+      }
+    });
+  };
+
   if (itemCount === 0) {
     return (
       <div className="pt-24 pb-16">
@@ -158,6 +201,38 @@ const Checkout = () => {
 
   return (
     <div className="pt-24 pb-16">
+      {/* M-Pesa STK Push Payment Modal */}
+      {mpesaModal.show && (
+        <MpesaPaymentModal
+          orderId={mpesaModal.orderId}
+          orderToken={mpesaModal.orderToken}
+          amount={mpesaModal.amount}
+          defaultPhone={formData.phone}
+          onSuccess={handleMpesaSuccess}
+          onClose={() => {
+            setMpesaModal(prev => ({ ...prev, show: false }));
+            // Navigate to success/tracking page so customer can track the order
+            navigate('/order-success', {
+              state: {
+                orderData: {
+                  ...formData,
+                  items,
+                  subtotal: safeTotal,
+                  shipping: shippingCost,
+                  total: finalTotal,
+                  orderId: mpesaModal.orderId,
+                  trackingToken: mpesaModal.orderToken,
+                  deliveryType: formData.deliveryType,
+                  deliveryZone: formData.deliveryZone,
+                  paymentMethod: 'mpesa',
+                  timestamp: new Date().toISOString()
+                }
+              }
+            });
+          }}
+        />
+      )}
+
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Checkout Form */}
@@ -294,6 +369,13 @@ const Checkout = () => {
                 <div>
                   <h2 className="text-lg font-semibold text-gray-800 mb-4">Payment Method</h2>
                   <GlassSelect label="Payment Method" name="paymentMethod" value={formData.paymentMethod} onChange={handleChange} options={paymentOptions} required />
+                  {formData.paymentMethod === 'mpesa' && (
+                    <div className="mt-3 p-3 bg-green-50/60 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
+                      <p className="text-sm text-green-800 dark:text-green-300">
+                        💚 After placing your order you will receive an <strong>M-Pesa STK Push</strong> on your phone. Enter your PIN to complete payment to Till <strong>3611027</strong>.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {errors.submit && (
