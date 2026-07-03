@@ -40,7 +40,7 @@ const buildCancellationEmails = (order, reason, cancelledByAdmin) => {
         <p>Whenever you're ready, you're welcome to shop with us again — we'd love to serve you!</p>
         <a href="${shopUrl}" class="button">Resume Shopping</a>
         <div class="notice">
-          🔒 <strong>Privacy reminder:</strong> Your order tracking token is personal. Please keep it secure and do not share it with anyone.
+          Privacy reminder: Your order details are still accessible via your tracking link. Please keep it private.
         </div>
         <p>For assistance, contact us at <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a> or call 0768103599.</p>
       </div>
@@ -525,8 +525,8 @@ exports.updateOrderStatus = async (req, res) => {
                 <div class="content">
                   <p>Dear ${order.customer_name},</p>
                   <p>Your order has been successfully completed. Thank you for shopping with us!</p>
-                  <p><strong>Order Token:</strong> ${order.token}</p>
                   <p>We hope to serve you again soon.</p>
+                  <p style="margin-top:16px"><a href="${process.env.FRONTEND_URL || 'https://esena.co.ke'}/track/${order.token}" style="display:inline-block;background:#27ae60;color:white;padding:10px 24px;text-decoration:none;border-radius:5px;font-size:13px;font-weight:bold;">View Order Details</a></p>
                 </div>
               </div>
             </body>
@@ -619,7 +619,7 @@ exports.updateShippingCost = async (req, res) => {
           <p>The delivery fee for your order <strong>#${order.id}</strong> has been updated by our team based on your exact location.</p>
 
           <div class="token-box">
-            <strong>Tracking Code:</strong> <code style="color:#667eea;">${order.token}</code>
+            <strong>Your Order:</strong> <a href="${frontendUrl}/track/${order.token}" style="color:#667eea;font-weight:bold;">View Order Details</a>
           </div>
 
           <h3 style="margin-bottom:8px;">Order Items</h3>

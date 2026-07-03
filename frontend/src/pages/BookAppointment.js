@@ -25,8 +25,26 @@ const BookAppointment = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [appointmentToken, setAppointmentToken] = useState('');
+  const [tokenCopied, setTokenCopied] = useState(false);
   const [bookedTimes, setBookedTimes] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
+
+  const copyToken = (token) => {
+    navigator.clipboard.writeText(token).then(() => {
+      setTokenCopied(true);
+      setTimeout(() => setTokenCopied(false), 2000);
+    }).catch(() => {
+      const el = document.createElement('textarea');
+      el.value = token;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      setTokenCopied(true);
+      setTimeout(() => setTokenCopied(false), 2000);
+    });
+  };
 
   const ALL_TIME_SLOTS = [
     { value: '09:00', label: '9:00 AM' },
@@ -130,6 +148,7 @@ const BookAppointment = () => {
         throw new Error(data.message || 'Failed to book appointment');
       }
       
+      setAppointmentToken(data.token || '');
       setSubmitSuccess(true);
       setFormData({ name: '', email: '', phone: '', service: '', date: '', time: '', message: '' });
       setErrors({});
@@ -151,19 +170,69 @@ const BookAppointment = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="text-gray-800 dark:text-white mb-4">Appointment Booked Successfully!</h1>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
-              Your appointment has been scheduled. We'll send you a confirmation email with all the details.
+
+            <h1 className="text-gray-800 dark:text-white mb-3">Appointment Booked!</h1>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              Your appointment has been scheduled. We'll confirm it shortly.
             </p>
+
+            {/* Token with copy + direct link */}
+            {appointmentToken && (
+              <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 mb-6 text-left">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium uppercase tracking-wide">
+                  Your Appointment Tracking Token
+                </p>
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="font-mono text-sm text-blue-700 dark:text-blue-400 break-all flex-1 select-all">
+                    {appointmentToken}
+                  </p>
+                  <button
+                    onClick={() => copyToken(appointmentToken)}
+                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-500 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    {tokenCopied ? (
+                      <>
+                        <svg className="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        Copy
+                      </>
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  Keep this private — use it to view or manage your appointment.
+                </p>
+              </div>
+            )}
+
             <div className="bg-amber-50/60 border border-amber-200 dark:border-amber-700 rounded-lg p-3 mb-6 text-sm text-amber-700 dark:text-amber-300 text-left">
-              📬 Can't find the email? Check your <span className="font-semibold">Spam / Junk</span> folder — our emails are sometimes filtered automatically.
+              Can't find the confirmation email? Check your <span className="font-semibold">Spam / Junk</span> folder.
             </div>
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <GlassButton onClick={() => setSubmitSuccess(false)}>
-                Book Another Appointment
-              </GlassButton>
-              <GlassButton variant="secondary" onClick={() => window.location.href = '/'}>
-                Return Home
+              {/* Direct link — no paste needed */}
+              {appointmentToken ? (
+                <GlassButton onClick={() => window.location.href = `/track-appointment/${appointmentToken}`}>
+                  View My Appointment
+                </GlassButton>
+              ) : (
+                <GlassButton onClick={() => window.location.href = '/track-appointment'}>
+                  Track Appointment
+                </GlassButton>
+              )}
+              <GlassButton variant="secondary" onClick={() => {
+                setSubmitSuccess(false);
+                setAppointmentToken('');
+              }}>
+                Book Another
               </GlassButton>
             </div>
           </GlassCard>

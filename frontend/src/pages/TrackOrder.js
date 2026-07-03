@@ -93,6 +93,21 @@ const TrackOrder = () => {
       }
       
       const data = await response.json();
+
+      // If paid via M-Pesa, also fetch the transaction_date from payment record
+      if (data.status === 'paid' && data.payment_method === 'mpesa') {
+        try {
+          const payRes = await fetch(`${apiUrl}/mpesa/order/${data.id}/payments`);
+          if (payRes.ok) {
+            const payData = await payRes.json();
+            const successPayment = payData.payments?.find(p => p.status === 'success');
+            if (successPayment?.transactionDate) {
+              data.transaction_date = successPayment.transactionDate;
+            }
+          }
+        } catch (_) {} // non-critical
+      }
+
       setOrderData(data);
     } catch (err) {
       setError('Order not found. Please check your tracking token and try again.');

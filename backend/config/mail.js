@@ -95,7 +95,8 @@ const orderConfirmationTemplate = (order, items = []) => {
             
             <div class="token-box">
               <strong>Order Tracking Token:</strong><br>
-              <code style="font-size: 16px; color: #667eea;">${order.token}</code>
+              <a href="${FRONTEND_URL}/track/${order.token}" style="font-size:16px;color:#667eea;font-family:monospace;word-break:break-all">${order.token}</a><br>
+              <a href="${FRONTEND_URL}/track/${order.token}" style="display:inline-block;margin-top:10px;background:#667eea;color:white;padding:10px 24px;text-decoration:none;border-radius:5px;font-size:13px;font-weight:bold;">View My Order</a>
             </div>
             
             ${items.length > 0 ? `
@@ -139,8 +140,8 @@ const orderConfirmationTemplate = (order, items = []) => {
             <div style="background:#e8f5e9;border-left:4px solid #27ae60;padding:16px;margin:20px 0;border-radius:4px;">
               <p style="margin:0 0 8px 0;font-weight:bold;color:#1a7a3a;font-size:15px;">Complete Your M-Pesa Payment Anytime</p>
               <p style="margin:0 0 8px 0;font-size:13px;color:#333;">If you did not complete your M-Pesa payment, you can do so at any time by clicking the button below:</p>
-              <a href="${FRONTEND_URL}/track-order" style="display:inline-block;background:#27ae60;color:white;padding:10px 24px;text-decoration:none;border-radius:5px;font-size:13px;font-weight:bold;">Pay Now via Track Order</a>
-              <p style="margin:10px 0 0 0;font-size:12px;color:#555;">Use your tracking token <strong>${order.token}</strong> to find your order, then click <strong>"Pay with M-Pesa"</strong>.</p>
+              <a href="${FRONTEND_URL}/track/${order.token}" style="display:inline-block;background:#27ae60;color:white;padding:10px 24px;text-decoration:none;border-radius:5px;font-size:13px;font-weight:bold;">Pay Now — Open My Order</a>
+              <p style="margin:10px 0 0 0;font-size:11px;color:#888;">This link opens your order directly. No token copy-paste needed.</p>
             </div>
 
             <div style="background:#fff3cd;border-left:4px solid #ffc107;padding:12px 16px;margin:16px 0;font-size:13px;border-radius:4px;">
@@ -277,14 +278,13 @@ const paymentRequestTemplate = (order) => {
             <div class="amount-box">
               <p style="margin: 0; font-size: 14px; color: #666;">Amount Due</p>
               <div class="amount">KSH ${parseFloat(order.total || 0).toFixed(2)}</div>
-              <p style="margin: 8px 0 0 0; font-size: 13px; color: #888;">Order Token: <strong>${order.token}</strong></p>
+              <p style="margin: 8px 0 0 0; font-size: 13px; color: #888;">Order #${order.id}</p>
             </div>
 
             <div class="pay-box">
-              <p style="margin: 0 0 8px 0; font-weight: bold; color: #1a7a3a; font-size: 15px;">Pay via Track Order</p>
-              <p style="margin: 0 0 12px 0; font-size: 13px; color: #333;">Click the button below to go to your order and complete your M-Pesa payment — an STK Push will be sent directly to your phone.</p>
-              <a href="${FRONTEND_URL}/track-order" class="pay-button">Complete M-Pesa Payment</a>
-              <p style="margin: 12px 0 0 0; font-size: 12px; color: #555;">Enter your tracking token <strong>${order.token}</strong>, then click <strong>"Pay with M-Pesa"</strong>.</p>
+              <p style="margin: 0 0 8px 0; font-weight: bold; color: #1a7a3a; font-size: 15px;">Complete Your M-Pesa Payment</p>
+              <p style="margin: 0 0 12px 0; font-size: 13px; color: #333;">Click the button below — it takes you straight to your order. No token needed.</p>
+              <a href="${FRONTEND_URL}/track/${order.token}" class="pay-button">Pay Now — Open My Order</a>
             </div>
             
             <p>Once payment is received, we'll process your order immediately.</p>
@@ -330,7 +330,7 @@ const dispatchNotificationTemplate = (order) => {
             <p>Dear ${order.customer_name},</p>
             <p>Great news! Your order has been dispatched and is on its way to you.</p>
             
-            <p><strong>Order Token:</strong> ${order.token}</p>
+            <p><strong>Order #:</strong> ${order.id}</p>
             <p><strong>Delivery Address:</strong> ${order.delivery_address}</p>
             
             <a href="${FRONTEND_URL}/track/${order.token}" class="button">Track Your Order</a>
@@ -380,8 +380,8 @@ const appointmentConfirmationTemplate = (appointment) => {
             <div class="appointment-box">
               <p><strong>Service:</strong> ${appointment.service}</p>
               <p><strong>Date:</strong> ${new Date(appointment.date).toLocaleString()}</p>
-              <p><strong>Tracking Token:</strong><br>
-              <code style="font-size: 16px; color: #667eea;">${appointment.token}</code></p>
+              <p style="margin-top:8px"><strong>View / Manage Your Appointment:</strong><br>
+              <a href="${FRONTEND_URL}/track-appointment/${appointment.token}" style="display:inline-block;margin-top:8px;background:#667eea;color:white;padding:10px 22px;text-decoration:none;border-radius:5px;font-size:13px;font-weight:bold;">Open My Appointment</a></p>
             </div>
             
             <a href="${FRONTEND_URL}/track-appointment/${appointment.token}" class="button">View Appointment Details</a>
@@ -502,8 +502,9 @@ const appointmentConfirmationUpdateTemplate = (appointment) => {
             <div class="appointment-box">
               <p><strong>Service:</strong> ${appointment.service}</p>
               <p><strong>Date:</strong> ${new Date(appointment.date).toLocaleString()}</p>
-              <p><strong>Tracking Token:</strong><br>
-              <code style="font-size: 16px; color: #27ae60;">${appointment.token}</code></p>
+              <p style="margin-top:8px">
+                <a href="${FRONTEND_URL}/track-appointment/${appointment.token}" style="display:inline-block;background:#27ae60;color:white;padding:10px 22px;text-decoration:none;border-radius:5px;font-size:13px;font-weight:bold;">View My Appointment</a>
+              </p>
             </div>
             
             <p>Please arrive 15 minutes early for your appointment.</p>
@@ -552,7 +553,7 @@ const appointmentCompletionTemplate = (appointment) => {
             <div class="appointment-box">
               <p><strong>Service:</strong> ${appointment.service}</p>
               <p><strong>Date:</strong> ${new Date(appointment.date).toLocaleString()}</p>
-              <p><strong>Tracking Token:</strong> ${appointment.token}</p>
+              <p>We hope you had a positive experience with us.</p>
             </div>
             
             <p>We hope you had a positive experience with our services.</p>
@@ -571,10 +572,23 @@ const appointmentCompletionTemplate = (appointment) => {
 
 /**
  * Email template for payment confirmed notification
+ * Accepts optional receiptHTML to attach as a downloadable receipt file
  */
-const paymentConfirmedTemplate = (order) => {
+const paymentConfirmedTemplate = (order, receiptHTML = null) => {
+  const receiptNote = receiptHTML
+    ? `<div style="background:#e8f5e9;border-left:4px solid #27ae60;padding:14px 16px;margin:16px 0;border-radius:4px;">
+        <p style="margin:0;font-size:13px;color:#1a7a3a;font-weight:bold;">Your receipt is attached to this email.</p>
+        <p style="margin:6px 0 0;font-size:12px;color:#555;">Open the attached file in your browser to print or save as PDF.</p>
+      </div>`
+    : '';
+
+  const attachments = receiptHTML
+    ? [{ filename: `receipt-order-${order.id}-${order.mpesa_receipt || 'mpesa'}.html`, content: receiptHTML, contentType: 'text/html' }]
+    : [];
+
   return {
-    subject: "Payment Confirmed - Esena Pharmacy",
+    subject: `Payment Confirmed — Order #${order.id} — Esena Pharmacy`,
+    attachments,
     html: `
       <!DOCTYPE html><html><head><style>
         body{font-family:Arial,sans-serif;line-height:1.6;color:#333}
@@ -582,23 +596,36 @@ const paymentConfirmedTemplate = (order) => {
         .header{background:#27ae60;color:white;padding:30px;text-align:center;border-radius:10px 10px 0 0}
         .content{background:#f9f9f9;padding:30px;border-radius:0 0 10px 10px}
         .box{background:white;padding:20px;border-left:4px solid #27ae60;margin:20px 0;border-radius:4px}
+        .receipt-badge{background:#e6f9ee;border:1px solid #27ae60;border-radius:6px;padding:12px 16px;margin:16px 0;text-align:center}
+        .receipt-val{font-size:22px;font-weight:bold;letter-spacing:.1em;color:#1a7a3a}
         .button{display:inline-block;background:#27ae60;color:white;padding:12px 30px;text-decoration:none;border-radius:5px;margin:20px 0}
         .footer{text-align:center;margin-top:20px;color:#666;font-size:12px}
       </style></head><body>
       <div class="container">
-        <div class="header"><h1>✅ Payment Confirmed!</h1></div>
+        <div class="header"><h1>Payment Confirmed!</h1></div>
         <div class="content">
           <p>Dear ${order.customer_name},</p>
-          <p>We have received your payment. Your order is now being prepared for dispatch.</p>
+          <p>Your M-Pesa payment has been received and your order is now confirmed.</p>
+
+          <div class="receipt-badge">
+            <p style="margin:0 0 4px;font-size:11px;color:#555;">M-Pesa Receipt Number</p>
+            <div class="receipt-val">${order.mpesa_receipt || '—'}</div>
+          </div>
+
           <div class="box">
-            <p><strong>Order Token:</strong> ${order.token}</p>
+            <p><strong>Order #:</strong> ${order.id}</p>
+            <p><strong>M-Pesa Receipt:</strong> ${order.mpesa_receipt || '—'}</p>
             <p><strong>Amount Paid:</strong> KSH ${parseFloat(order.total || 0).toFixed(2)}</p>
           </div>
-          <p>We'll notify you once your order is on its way.</p>
+          ${receiptNote}
+          <p>We will notify you once your order is on its way.</p>
           <a href="${FRONTEND_URL}/track/${order.token}" class="button">Track Your Order</a>
-          <p>For assistance, contact us at <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a> or call 0768103599.</p>
+          <p style="font-size:13px;color:#888;margin-top:16px">For assistance contact us at <a href="mailto:esenapharmacy@gmail.com">esenapharmacy@gmail.com</a> or call 0768103599.</p>
         </div>
-        <div class="footer"><p>Esena Pharmacy - Your Trusted Healthcare Partner</p><p>OUTERING ROAD BEHIND EASTMART SUPERMARKET RUARAKA, NAIROBI</p></div>
+        <div class="footer">
+          <p>Esena Pharmacy — Your Trusted Healthcare Partner</p>
+          <p>Outering Road, Behind Eastmart Supermarket, Ruaraka, Nairobi</p>
+        </div>
       </div></body></html>
     `
   };
@@ -626,7 +653,7 @@ const readyForPickupTemplate = (order) => {
           <p>Dear ${order.customer_name},</p>
           <p>Your order is ready and waiting for you at our pharmacy.</p>
           <div class="box">
-            <p><strong>Order Token:</strong> ${order.token}</p>
+            <p><strong>Order #:</strong> ${order.id}</p>
             <p><strong>Total:</strong> KSH ${parseFloat(order.total || 0).toFixed(2)}</p>
           </div>
           <div class="address">
@@ -676,7 +703,7 @@ const appointmentCancellationTemplate = (appointment) => {
             <div class="appointment-box">
               <p><strong>Service:</strong> ${appointment.service}</p>
               <p><strong>Date:</strong> ${new Date(appointment.date).toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              <p><strong>Tracking Token:</strong> ${appointment.token}</p>
+              <p>Appointment cancelled.</p>
             </div>
             
             <p>If you'd like to book a new appointment, please visit our website or contact us directly.</p>
@@ -729,8 +756,9 @@ const appointmentRescheduleTemplate = (appointment) => {
               <p><strong>Service:</strong> ${appointment.service}</p>
               <p><strong>New Date:</strong> ${new Date(appointment.date).toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
               <p><strong>New Time:</strong> ${appointment.time || new Date(appointment.date).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}</p>
-              <p><strong>Tracking Token:</strong><br>
-              <code style="font-size: 16px; color: #f39c12;">${appointment.token}</code></p>
+              <p style="margin-top:10px">
+                <a href="${FRONTEND_URL}/track-appointment/${appointment.token}" style="display:inline-block;background:#f39c12;color:white;padding:10px 22px;text-decoration:none;border-radius:5px;font-size:13px;font-weight:bold;">View My Appointment</a>
+              </p>
             </div>
             
             <a href="${FRONTEND_URL}/track-appointment/${appointment.token}" class="button">View Appointment Details</a>
