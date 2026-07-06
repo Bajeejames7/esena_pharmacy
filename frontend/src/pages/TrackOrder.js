@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useBreakpoint } from '../utils/responsive';
 import GlassCard from '../components/GlassCard';
 import GlassInput from '../components/forms/GlassInput';
 import GlassButton from '../components/forms/GlassButton';
 import MpesaPaymentModal from '../components/MpesaPaymentModal';
 import PaymentReceipt from '../components/PaymentReceipt';
+import { useCustomerAuth } from '../contexts/CustomerAuthContext';
 
 /**
  * Track Order page with enhanced UI and status timeline
@@ -14,6 +15,8 @@ import PaymentReceipt from '../components/PaymentReceipt';
 const TrackOrder = () => {
   const { token } = useParams();
   const { breakpoint } = useBreakpoint();
+  const navigate = useNavigate();
+  const { isLoggedIn } = useCustomerAuth();
   const [trackingToken, setTrackingToken] = useState(token || '');
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -236,12 +239,16 @@ const TrackOrder = () => {
                     variant="secondary"
                     size="sm"
                     onClick={() => {
-                      setOrderData(null);
-                      setTrackingToken('');
-                      setError('');
+                      if (isLoggedIn) {
+                        navigate('/account');
+                      } else {
+                        setOrderData(null);
+                        setTrackingToken('');
+                        setError('');
+                      }
                     }}
                   >
-                    Track Another Order
+                    {isLoggedIn ? 'My Orders' : 'Track Another Order'}
                   </GlassButton>
                   {['pending', 'payment_requested'].includes(orderData.status) && (
                     <GlassButton

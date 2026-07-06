@@ -3,11 +3,12 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { CartProvider } from './contexts/CartContext';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { CustomerAuthProvider } from './contexts/CustomerAuthContext';
+import { CustomerAuthProvider, useCustomerAuth } from './contexts/CustomerAuthContext';
 import { initPerformanceMonitoring } from './utils/performance';
 import { cacheManager } from './utils/cacheManager';
 import { compatibilityManager } from './utils/browserCompat';
 import ErrorBoundary from './components/ErrorBoundary';
+import ProfileGuard from './components/ProfileGuard';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
@@ -104,35 +105,6 @@ const FocusManager = ({ children }) => {
   return children;
 };
 
-// Component to conditionally render Header based on route
-const ConditionalHeader = () => {
-  const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith('/admin');
-  
-  if (isAdminRoute) return null;
-  
-  return (
-    <>
-      <Header />
-      {/* Spacer so content doesn't slide under the fixed header (h-16 = 64px) */}
-      <div className="h-16 flex-shrink-0" aria-hidden="true" />
-    </>
-  );
-};
-
-// Component to conditionally render Footer based on route
-const ConditionalFooter = () => {
-  const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith('/admin');
-  
-  // Don't render Footer on admin routes
-  if (isAdminRoute) {
-    return null;
-  }
-  
-  return <Footer />;
-};
-
 // Main content wrapper
 const MainContentWrapper = ({ children }) => {
   return (
@@ -187,31 +159,90 @@ function App() {
       <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || ''}>
         <ThemeProvider>
           <CustomerAuthProvider>
-          <CartProvider>
-          <Router>
-          {/* Skip Links for keyboard navigation */}
-          <div className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 z-50">
-            <a 
-              href="#main-content" 
-              className="glass-button-primary p-2 m-2 rounded"
-              onFocus={(e) => e.target.classList.remove('sr-only')}
-              onBlur={(e) => e.target.classList.add('sr-only')}
-            >
-              Skip to main content
-            </a>
-            <a 
-              href="#navigation" 
-              className="glass-button-secondary p-2 m-2 rounded ml-2"
-              onFocus={(e) => e.target.classList.remove('sr-only')}
-              onBlur={(e) => e.target.classList.add('sr-only')}
-            >
-              Skip to navigation
-            </a>
-          </div>
+            <CartProvider>
+              <Router>
+                <AppContent 
+                  showCookiePreferences={showCookiePreferences}
+                  setShowCookiePreferences={setShowCookiePreferences}
+                  handleSaveCookiePreferences={handleSaveCookiePreferences}
+                />
+              </Router>
+            </CartProvider>
+          </CustomerAuthProvider>
+        </ThemeProvider>
+      </GoogleReCaptchaProvider>
+    </ErrorBoundary>
+  );
+}
 
-          <FocusManager>
+// Separate component that has access to auth context
+const AppContent = ({ showCookiePreferences, setShowCookiePreferences, handleSaveCookiePreferences }) => {
+  const location = useLocation();
+  const { firebaseUser, customer, needsProfile, loading } = useCustomerAuth();
+  
+  // Determine if header/footer should be hidden
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  
+  // Hide header/footer if:
+  // 1. Not loading (auth state is known)
+  // 2. User is logged in (firebaseUser exists)
+  // 3. Profile is incomplete (needsProfile is true OR customer doesn't have required fields)
+  const hideHeaderFooter = !loading && firebaseUser && (
+    needsProfile || 
+    !customer?.profile_completed ||
+    !customer?.phone ||
+    !customer?.delivery_address ||
+    !customer?.city ||
+    !customer?.county
+  );
+  
+  // Debug logging
+  useEffect(() => {
+    console.log('🎯 AppContent State:', {
+      loading,
+      hasFirebaseUser: !!firebaseUser,
+      hasCustomer: !!customer,
+      needsProfile,
+      profileCompleted: customer?.profile_completed,
+      hasPhone: !!customer?.phone,
+      hideHeaderFooter,
+      pathname: location.pathname
+    });
+  }, [loading, firebaseUser, customer, needsProfile, hideHeaderFooter, location.pathname]);
+  
+  return (
+    <>
+      {/* Skip Links for keyboard navigation */}
+      <div className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 z-50">
+        <a 
+          href="#main-content" 
+          className="glass-button-primary p-2 m-2 rounded"
+          onFocus={(e) => e.target.classList.remove('sr-only')}
+          onBlur={(e) => e.target.classList.add('sr-only')}
+        >
+          Skip to main content
+        </a>
+        <a 
+          href="#navigation" 
+          className="glass-button-secondary p-2 m-2 rounded ml-2"
+          onFocus={(e) => e.target.classList.remove('sr-only')}
+          onBlur={(e) => e.target.classList.add('sr-only')}
+        >
+          Skip to navigation
+        </a>
+      </div>
+
+      <FocusManager>
+        <ProfileGuard>
           <div className="min-h-screen w-full overflow-x-hidden flex flex-col">
-            <ConditionalHeader />
+            {/* Conditional Header */}
+            {!isAdminRoute && !hideHeaderFooter && (
+              <>
+                <Header />
+                <div className="h-16 flex-shrink-0" aria-hidden="true" />
+              </>
+            )}
+            
             <MainContentWrapper>
               <Routes>
               {/* Public Routes */}
@@ -305,35 +336,25 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
             </MainContentWrapper>
-            <ConditionalFooter />
             
-            {/* WhatsApp floating button - only show on public pages */}
-            <Routes>
-              <Route path="/admin/*" element={null} />
-              <Route path="*" element={<WhatsAppButton />} />
-            </Routes>
-
-            {/* Ivo Bot - only show on public pages */}
-            <Routes>
-              <Route path="/admin/*" element={null} />
-              <Route path="*" element={<IvoBot />} />
-            </Routes>
+            {/* Conditional Footer */}
+            {!isAdminRoute && !hideHeaderFooter && <Footer />}
             
-            {/* Cookie Consent Banner - only show on public pages */}
-            <Routes>
-              <Route path="/admin/*" element={null} />
-              <Route path="*" element={<CookieConsent />} />
-            </Routes>
+            {/* WhatsApp floating button - only show on public pages when profile complete */}
+            {!isAdminRoute && !hideHeaderFooter && <WhatsAppButton />}
 
-            {/* Cookie Settings Button - only show on public pages after consent */}
-            <Routes>
-              <Route path="/admin/*" element={null} />
-              <Route path="*" element={
-                <CookieSettingsButton 
-                  onOpenPreferences={() => setShowCookiePreferences(true)} 
-                />
-              } />
-            </Routes>
+            {/* Ivo Bot - only show on public pages when profile complete */}
+            {!isAdminRoute && !hideHeaderFooter && <IvoBot />}
+            
+            {/* Cookie Consent Banner - only show on public pages when profile complete */}
+            {!isAdminRoute && !hideHeaderFooter && <CookieConsent />}
+
+            {/* Cookie Settings Button - only show on public pages after consent when profile complete */}
+            {!isAdminRoute && !hideHeaderFooter && (
+              <CookieSettingsButton 
+                onOpenPreferences={() => setShowCookiePreferences(true)} 
+              />
+            )}
 
             {/* Cookie Preferences Modal */}
             {showCookiePreferences && (
@@ -343,14 +364,10 @@ function App() {
               />
             )}
           </div>
+          </ProfileGuard>
         </FocusManager>
-      </Router>
-    </CartProvider>
-    </CustomerAuthProvider>
-  </ThemeProvider>
-  </GoogleReCaptchaProvider>
-  </ErrorBoundary>
+      </>
   );
-}
+};
 
 export default App;

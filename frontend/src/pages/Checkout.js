@@ -31,7 +31,7 @@ const Checkout = () => {
     address:       prefill.delivery_address?.split(',')[0]?.trim() || customer?.delivery_address || '',
     city:          prefill.city           || customer?.city             || '',
     state:         prefill.county         || customer?.county           || '',
-    landmark:      '',
+    landmark:      prefill.landmark       || customer?.landmark          || '',
     paymentMethod: 'mpesa'
   });
 

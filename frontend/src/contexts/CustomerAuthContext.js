@@ -17,7 +17,7 @@ export const CustomerAuthProvider = ({ children }) => {
   const [customer, setCustomer] = useState(null);   // DB profile
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [needsProfile, setNeedsProfile] = useState(false); // new Google user needs extra details
+  const [needsProfile, setNeedsProfile] = useState(false); // Will be set after profile sync
 
   // Sync Firebase auth state → fetch/create DB profile
   useEffect(() => {
@@ -45,15 +45,36 @@ export const CustomerAuthProvider = ({ children }) => {
           name: fbUser.displayName || extraData.name,
           phone: extraData.phone || null,
           delivery_address: extraData.delivery_address || null,
+          landmark: extraData.landmark || null,
           city: extraData.city || null,
-          county: extraData.county || null
+          county: extraData.county || null,
+          date_of_birth: extraData.date_of_birth || null,
+          blood_type: extraData.blood_type || null,
+          chronic_conditions: extraData.chronic_conditions || null,
+          allergies: extraData.allergies || null,
+          emergency_contact_name: extraData.emergency_contact_name || null,
+          emergency_contact_phone: extraData.emergency_contact_phone || null,
+          profile_completed: extraData.profile_completed || null
         })
       });
       const data = await res.json();
       if (data.success) {
         setCustomer(data.customer);
-        // If profile has no phone, they need to complete it
-        setNeedsProfile(!data.customer.phone);
+        // Profile is incomplete if required fields are missing or profile_completed is false
+        const needsCompletion = !data.customer.profile_completed || 
+                                !data.customer.phone || 
+                                !data.customer.delivery_address ||
+                                !data.customer.city ||
+                                !data.customer.county;
+        console.log('🔍 Profile Sync Check:', {
+          profile_completed: data.customer.profile_completed,
+          phone: !!data.customer.phone,
+          delivery_address: !!data.customer.delivery_address,
+          city: !!data.customer.city,
+          county: !!data.customer.county,
+          needsCompletion
+        });
+        setNeedsProfile(needsCompletion);
         return data.customer;
       }
     } catch (err) {
@@ -66,16 +87,21 @@ export const CustomerAuthProvider = ({ children }) => {
   const signInWithGoogle = async () => {
     const result = await signInWithPopup(auth, googleProvider);
     const profile = await syncProfile(result.user);
-    // If first time (no phone), show profile completion form
-    if (!profile?.phone) setNeedsProfile(true);
-    return result.user;
+    // Return whether profile needs completion
+    return {
+      user: result.user,
+      needsProfile: !profile?.profile_completed || !profile?.phone || !profile?.delivery_address || !profile?.city || !profile?.county
+    };
   };
 
   // ── Email sign-in ──────────────────────────────────────────────
   const signInWithEmail = async (email, password) => {
     const result = await signInWithEmailAndPassword(auth, email, password);
-    await syncProfile(result.user);
-    return result.user;
+    const profile = await syncProfile(result.user);
+    return {
+      user: result.user,
+      needsProfile: !profile?.profile_completed || !profile?.phone || !profile?.delivery_address || !profile?.city || !profile?.county
+    };
   };
 
   // ── Email sign-up ──────────────────────────────────────────────
@@ -89,7 +115,7 @@ export const CustomerAuthProvider = ({ children }) => {
   // ── Complete profile (after Google sign-in or email sign-up) ──
   const completeProfile = async (extraData) => {
     if (!firebaseUser) return;
-    const profile = await syncProfile(firebaseUser, extraData);
+    const profile = await syncProfile(firebaseUser, { ...extraData, profile_completed: true });
     setNeedsProfile(false);
     return profile;
   };

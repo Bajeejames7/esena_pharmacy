@@ -13,7 +13,11 @@ const { logger } = require('../utils/logger');
 // Links any past orders placed with the same email.
 // ──────────────────────────────────────────────────────────────
 exports.upsertCustomer = async (req, res) => {
-  const { name, phone, delivery_address, city, county } = req.body;
+  const {
+    name, phone, delivery_address, landmark, city, county,
+    date_of_birth, blood_type, chronic_conditions, allergies,
+    emergency_contact_name, emergency_contact_phone, profile_completed
+  } = req.body;
   const { uid, email, picture, firebase_sign_in_provider } = req.firebaseUser;
 
   const provider = firebase_sign_in_provider?.includes('google') ? 'google' : 'email';
@@ -23,42 +27,82 @@ exports.upsertCustomer = async (req, res) => {
   try {
     await conn.beginTransaction();
 
-    // Upsert customer row
-    await conn.query(
+    const [insertResult] = await conn.query(
       `INSERT INTO customers
-         (firebase_uid, email, name, phone, delivery_address, city, county, auth_provider, profile_picture)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+         (firebase_uid, email, name, phone, delivery_address, landmark, city, county,
+          date_of_birth, blood_type, chronic_conditions, allergies,
+          emergency_contact_name, emergency_contact_phone, profile_completed,
+          auth_provider, profile_picture)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE
-         name            = COALESCE(VALUES(name), name),
-         phone           = COALESCE(VALUES(phone), phone),
-         delivery_address= COALESCE(VALUES(delivery_address), delivery_address),
-         city            = COALESCE(VALUES(city), city),
-         county          = COALESCE(VALUES(county), county),
-         profile_picture = COALESCE(VALUES(profile_picture), profile_picture),
-         updated_at      = NOW()`,
-      [uid, email, name || email.split('@')[0], phone || null,
-       delivery_address || null, city || null, county || null, provider, profilePicture]
+         firebase_uid            = VALUES(firebase_uid),
+         name                    = COALESCE(VALUES(name), name),
+         phone                   = COALESCE(VALUES(phone), phone),
+         delivery_address        = COALESCE(VALUES(delivery_address), delivery_address),
+         landmark                = COALESCE(VALUES(landmark), landmark),
+         city                    = COALESCE(VALUES(city), city),
+         county                  = COALESCE(VALUES(county), county),
+         date_of_birth           = COALESCE(VALUES(date_of_birth), date_of_birth),
+         blood_type              = COALESCE(VALUES(blood_type), blood_type),
+         chronic_conditions      = COALESCE(VALUES(chronic_conditions), chronic_conditions),
+         allergies               = COALESCE(VALUES(allergies), allergies),
+         emergency_contact_name  = COALESCE(VALUES(emergency_contact_name), emergency_contact_name),
+         emergency_contact_phone = COALESCE(VALUES(emergency_contact_phone), emergency_contact_phone),
+         profile_completed       = IF(VALUES(profile_completed) = TRUE, TRUE, profile_completed),
+         profile_picture         = COALESCE(VALUES(profile_picture), profile_picture),
+         updated_at              = NOW()`,
+      [
+        uid, email, name || email.split('@')[0], phone || null,
+        delivery_address || null, landmark || null, city || null, county || null,
+        date_of_birth || null, blood_type || 'Unknown',
+        chronic_conditions || null, allergies || null,
+        emergency_contact_name || null, emergency_contact_phone || null,
+        profile_completed ? 1 : 0, provider, profilePicture
+      ]
     );
 
-    // Fetch the stored customer
-    const [[customer]] = await conn.query(
+    console.log('Insert result:', insertResult);
+    console.log('Looking for firebase_uid:', uid);
+
+    // Try to find by firebase_uid first, then by email as fallback
+    let [customers] = await conn.query(
       'SELECT * FROM customers WHERE firebase_uid = ?', [uid]
     );
+    let customer = customers[0];
 
-    // Link historical orders by email (orders placed before account creation)
+    if (!customer) {
+      // Maybe the record was updated by email match, try finding by email
+      [customers] = await conn.query(
+        'SELECT * FROM customers WHERE email = ?', [email]
+      );
+      customer = customers[0];
+    }
+
+    console.log('Customer after insert:', customer);
+
+    if (!customer) {
+      throw new Error(`Failed to create/update customer profile for uid: ${uid}, email: ${email}`);
+    }
+
+    // Link historical orders by email
     await conn.query(
       'UPDATE orders SET customer_id = ? WHERE email = ? AND customer_id IS NULL',
       [customer.id, email]
     );
 
-    await conn.commit();
+    // Link historical appointments by email
+    await conn.query(
+      'UPDATE appointments SET customer_id = ? WHERE email = ? AND customer_id IS NULL',
+      [customer.id, email]
+    );
 
+    await conn.commit();
     logger.info('Customer upserted', { customerId: customer.id, provider });
     return res.json({ success: true, customer: sanitize(customer) });
   } catch (err) {
     await conn.rollback();
-    logger.error('Customer upsert error', { error: err.message });
-    return res.status(500).json({ error: 'Failed to save profile' });
+    logger.error('Customer upsert error', { error: err.message, stack: err.stack });
+    return res.status(500).json({ error: 'Failed to save profile', details: err.message });
   } finally {
     conn.release();
   }
@@ -84,13 +128,21 @@ exports.getProfile = async (req, res) => {
 // PUT /api/customers/profile
 // ──────────────────────────────────────────────────────────────
 exports.updateProfile = async (req, res) => {
-  const { name, phone, delivery_address, city, county } = req.body;
+  const {
+    name, phone, delivery_address, landmark, city, county,
+    date_of_birth, blood_type, chronic_conditions, allergies,
+    emergency_contact_name, emergency_contact_phone
+  } = req.body;
   try {
     await db.query(
       `UPDATE customers
-       SET name=?, phone=?, delivery_address=?, city=?, county=?, updated_at=NOW()
+       SET name=?, phone=?, delivery_address=?, landmark=?, city=?, county=?,
+           date_of_birth=?, blood_type=?, chronic_conditions=?, allergies=?,
+           emergency_contact_name=?, emergency_contact_phone=?, updated_at=NOW()
        WHERE firebase_uid=?`,
-      [name, phone, delivery_address, city, county, req.firebaseUser.uid]
+      [name, phone, delivery_address, landmark, city, county,
+       date_of_birth || null, blood_type || 'Unknown', chronic_conditions, allergies,
+       emergency_contact_name, emergency_contact_phone, req.firebaseUser.uid]
     );
     const [[updated]] = await db.query(
       'SELECT * FROM customers WHERE firebase_uid = ?',

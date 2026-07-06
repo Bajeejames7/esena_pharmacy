@@ -20,6 +20,10 @@ router.get('/orders',         firebaseAuth, getMyOrders);
 router.post('/reorder/:orderId', firebaseAuth, reorder);
 router.get('/prescriptions',  firebaseAuth, getMyPrescriptions);
 
+// Customer appointments (with notes + reports)
+const { getMyAppointments } = require('../controllers/appointmentNotesController');
+router.get('/appointments',   firebaseAuth, getMyAppointments);
+
 // ── Admin route (existing JWT auth) ───────────────────────────
 router.get('/admin/list',     auth, getAllCustomers);
 

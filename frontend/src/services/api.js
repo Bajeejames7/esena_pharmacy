@@ -173,25 +173,25 @@ export const inventoryAPI = {
   addMovement: (productId, data) => api.post(`/inventory/${productId}/movements`, data),
 };
 
-// M-Pesa API methods
+// K2 Connect (Kopo Kopo) API methods - Primary payment method for Buy Goods
 export const mpesaAPI = {
   /**
-   * Trigger STK Push on customer's phone
+   * Trigger STK Push on customer's phone (via K2 Connect)
    * @param {{ orderId: number, phoneNumber: string, amount: number }} data
    */
-  initiateSTKPush: (data) => api.post('/mpesa/stkpush', data),
+  initiateSTKPush: (data) => api.post('/k2/stkpush', data),
 
   /**
    * Poll payment status
    * @param {string} checkoutRequestId - ID returned by initiateSTKPush
    */
-  checkStatus: (checkoutRequestId) => api.get(`/mpesa/status/${checkoutRequestId}`),
+  checkStatus: (checkoutRequestId) => api.get(`/k2/status/${checkoutRequestId}`),
 
   /**
    * Get all payment attempts for an order (admin)
    * @param {number} orderId
    */
-  getOrderPayments: (orderId) => api.get(`/mpesa/order/${orderId}/payments`),
+  getOrderPayments: (orderId) => api.get(`/k2/order/${orderId}/payments`),
 };
 
 // Reports API methods

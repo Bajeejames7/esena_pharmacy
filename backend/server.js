@@ -104,7 +104,8 @@ app.use(["/admin/logs", "/api/admin/logs"], require("./routes/logs"));
 app.use(["/admin/employees", "/api/admin/employees"], require("./routes/employees"));
 app.use(["/inventory", "/api/inventory"], require("./routes/inventory"));
 app.use(["/reports", "/api/reports"], require("./routes/reports"));
-app.use(["/mpesa", "/api/mpesa"], require("./routes/mpesa"));
+app.use(["/mpesa", "/api/mpesa"], require("./routes/mpesa")); // Legacy M-Pesa Daraja (deprecated)
+app.use(["/k2", "/api/k2"], require("./routes/k2")); // K2 Connect (Kopo Kopo) - Primary payment method
 app.use(["/customers", "/api/customers"], require("./routes/customers"));
 app.use(["/admin/customers", "/api/admin/customers"], require("./routes/customers"));
 

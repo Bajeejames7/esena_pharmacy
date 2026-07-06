@@ -5,6 +5,7 @@ import GlassInput from '../components/forms/GlassInput';
 import GlassTextarea from '../components/forms/GlassTextarea';
 import GlassButton from '../components/forms/GlassButton';
 import { prescriptionsAPI } from '../services/api';
+import { useCustomerAuth } from '../contexts/CustomerAuthContext';
 
 /**
  * Prescription Upload Page
@@ -12,10 +13,12 @@ import { prescriptionsAPI } from '../services/api';
  */
 const UploadPrescription = () => {
   const { breakpoint } = useBreakpoint();
+  const { customer } = useCustomerAuth();
+  
   const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    email: '',
+    name: customer?.name || '',
+    phone: customer?.phone || '',
+    email: customer?.email || '',
     message: '',
     prescriptionFile: null
   });

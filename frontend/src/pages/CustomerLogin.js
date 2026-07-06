@@ -21,8 +21,9 @@ const CustomerLogin = () => {
   const handleGoogle = async () => {
     setError(''); setLoading(true);
     try {
-      await signInWithGoogle();
-      navigate(needsProfile ? '/complete-profile' : from, { replace: true });
+      const result = await signInWithGoogle();
+      // Check if profile needs completion from the sign-in result
+      navigate(result.needsProfile ? '/complete-profile' : from, { replace: true });
     } catch (err) {
       setError(friendlyError(err.code));
     } finally { setLoading(false); }
@@ -38,8 +39,8 @@ const CustomerLogin = () => {
         await signUpWithEmail(form.email, form.password, form.name);
         navigate('/complete-profile', { replace: true });
       } else {
-        await signInWithEmail(form.email, form.password);
-        navigate(from, { replace: true });
+        const result = await signInWithEmail(form.email, form.password);
+        navigate(result.needsProfile ? '/complete-profile' : from, { replace: true });
       }
     } catch (err) {
       setError(friendlyError(err.code));
