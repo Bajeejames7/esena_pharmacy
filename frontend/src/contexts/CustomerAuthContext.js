@@ -4,6 +4,7 @@ import {
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendEmailVerification,
   signOut,
   updateProfile as firebaseUpdateProfile
 } from 'firebase/auth';
@@ -108,6 +109,19 @@ export const CustomerAuthProvider = ({ children }) => {
   const signUpWithEmail = async (email, password, name) => {
     const result = await createUserWithEmailAndPassword(auth, email, password);
     await firebaseUpdateProfile(result.user, { displayName: name });
+    
+    // Send email verification
+    try {
+      await sendEmailVerification(result.user, {
+        url: `${window.location.origin}/login?verified=true`,
+        handleCodeInApp: false
+      });
+      console.log('✉️ Verification email sent to:', email);
+    } catch (emailErr) {
+      console.error('Failed to send verification email:', emailErr);
+      // Don't block signup if email fails
+    }
+    
     setNeedsProfile(true); // always collect phone + address on signup
     return result.user;
   };
@@ -147,6 +161,20 @@ export const CustomerAuthProvider = ({ children }) => {
     setNeedsProfile(false);
   };
 
+  // ── Resend verification email ──────────────────────────────────
+  const resendVerificationEmail = async () => {
+    if (!firebaseUser) throw new Error('No user logged in');
+    if (firebaseUser.emailVerified) throw new Error('Email already verified');
+    
+    await sendEmailVerification(firebaseUser, {
+      url: `${window.location.origin}/login?verified=true`,
+      handleCodeInApp: false
+    });
+  };
+
+  // ── Check if email is verified ────────────────────────────────
+  const isEmailVerified = firebaseUser?.emailVerified || false;
+
   return (
     <CustomerAuthContext.Provider value={{
       customer,
@@ -154,6 +182,7 @@ export const CustomerAuthProvider = ({ children }) => {
       loading,
       needsProfile,
       isLoggedIn: !!firebaseUser,
+      isEmailVerified,
       signInWithGoogle,
       signInWithEmail,
       signUpWithEmail,
@@ -161,6 +190,7 @@ export const CustomerAuthProvider = ({ children }) => {
       refreshProfile,
       getToken,
       logout,
+      resendVerificationEmail,
     }}>
       {children}
     </CustomerAuthContext.Provider>

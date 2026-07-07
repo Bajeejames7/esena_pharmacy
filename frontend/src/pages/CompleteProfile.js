@@ -22,9 +22,11 @@ const CHRONIC_CONDITIONS = [
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown'];
 
 const CompleteProfile = () => {
-  const { customer, firebaseUser, completeProfile, refreshProfile, logout, loading: authLoading } = useCustomerAuth();
+  const { customer, firebaseUser, completeProfile, refreshProfile, logout, loading: authLoading, isEmailVerified, resendVerificationEmail } = useCustomerAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [resendingEmail, setResendingEmail] = useState(false);
+  const [emailResent, setEmailResent] = useState(false);
 
   // Calculate date limits for age validation (18+ required)
   const today = new Date();
@@ -219,6 +221,20 @@ const CompleteProfile = () => {
     }
   };
 
+  const handleResendVerification = async () => {
+    setResendingEmail(true);
+    try {
+      await resendVerificationEmail();
+      setEmailResent(true);
+      setTimeout(() => setEmailResent(false), 5000);
+    } catch (err) {
+      console.error('Failed to resend verification:', err);
+      alert('Failed to send verification email. Please try again later.');
+    } finally {
+      setResendingEmail(false);
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="pt-24 pb-16 flex items-center justify-center min-h-screen">
@@ -248,6 +264,37 @@ const CompleteProfile = () => {
             Sign Out
           </button>
         </div>
+
+        {/* Email Verification Notice (for manual signups) */}
+        {firebaseUser && !isEmailVerified && firebaseUser.providerData[0]?.providerId === 'password' && (
+          <div className="mb-6 p-5 rounded-2xl bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-300 dark:border-blue-700">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">✉️</span>
+              <div className="flex-1">
+                <h3 className="font-bold text-blue-900 dark:text-blue-200 mb-1">
+                  Verify Your Email
+                </h3>
+                <p className="text-sm text-blue-800 dark:text-blue-300 mb-3">
+                  We've sent a verification link to <strong>{firebaseUser.email}</strong>. 
+                  Please check your inbox (and spam folder) to verify your email address.
+                </p>
+                {emailResent ? (
+                  <p className="text-sm text-green-600 dark:text-green-400 font-medium">
+                    ✓ Verification email sent! Check your inbox.
+                  </p>
+                ) : (
+                  <button
+                    onClick={handleResendVerification}
+                    disabled={resendingEmail}
+                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium disabled:opacity-50"
+                  >
+                    {resendingEmail ? 'Sending...' : 'Resend verification email'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Important Notice Banner */}
         <div className="mb-6 p-5 rounded-2xl bg-amber-50 dark:bg-amber-900/30 border-2 border-amber-300 dark:border-amber-700">

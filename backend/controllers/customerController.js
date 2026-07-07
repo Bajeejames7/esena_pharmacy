@@ -294,13 +294,15 @@ exports.getMyPrescriptions = async (req, res) => {
 // ──────────────────────────────────────────────────────────────
 // Admin: GET /api/admin/customers
 // ──────────────────────────────────────────────────────────────
+// Admin: GET /api/admin/customers
+// ──────────────────────────────────────────────────────────────
 exports.getAllCustomers = async (req, res) => {
   try {
     const [customers] = await db.query(`
       SELECT c.*,
-             COUNT(DISTINCT o.id) AS order_count,
-             COALESCE(SUM(o.total), 0) AS total_spent,
-             MAX(o.created_at) AS last_order_at
+             COUNT(DISTINCT CASE WHEN o.status IN ('paid', 'dispatched', 'ready_for_pickup', 'completed') THEN o.id END) AS order_count,
+             COALESCE(SUM(CASE WHEN o.status IN ('paid', 'dispatched', 'ready_for_pickup', 'completed') THEN o.total ELSE 0 END), 0) AS total_spent,
+             MAX(CASE WHEN o.status IN ('paid', 'dispatched', 'ready_for_pickup', 'completed') THEN o.created_at END) AS last_order_at
       FROM customers c
       LEFT JOIN orders o ON (o.customer_id = c.id OR o.email = c.email)
       GROUP BY c.id
