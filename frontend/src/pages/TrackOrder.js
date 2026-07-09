@@ -119,7 +119,7 @@ const TrackOrder = () => {
     }
   };
 
-  const getStatusInfo = (status) => {
+  const getStatusInfo = (status, deliveryType) => {
     switch (status) {
       case 'pending':
         return { color: 'text-yellow-600', bgColor: 'bg-yellow-100', icon: '⏳', message: 'Your order has been received and is awaiting payment.' };
@@ -127,10 +127,15 @@ const TrackOrder = () => {
         return { color: 'text-purple-600', bgColor: 'bg-purple-100', icon: '💳', message: 'Payment has been requested. Please complete your payment.' };
       case 'paid':
         return { color: 'text-blue-600', bgColor: 'bg-blue-100', icon: '📦', message: 'Payment confirmed. Your order is being prepared.' };
+      case 'ready_for_pickup':
+        return { color: 'text-green-600', bgColor: 'bg-green-100', icon: '🏪', message: 'Your order is ready for pickup at our store!' };
       case 'dispatched':
         return { color: 'text-green-600', bgColor: 'bg-green-100', icon: '🚚', message: 'Your order has been dispatched and is on its way.' };
       case 'completed':
-        return { color: 'text-green-800', bgColor: 'bg-green-200', icon: '✅', message: 'Your order has been delivered successfully.' };
+        const completedMsg = deliveryType === 'pickup' 
+          ? 'Your order has been picked up successfully.' 
+          : 'Your order has been delivered successfully.';
+        return { color: 'text-green-800', bgColor: 'bg-green-200', icon: '✅', message: completedMsg };
       case 'cancelled':
         return { color: 'text-red-600', bgColor: 'bg-red-100', icon: '❌', message: 'This order has been cancelled.' };
       default:
@@ -138,21 +143,31 @@ const TrackOrder = () => {
     }
   };
 
-  const getStatusTimeline = (currentStatus) => {
-    const allStatuses = [
+  const getStatusTimeline = (currentStatus, deliveryType) => {
+    // Different timelines for pickup vs delivery orders
+    const isPickup = deliveryType === 'pickup';
+    
+    const pickupStatuses = [
+      { key: 'pending', label: 'Order Placed', description: 'Order received and confirmed' },
+      { key: 'payment_requested', label: 'Payment Requested', description: 'Awaiting payment' },
+      { key: 'paid', label: 'Paid', description: 'Payment confirmed, preparing order' },
+      { key: 'ready_for_pickup', label: 'Ready for Pickup', description: 'Order ready at store' },
+      { key: 'completed', label: 'Picked Up', description: 'Order picked up successfully' }
+    ];
+
+    const deliveryStatuses = [
       { key: 'pending', label: 'Order Placed', description: 'Order received and confirmed' },
       { key: 'payment_requested', label: 'Payment Requested', description: 'Awaiting payment' },
       { key: 'paid', label: 'Paid', description: 'Payment confirmed, preparing order' },
       { key: 'dispatched', label: 'Dispatched', description: 'Order shipped and in transit' },
-      { key: 'completed', label: 'Completed', description: 'Order delivered successfully' }
+      { key: 'completed', label: 'Delivered', description: 'Order delivered successfully' }
     ];
 
+    const allStatuses = isPickup ? pickupStatuses : deliveryStatuses;
+
     if (currentStatus === 'cancelled') {
-      // Find the last completed step before cancellation by checking which statuses
-      // could have been reached — we don't know exactly, so show pending as done + cancelled
-      // Use the order's actual last known status if available, otherwise just show pending + cancelled
-      const cancelledStep = { key: 'cancelled', label: 'Cancelled', description: 'Order was cancelled', isCancelled: true };
       // Show pending as completed (it always was), then cancelled
+      const cancelledStep = { key: 'cancelled', label: 'Cancelled', description: 'Order was cancelled', isCancelled: true };
       return [
         { ...allStatuses[0], completed: true, active: false },
         { ...cancelledStep, completed: true, active: true }
@@ -265,14 +280,14 @@ const TrackOrder = () => {
                 {cancelled && <p className="text-green-600 text-sm mt-2">Your order has been cancelled successfully.</p>}
                 
                 <div className="flex items-center space-x-4 mb-6">
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl ${getStatusInfo(orderData.status).bgColor}`}>
-                    {getStatusInfo(orderData.status).icon}
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl ${getStatusInfo(orderData.status, orderData.delivery_type).bgColor}`}>
+                    {getStatusInfo(orderData.status, orderData.delivery_type).icon}
                   </div>
                   <div>
-                    <p className={`text-xl font-semibold capitalize ${getStatusInfo(orderData.status).color}`}>
-                      {orderData.status}
+                    <p className={`text-xl font-semibold capitalize ${getStatusInfo(orderData.status, orderData.delivery_type).color}`}>
+                      {orderData.status === 'ready_for_pickup' ? 'Ready for Pickup' : orderData.status.replace(/_/g, ' ')}
                     </p>
-                    <p className="text-gray-600 dark:text-gray-300">{getStatusInfo(orderData.status).message}</p>
+                    <p className="text-gray-600 dark:text-gray-300">{getStatusInfo(orderData.status, orderData.delivery_type).message}</p>
                   </div>
                 </div>
 
@@ -294,6 +309,12 @@ const TrackOrder = () => {
                   <div>
                     <p className="text-gray-600 dark:text-gray-400 text-sm">Payment Method</p>
                     <p className="text-gray-800 dark:text-white capitalize">{orderData.notes || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">Delivery Type</p>
+                    <p className="text-gray-800 dark:text-white">
+                      {orderData.delivery_type === 'pickup' ? '🏪 In-store Pickup' : '🚚 Delivery'}
+                    </p>
                   </div>
                 </div>
 
@@ -334,9 +355,14 @@ const TrackOrder = () => {
 
                 {/* Status Timeline */}
                 <div className="space-y-4">
-                  <h3 className="font-medium text-gray-800 dark:text-white">Order Timeline</h3>
+                  <h3 className="font-medium text-gray-800 dark:text-white">
+                    Order Timeline
+                    {orderData.delivery_type === 'pickup' && (
+                      <span className="ml-2 text-xs text-gray-500 dark:text-gray-400 font-normal">(In-store Pickup)</span>
+                    )}
+                  </h3>
                   <div className="space-y-3">
-                    {getStatusTimeline(orderData.status).map((step, index) => (
+                    {getStatusTimeline(orderData.status, orderData.delivery_type).map((step, index) => (
                       <div key={step.key} className="flex items-center space-x-4">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                           step.isCancelled
@@ -412,7 +438,9 @@ const TrackOrder = () => {
 
               {/* Customer Information */}
               <GlassCard className="p-6">
-                <h3 className="font-medium text-gray-800 dark:text-white mb-4">Delivery Information</h3>
+                <h3 className="font-medium text-gray-800 dark:text-white mb-4">
+                  {orderData.delivery_type === 'pickup' ? 'Pickup Information' : 'Delivery Information'}
+                </h3>
                 <div className="space-y-3 text-gray-600 dark:text-gray-300">
                   <div>
                     <p className="font-medium text-gray-800 dark:text-white">{orderData.customer_name}</p>
@@ -420,8 +448,20 @@ const TrackOrder = () => {
                     <p className="text-sm">{orderData.phone}</p>
                   </div>
                   <div className="pt-2 border-t border-white/20 dark:border-slate-600/30">
-                    <p className="font-medium text-gray-700 dark:text-gray-200 mb-1">Delivery Address</p>
-                    <p className="text-sm">{orderData.delivery_address}</p>
+                    {orderData.delivery_type === 'pickup' ? (
+                      <>
+                        <p className="font-medium text-gray-700 dark:text-gray-200 mb-1">Pickup Location</p>
+                        <p className="text-sm">Esena Pharmacy, Kasarani</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                          Please bring a valid ID and your order number when picking up.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-medium text-gray-700 dark:text-gray-200 mb-1">Delivery Address</p>
+                        <p className="text-sm">{orderData.delivery_address}</p>
+                      </>
+                    )}
                   </div>
                 </div>
               </GlassCard>
