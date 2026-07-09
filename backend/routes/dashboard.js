@@ -89,7 +89,7 @@ router.get('/stats', auth, async (req, res) => {
     const [revenueResult] = await db.query(
       `SELECT COALESCE(SUM(total), 0) as total
        FROM orders
-       WHERE status = 'completed'
+       WHERE status IN ('paid', 'dispatched', 'out_for_delivery', 'ready_for_pickup', 'completed')
        AND created_at >= ?`,
       [thisMonthStartStr]
     );
@@ -225,7 +225,7 @@ router.get('/revenue', auth, async (req, res) => {
 
     const query = (from, to) => db.query(
       `SELECT COALESCE(SUM(total), 0) AS revenue, COUNT(*) AS orders
-       FROM orders WHERE status = 'completed'
+       FROM orders WHERE status IN ('paid', 'dispatched', 'out_for_delivery', 'ready_for_pickup', 'completed')
        AND created_at >= ? AND created_at <= ?`,
       [fmt(from), fmt(to)]
     );
@@ -239,7 +239,7 @@ router.get('/revenue', auth, async (req, res) => {
       query(lastWeekStart, lastWeekEnd),
       query(thisMonthStart, thisMonthEnd),
       query(lastMonthStart, lastMonthEnd),
-      db.query(`SELECT COALESCE(SUM(total), 0) AS revenue, COUNT(*) AS orders FROM orders WHERE status = 'completed'`)
+      db.query(`SELECT COALESCE(SUM(total), 0) AS revenue, COUNT(*) AS orders FROM orders WHERE status IN ('paid', 'dispatched', 'out_for_delivery', 'ready_for_pickup', 'completed')`)
     ]);
 
     const thisWeek  = thisWeekRows[0];

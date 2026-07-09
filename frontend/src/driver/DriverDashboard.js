@@ -153,7 +153,7 @@ const DriverDashboard = () => {
     }
   };
 
-  const activeDeliveries = deliveries.filter(d => ['assigned', 'out_for_delivery'].includes(d.status));
+  const activeDeliveries = deliveries.filter(d => d.status === 'assigned');
   const completedDeliveries = deliveries.filter(d => ['delivered', 'failed'].includes(d.status));
 
   return (
@@ -199,15 +199,15 @@ const DriverDashboard = () => {
             </p>
           </GlassCard>
           <GlassCard className="p-4">
-            <p className="text-sm text-gray-600 dark:text-gray-400">Out for Delivery</p>
-            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {deliveries.filter(d => d.status === 'out_for_delivery').length}
-            </p>
-          </GlassCard>
-          <GlassCard className="p-4">
             <p className="text-sm text-gray-600 dark:text-gray-400">Delivered</p>
             <p className="text-2xl font-bold text-green-600 dark:text-green-400">
               {deliveries.filter(d => d.status === 'delivered').length}
+            </p>
+          </GlassCard>
+          <GlassCard className="p-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400">Failed</p>
+            <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+              {deliveries.filter(d => d.status === 'failed').length}
             </p>
           </GlassCard>
         </div>
@@ -343,22 +343,17 @@ const DriverDashboard = () => {
                 </div>
 
                 {/* Actions for Active Deliveries */}
-                {['assigned', 'out_for_delivery'].includes(selectedDelivery.status) && (
+                {['assigned'].includes(selectedDelivery.status) && (
                   <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                     <h3 className="font-semibold text-gray-800 dark:text-white mb-3">Update Delivery Status</h3>
                     <div className="space-y-3">
                       <GlassSelect
+                        label="New Status"
+                        value={newStatus}
+                        onChange={(e) => setNewStatus(e.target.value)}
                       >
                         <option value="">Select status...</option>
-                        {selectedDelivery.status === 'assigned' && (
-                          <>
-                            <option value="out_for_delivery">Start Delivery</option>
-                            <option value="delivered">Mark as Delivered (with proof)</option>
-                          </>
-                        )}
-                        {selectedDelivery.status === 'out_for_delivery' && (
-                          <option value="delivered">Mark as Delivered</option>
-                        )}
+                        <option value="delivered">Mark as Delivered (with proof)</option>
                         <option value="failed">Mark as Failed</option>
                       </GlassSelect>
 
@@ -384,8 +379,8 @@ const DriverDashboard = () => {
                         placeholder="Any additional notes..."
                       />
 
-                      {/* Proof of Delivery Upload - Show when delivered is selected OR status is out_for_delivery */}
-                      {(newStatus === 'delivered' || selectedDelivery.status === 'out_for_delivery') && (
+                      {/* Proof of Delivery Upload - Show when delivered is selected OR status is assigned */}
+                      {(newStatus === 'delivered' || selectedDelivery.status === 'assigned') && (
                         <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Proof of Delivery {newStatus === 'delivered' ? '(Required)' : '(Optional - can upload now or later)'}

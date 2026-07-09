@@ -157,7 +157,6 @@ const ManageDeliveries = () => {
             >
               <option value="">All Statuses</option>
               <option value="assigned">Assigned</option>
-              <option value="out_for_delivery">Out for Delivery</option>
               <option value="delivered">Delivered</option>
               <option value="failed">Failed</option>
             </GlassSelect>
@@ -178,15 +177,15 @@ const ManageDeliveries = () => {
               </p>
             </GlassCard>
             <GlassCard className="p-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">Out for Delivery</p>
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {deliveries.filter(d => d.status === 'out_for_delivery').length}
-              </p>
-            </GlassCard>
-            <GlassCard className="p-4">
               <p className="text-sm text-gray-600 dark:text-gray-400">Delivered</p>
               <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {deliveries.filter(d => d.status === 'delivered').length}
+              </p>
+            </GlassCard>
+            <GlassCard className="p-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Failed</p>
+              <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+                {deliveries.filter(d => d.status === 'failed').length}
               </p>
             </GlassCard>
           </div>
