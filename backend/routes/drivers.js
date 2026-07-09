@@ -14,6 +14,7 @@ const proofUpload = require('../middleware/proofUpload');
 // PUBLIC ROUTES (Driver authentication)
 // ──────────────────────────────────────────────────────────────
 router.post('/login', driverController.login);
+router.post('/request-reset', driverController.requestPasswordReset);
 
 // ──────────────────────────────────────────────────────────────
 // DRIVER PROTECTED ROUTES
@@ -28,6 +29,7 @@ router.post('/deliveries/:id/proof', driverAuth, proofUpload.single('proof'), dr
 router.post('/admin/register', auth, driverController.registerDriver);
 router.get('/admin/list', auth, driverController.getAllDrivers);
 router.put('/admin/:id', auth, driverController.updateDriver);
+router.put('/admin/:id/reset-password', auth, driverController.resetDriverPassword);
 router.get('/admin/deliveries', auth, driverController.getAllDeliveries);
 router.post('/admin/deliveries/assign', auth, driverController.assignDelivery);
 router.post('/admin/deliveries/:id/reassign', auth, driverController.reassignDelivery);

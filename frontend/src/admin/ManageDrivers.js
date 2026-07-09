@@ -38,6 +38,10 @@ const ManageDrivers = () => {
   const [formError, setFormError] = useState('');
   const [formLoading, setFormLoading] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [resetPasswordId, setResetPasswordId] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [resetError, setResetError] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -123,6 +127,39 @@ const ManageDrivers = () => {
     setForm(EMPTY_FORM);
     setEditId(null);
     setFormError('');
+  };
+
+  const handleResetPassword = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      setResetError('Password must be at least 6 characters');
+      return;
+    }
+
+    setResetLoading(true);
+    setResetError('');
+
+    try {
+      const res = await fetch(`${API}/drivers/admin/${resetPasswordId}/reset-password`, {
+        method: 'PUT',
+        headers: headers(),
+        body: JSON.stringify({ new_password: newPassword })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setResetError(data.error || 'Failed to reset password');
+        return;
+      }
+
+      alert('Password reset successfully!');
+      setResetPasswordId(null);
+      setNewPassword('');
+    } catch (err) {
+      setResetError('Network error. Please try again.');
+    } finally {
+      setResetLoading(false);
+    }
   };
 
   const filtered = drivers.filter(d =>
@@ -345,12 +382,24 @@ const ManageDrivers = () => {
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <button
-                            onClick={() => handleEdit(driver)}
-                            className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg text-xs font-medium hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
-                          >
-                            Edit
-                          </button>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEdit(driver)}
+                              className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg text-xs font-medium hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => {
+                                setResetPasswordId(driver.id);
+                                setNewPassword('');
+                                setResetError('');
+                              }}
+                              className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-lg text-xs font-medium hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors"
+                            >
+                              Reset PW
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -365,6 +414,59 @@ const ManageDrivers = () => {
           )}
         </main>
       </div>
+
+      {/* Password Reset Modal */}
+      {resetPasswordId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <GlassCard className="w-full max-w-md p-6">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
+              Reset Driver Password
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Enter a new password for {drivers.find(d => d.id === resetPasswordId)?.name}
+            </p>
+            
+            <GlassInput
+              label="New Password"
+              type="password"
+              value={newPassword}
+              onChange={(e) => {
+                setNewPassword(e.target.value);
+                setResetError('');
+              }}
+              placeholder="Enter new password (min 6 characters)"
+              autoFocus
+            />
+
+            {resetError && (
+              <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                {resetError}
+              </div>
+            )}
+
+            <div className="flex gap-3 mt-6">
+              <GlassButton
+                onClick={handleResetPassword}
+                loading={resetLoading}
+                disabled={resetLoading || !newPassword}
+              >
+                Reset Password
+              </GlassButton>
+              <button
+                onClick={() => {
+                  setResetPasswordId(null);
+                  setNewPassword('');
+                  setResetError('');
+                }}
+                className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                disabled={resetLoading}
+              >
+                Cancel
+              </button>
+            </div>
+          </GlassCard>
+        </div>
+      )}
     </div>
   );
 };

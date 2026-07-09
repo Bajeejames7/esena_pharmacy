@@ -43,7 +43,7 @@ exports.registerDriver = async (req, res) => {
       [name, phone, email || null, passwordHash, national_id || null, license_number || null, vehicle_type || 'bike', vehicle_registration || null]
     );
 
-    logger.info('Driver registered', { driverId: result.insertId, createdBy: req.user?.id });
+    logger.info('Driver registered', { driverId: result.insertId, createdBy: req.user?.userId || req.user?.id });
 
     return res.json({
       success: true,
@@ -51,8 +51,8 @@ exports.registerDriver = async (req, res) => {
       driver: { id: result.insertId, name, phone, email }
     });
   } catch (err) {
-    logger.error('Driver registration error', { error: err.message });
-    return res.status(500).json({ error: 'Failed to register driver' });
+    logger.error('Driver registration error', err);
+    return res.status(500).json({ error: 'Failed to register driver', details: err.message });
   }
 };
 
@@ -78,8 +78,8 @@ exports.getAllDrivers = async (req, res) => {
 
     return res.json({ success: true, drivers: sanitized });
   } catch (err) {
-    logger.error('Get drivers error', { error: err.message });
-    return res.status(500).json({ error: 'Failed to fetch drivers' });
+    logger.error('Get drivers error', err);
+    return res.status(500).json({ error: 'Failed to fetch drivers', details: err.message });
   }
 };
 
@@ -100,12 +100,90 @@ exports.updateDriver = async (req, res) => {
       [name, phone, email || null, national_id || null, license_number || null, vehicle_type, vehicle_registration || null, status, id]
     );
 
-    logger.info('Driver updated', { driverId: id, updatedBy: req.user?.id });
+    logger.info('Driver updated', { driverId: id, updatedBy: req.user?.userId || req.user?.id });
 
     return res.json({ success: true, message: 'Driver updated successfully' });
   } catch (err) {
-    logger.error('Update driver error', { error: err.message });
+    logger.error('Update driver error', err);
     return res.status(500).json({ error: 'Failed to update driver' });
+  }
+};
+
+// ──────────────────────────────────────────────────────────────
+// DRIVER: Request password reset (admin must reset)
+// POST /api/drivers/request-reset
+// ──────────────────────────────────────────────────────────────
+exports.requestPasswordReset = async (req, res) => {
+  const { phone } = req.body;
+
+  if (!phone) {
+    return res.status(400).json({ error: 'Phone number is required' });
+  }
+
+  try {
+    const [[driver]] = await db.query(
+      'SELECT id, name, phone FROM drivers WHERE phone = ?',
+      [phone]
+    );
+
+    if (!driver) {
+      // Return success even if driver not found (security best practice)
+      return res.json({ 
+        success: true, 
+        message: 'If this phone number is registered, the admin will be notified to reset your password.' 
+      });
+    }
+
+    logger.info('Password reset requested', { driverId: driver.id, phone });
+
+    return res.json({ 
+      success: true, 
+      message: 'Password reset request received. Please contact your admin to reset your password.' 
+    });
+  } catch (err) {
+    logger.error('Password reset request error', err);
+    return res.status(500).json({ error: 'Failed to process request' });
+  }
+};
+
+// ──────────────────────────────────────────────────────────────
+// ADMIN: Reset driver password
+// PUT /api/admin/drivers/:id/reset-password
+// ──────────────────────────────────────────────────────────────
+exports.resetDriverPassword = async (req, res) => {
+  const { id } = req.params;
+  const { new_password } = req.body;
+
+  if (!new_password || new_password.length < 6) {
+    return res.status(400).json({ error: 'New password must be at least 6 characters' });
+  }
+
+  try {
+    const [[driver]] = await db.query('SELECT * FROM drivers WHERE id = ?', [id]);
+    
+    if (!driver) {
+      return res.status(404).json({ error: 'Driver not found' });
+    }
+
+    const passwordHash = await bcrypt.hash(new_password, 10);
+
+    await db.query(
+      'UPDATE drivers SET password_hash = ? WHERE id = ?',
+      [passwordHash, id]
+    );
+
+    logger.info('Driver password reset by admin', { 
+      driverId: id, 
+      resetBy: req.user?.userId || req.user?.id 
+    });
+
+    return res.json({ 
+      success: true, 
+      message: 'Driver password reset successfully' 
+    });
+  } catch (err) {
+    logger.error('Reset driver password error', err);
+    return res.status(500).json({ error: 'Failed to reset password' });
   }
 };
 
@@ -152,7 +230,7 @@ exports.login = async (req, res) => {
       driver: driverData
     });
   } catch (err) {
-    logger.error('Driver login error', { error: err.message });
+    logger.error('Driver login error', err);
     return res.status(500).json({ error: 'Login failed' });
   }
 };
@@ -195,7 +273,7 @@ exports.getMyDeliveries = async (req, res) => {
 
     return res.json({ success: true, deliveries });
   } catch (err) {
-    logger.error('Get driver deliveries error', { error: err.message, driverId });
+    logger.error('Get driver deliveries error', err, { driverId });
     return res.status(500).json({ error: 'Failed to fetch deliveries' });
   }
 };
@@ -261,7 +339,7 @@ exports.updateDeliveryStatus = async (req, res) => {
     return res.json({ success: true, message: 'Delivery status updated' });
   } catch (err) {
     await conn.rollback();
-    logger.error('Update delivery status error', { error: err.message });
+    logger.error('Update delivery status error', err);
     return res.status(500).json({ error: 'Failed to update delivery status' });
   } finally {
     conn.release();
@@ -306,7 +384,7 @@ exports.uploadProof = async (req, res) => {
       proof_url: proofUrl
     });
   } catch (err) {
-    logger.error('Upload proof error', { error: err.message });
+    logger.error('Upload proof error', err);
     return res.status(500).json({ error: 'Failed to upload proof' });
   }
 };
@@ -317,7 +395,7 @@ exports.uploadProof = async (req, res) => {
 // ──────────────────────────────────────────────────────────────
 exports.assignDelivery = async (req, res) => {
   const { order_id, driver_id } = req.body;
-  const assignedBy = req.user.id;
+  const assignedBy = req.user.userId || req.user.id;
 
   if (!order_id || !driver_id) {
     return res.status(400).json({ error: 'Order ID and Driver ID are required' });
@@ -384,7 +462,7 @@ exports.assignDelivery = async (req, res) => {
     });
   } catch (err) {
     await conn.rollback();
-    logger.error('Assign delivery error', { error: err.message });
+    logger.error('Assign delivery error', err);
     return res.status(500).json({ error: 'Failed to assign delivery' });
   } finally {
     conn.release();
@@ -398,7 +476,7 @@ exports.assignDelivery = async (req, res) => {
 exports.reassignDelivery = async (req, res) => {
   const { id } = req.params;
   const { new_driver_id, reason } = req.body;
-  const reassignedBy = req.user.id;
+  const reassignedBy = req.user.userId || req.user.id;
 
   if (!new_driver_id) {
     return res.status(400).json({ error: 'New driver ID is required' });
@@ -471,7 +549,7 @@ exports.reassignDelivery = async (req, res) => {
     });
   } catch (err) {
     await conn.rollback();
-    logger.error('Reassign delivery error', { error: err.message });
+    logger.error('Reassign delivery error', err);
     return res.status(500).json({ error: 'Failed to reassign delivery' });
   } finally {
     conn.release();
@@ -504,7 +582,7 @@ exports.getAllDeliveries = async (req, res) => {
 
     return res.json({ success: true, deliveries });
   } catch (err) {
-    logger.error('Get all deliveries error', { error: err.message });
+    logger.error('Get all deliveries error', err);
     return res.status(500).json({ error: 'Failed to fetch deliveries' });
   }
 };
