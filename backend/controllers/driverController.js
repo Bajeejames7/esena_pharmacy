@@ -205,11 +205,20 @@ exports.login = async (req, res) => {
     );
 
     if (!driver) {
+      logger.security('DRIVER_LOGIN_FAILED', {
+        reason: 'Invalid credentials or inactive',
+        phone: phone.substring(0, 4) + '****' // Partial phone for security
+      }, req);
       return res.status(401).json({ error: 'Invalid credentials or driver is inactive' });
     }
 
     const isValidPassword = await bcrypt.compare(password, driver.password_hash);
     if (!isValidPassword) {
+      logger.security('DRIVER_LOGIN_FAILED', {
+        reason: 'Invalid password',
+        driverId: driver.id,
+        driverName: driver.name
+      }, req);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -219,7 +228,18 @@ exports.login = async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    logger.info('Driver logged in', { driverId: driver.id });
+    // Update last login timestamp
+    await db.query(
+      'UPDATE drivers SET updated_at = NOW() WHERE id = ?',
+      [driver.id]
+    );
+
+    logger.audit('DRIVER_LOGIN_SUCCESS', {
+      driverId: driver.id,
+      driverName: driver.name,
+      phone: driver.phone,
+      vehicleType: driver.vehicle_type
+    }, req);
 
     // Remove password hash
     const { password_hash, ...driverData } = driver;
@@ -334,7 +354,15 @@ exports.updateDeliveryStatus = async (req, res) => {
 
     await conn.commit();
 
-    logger.info('Delivery status updated', { deliveryId: id, driverId, status });
+    logger.audit('DELIVERY_STATUS_UPDATED', { 
+      deliveryId: id, 
+      driverId, 
+      driverName: delivery.driver_id,
+      orderId: delivery.order_id,
+      oldStatus: delivery.status,
+      newStatus: status,
+      notes: notes || null
+    }, req);
 
     return res.json({ success: true, message: 'Delivery status updated' });
   } catch (err) {
@@ -376,7 +404,13 @@ exports.uploadProof = async (req, res) => {
       [proofUrl, id]
     );
 
-    logger.info('Proof of delivery uploaded', { deliveryId: id, driverId });
+    logger.audit('PROOF_OF_DELIVERY_UPLOADED', { 
+      deliveryId: id, 
+      driverId,
+      orderId: delivery.order_id,
+      proofUrl,
+      fileName: req.file.filename
+    }, req);
 
     return res.json({
       success: true,
@@ -453,7 +487,15 @@ exports.assignDelivery = async (req, res) => {
 
     await conn.commit();
 
-    logger.info('Delivery assigned', { orderId: order_id, driverId: driver_id, assignedBy });
+    logger.audit('DELIVERY_ASSIGNED', { 
+      orderId: order_id, 
+      driverId: driver_id,
+      driverName: driver.name,
+      assignedBy,
+      deliveryId: result.insertId,
+      customerName: order.customer_name,
+      orderTotal: order.total
+    }, req);
 
     return res.json({
       success: true,
@@ -536,12 +578,15 @@ exports.reassignDelivery = async (req, res) => {
 
     await conn.commit();
 
-    logger.info('Delivery reassigned', { 
+    logger.audit('DELIVERY_REASSIGNED', { 
       deliveryId: id, 
+      orderId: delivery.order_id,
       oldDriverId: delivery.driver_id, 
-      newDriverId: new_driver_id, 
-      reassignedBy 
-    });
+      newDriverId: new_driver_id,
+      newDriverName: newDriver.name,
+      reassignedBy,
+      reason: reason || 'No reason provided'
+    }, req);
 
     return res.json({
       success: true,

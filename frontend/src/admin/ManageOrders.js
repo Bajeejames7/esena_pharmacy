@@ -428,17 +428,22 @@ const ManageOrders = () => {
                       </div>
                     </div>
 
-                    {/* Delivery Assignment */}
-                    {selectedOrder.status === 'paid' && selectedOrder.delivery_type !== 'pickup' && (
+                    {/* Delivery Assignment - Show for paid/dispatched orders that need delivery (not pickup) */}
+                    {['paid', 'dispatched'].includes(selectedOrder.status) && 
+                     (!selectedOrder.delivery_type || selectedOrder.delivery_type === 'delivery') && (
                       <div className="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
                         <div className="flex items-center gap-2 mb-4">
                           <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                           </svg>
-                          <h3 className="font-semibold text-gray-800 dark:text-white">Assign to Driver</h3>
+                          <h3 className="font-semibold text-gray-800 dark:text-white">
+                            {selectedOrder.status === 'paid' ? 'Assign to Driver' : 'Reassign Driver'}
+                          </h3>
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                          Order is paid and ready for delivery. Assign a driver to start delivery.
+                          {selectedOrder.status === 'paid' 
+                            ? 'Order is paid and ready for delivery. Assign a driver to start delivery.'
+                            : 'Order is dispatched. You can reassign to a different driver if needed.'}
                         </p>
                         <div className="space-y-3">
                           <GlassSelect
