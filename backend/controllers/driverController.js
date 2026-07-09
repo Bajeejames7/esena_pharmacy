@@ -311,6 +311,11 @@ exports.updateDeliveryStatus = async (req, res) => {
     return res.status(400).json({ error: 'Invalid status' });
   }
 
+  // Validate failed_reason is provided when marking as failed
+  if (status === 'failed' && (!failed_reason || failed_reason.trim() === '')) {
+    return res.status(400).json({ error: 'Failed reason is required when marking delivery as failed' });
+  }
+
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
@@ -361,7 +366,8 @@ exports.updateDeliveryStatus = async (req, res) => {
       orderId: delivery.order_id,
       oldStatus: delivery.status,
       newStatus: status,
-      notes: notes || null
+      notes: notes || null,
+      failedReason: status === 'failed' ? failed_reason : null
     }, req);
 
     return res.json({ success: true, message: 'Delivery status updated' });

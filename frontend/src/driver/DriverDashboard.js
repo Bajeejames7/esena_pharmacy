@@ -61,6 +61,12 @@ const DriverDashboard = () => {
   const handleUpdateStatus = async () => {
     if (!newStatus) return;
 
+    // Validate failed reason if marking as failed
+    if (newStatus === 'failed' && (!failedReason || failedReason.trim() === '')) {
+      alert('Please provide a reason for marking this delivery as failed');
+      return;
+    }
+
     // Require proof of delivery before marking as delivered
     if (newStatus === 'delivered' && !selectedDelivery.proof_of_delivery && !proofFile) {
       alert('Please upload proof of delivery photo before marking as delivered');
@@ -91,7 +97,7 @@ const DriverDashboard = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to update status');
 
-      alert('Status updated successfully!');
+      alert(`Delivery status updated to ${newStatus.replace(/_/g, ' ')}!`);
       setShowDetails(false);
       loadDeliveries();
     } catch (err) {
@@ -357,13 +363,18 @@ const DriverDashboard = () => {
                       </GlassSelect>
 
                       {newStatus === 'failed' && (
-                        <GlassInput
-                          label="Failed Reason"
-                          value={failedReason}
-                          onChange={(e) => setFailedReason(e.target.value)}
-                          placeholder="e.g., Customer unavailable, wrong address..."
-                          required
-                        />
+                        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg">
+                          <GlassInput
+                            label="Failed Reason *"
+                            value={failedReason}
+                            onChange={(e) => setFailedReason(e.target.value)}
+                            placeholder="e.g., Customer unavailable, wrong address..."
+                            required
+                          />
+                          <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                            ⚠️ Please explain why the delivery could not be completed
+                          </p>
+                        </div>
                       )}
 
                       <GlassInput
@@ -420,7 +431,11 @@ const DriverDashboard = () => {
                       <GlassButton
                         className="w-full"
                         onClick={handleUpdateStatus}
-                        disabled={!newStatus || updatingStatus}
+                        disabled={
+                          !newStatus || 
+                          updatingStatus || 
+                          (newStatus === 'failed' && !failedReason.trim())
+                        }
                       >
                         {updatingStatus ? 'Updating...' : 'Update Status'}
                       </GlassButton>
