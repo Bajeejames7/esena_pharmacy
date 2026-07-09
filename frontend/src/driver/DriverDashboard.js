@@ -61,8 +61,15 @@ const DriverDashboard = () => {
   const handleUpdateStatus = async () => {
     if (!newStatus) return;
 
+    // Require proof of delivery before marking as delivered
     if (newStatus === 'delivered' && !selectedDelivery.proof_of_delivery && !proofFile) {
-      alert('Please upload proof of delivery before marking as delivered');
+      alert('Please upload proof of delivery photo before marking as delivered');
+      return;
+    }
+
+    // If proof file is selected but not uploaded yet, upload it first
+    if (newStatus === 'delivered' && proofFile && !selectedDelivery.proof_of_delivery) {
+      alert('Please click "Upload Now" button to upload the proof photo first');
       return;
     }
 
@@ -111,9 +118,11 @@ const DriverDashboard = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to upload proof');
 
-      alert('Proof of delivery uploaded successfully!');
+      alert('Proof of delivery uploaded successfully! You can now mark as delivered.');
       setSelectedDelivery(prev => ({ ...prev, proof_of_delivery: data.proof_url }));
       setProofFile(null);
+      // Reload deliveries to update the list
+      loadDeliveries();
     } catch (err) {
       alert('Failed to upload proof: ' + err.message);
     } finally {
@@ -242,7 +251,7 @@ const DriverDashboard = () => {
             <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Completed Deliveries</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {completedDeliveries.map(delivery => (
-                <GlassCard key={delivery.id} className="p-5 opacity-75">
+                <GlassCard key={delivery.id} className="p-5 opacity-75 hover:opacity-100 transition-opacity">
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <p className="font-bold text-gray-800 dark:text-white">Order #{delivery.order_id}</p>
@@ -254,10 +263,19 @@ const DriverDashboard = () => {
                       {delivery.status?.replace(/_/g, ' ')}
                     </span>
                   </div>
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-2 text-sm mb-3">
                     <p className="font-medium text-gray-800 dark:text-white">{delivery.customer_name}</p>
                     <p className="font-medium text-green-600 dark:text-green-400">KSh {parseFloat(delivery.order_total || 0).toLocaleString()}</p>
+                    {delivery.proof_of_delivery && (
+                      <p className="text-xs text-blue-600 dark:text-blue-400">✓ Proof uploaded</p>
+                    )}
                   </div>
+                  <button
+                    onClick={() => handleViewDetails(delivery)}
+                    className="w-full text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    View Details
+                  </button>
                 </GlassCard>
               ))}
             </div>
@@ -324,13 +342,17 @@ const DriverDashboard = () => {
                     <h3 className="font-semibold text-gray-800 dark:text-white mb-3">Update Delivery Status</h3>
                     <div className="space-y-3">
                       <GlassSelect
-                        label="New Status"
-                        value={newStatus}
-                        onChange={(e) => setNewStatus(e.target.value)}
                       >
                         <option value="">Select status...</option>
-                        {selectedDelivery.status === 'assigned' && <option value="out_for_delivery">Start Delivery</option>}
-                        {selectedDelivery.status === 'out_for_delivery' && <option value="delivered">Mark as Delivered</option>}
+                        {selectedDelivery.status === 'assigned' && (
+                          <>
+                            <option value="out_for_delivery">Start Delivery</option>
+                            <option value="delivered">Mark as Delivered (with proof)</option>
+                          </>
+                        )}
+                        {selectedDelivery.status === 'out_for_delivery' && (
+                          <option value="delivered">Mark as Delivered</option>
+                        )}
                         <option value="failed">Mark as Failed</option>
                       </GlassSelect>
 
@@ -351,11 +373,11 @@ const DriverDashboard = () => {
                         placeholder="Any additional notes..."
                       />
 
-                      {/* Proof of Delivery Upload */}
+                      {/* Proof of Delivery Upload - Show when delivered is selected OR status is out_for_delivery */}
                       {(newStatus === 'delivered' || selectedDelivery.status === 'out_for_delivery') && (
-                        <div>
+                        <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Proof of Delivery {newStatus === 'delivered' && '*'}
+                            Proof of Delivery {newStatus === 'delivered' ? '(Required)' : '(Optional - can upload now or later)'}
                           </label>
                           {selectedDelivery.proof_of_delivery ? (
                             <div>
@@ -363,7 +385,7 @@ const DriverDashboard = () => {
                               <img
                                 src={`${API}${selectedDelivery.proof_of_delivery}`}
                                 alt="Proof"
-                                className="w-32 h-32 object-cover rounded-lg"
+                                className="w-full max-w-xs h-auto object-cover rounded-lg border-2 border-green-500"
                               />
                             </div>
                           ) : (
@@ -371,13 +393,24 @@ const DriverDashboard = () => {
                               <input
                                 type="file"
                                 accept="image/*"
+                                capture="environment"
                                 onChange={(e) => setProofFile(e.target.files[0])}
                                 className="block w-full text-sm text-gray-600 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                               />
                               {proofFile && (
-                                <GlassButton size="sm" onClick={handleUploadProof} disabled={uploadingProof}>
-                                  {uploadingProof ? 'Uploading...' : 'Upload Proof'}
-                                </GlassButton>
+                                <div className="flex items-center gap-2">
+                                  <p className="text-xs text-gray-600 dark:text-gray-400 flex-1">
+                                    Selected: {proofFile.name}
+                                  </p>
+                                  <GlassButton size="sm" onClick={handleUploadProof} disabled={uploadingProof}>
+                                    {uploadingProof ? 'Uploading...' : 'Upload Now'}
+                                  </GlassButton>
+                                </div>
+                              )}
+                              {newStatus === 'delivered' && !selectedDelivery.proof_of_delivery && (
+                                <p className="text-xs text-orange-600 dark:text-orange-400">
+                                  ⚠️ Please upload proof before marking as delivered
+                                </p>
                               )}
                             </div>
                           )}
@@ -392,6 +425,44 @@ const DriverDashboard = () => {
                         {updatingStatus ? 'Updating...' : 'Update Status'}
                       </GlassButton>
                     </div>
+                  </div>
+                )}
+
+                {/* Show Proof for Completed Deliveries */}
+                {['delivered', 'failed'].includes(selectedDelivery.status) && (
+                  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                    <h3 className="font-semibold text-gray-800 dark:text-white mb-3">
+                      Delivery {selectedDelivery.status === 'delivered' ? 'Completed' : 'Failed'}
+                    </h3>
+                    {selectedDelivery.status === 'delivered' && selectedDelivery.proof_of_delivery && (
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Proof of Delivery:</p>
+                        <img
+                          src={`${API}${selectedDelivery.proof_of_delivery}`}
+                          alt="Proof of Delivery"
+                          className="w-full max-w-md h-auto object-cover rounded-lg border-2 border-green-500"
+                        />
+                      </div>
+                    )}
+                    {selectedDelivery.delivery_notes && (
+                      <div className="mt-3">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Notes:</p>
+                        <p className="text-sm text-gray-800 dark:text-white">{selectedDelivery.delivery_notes}</p>
+                      </div>
+                    )}
+                    {selectedDelivery.failed_reason && (
+                      <div className="mt-3">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Failed Reason:</p>
+                        <p className="text-sm text-red-600 dark:text-red-400">{selectedDelivery.failed_reason}</p>
+                      </div>
+                    )}
+                    {selectedDelivery.completed_at && (
+                      <div className="mt-3">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Completed: {new Date(selectedDelivery.completed_at).toLocaleString()}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
