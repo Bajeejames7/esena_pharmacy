@@ -44,10 +44,11 @@ router.get('/sales', auth, async (req, res) => {
   try {
     const { period = 'month', date_from, date_to } = req.query;
 
-    // Summary always counts completed orders only
+    // Summary counts ALL PAID orders (paid, dispatched, out_for_delivery, ready_for_pickup, completed)
+    // Because once paid, it's revenue - no refunds
     const { conditions, params } = buildDateFilter(period, date_from, date_to);
-    const completedCondition = `o.status = 'completed'`;
-    const summaryConditions = [completedCondition, ...conditions];
+    const paidCondition = `o.status IN ('paid', 'dispatched', 'out_for_delivery', 'ready_for_pickup', 'completed')`;
+    const summaryConditions = [paidCondition, ...conditions];
     const summaryParams = [...params];
     const summaryWhere = 'WHERE ' + summaryConditions.join(' AND ');
 

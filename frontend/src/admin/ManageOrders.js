@@ -52,8 +52,9 @@ const ManageOrders = () => {
   const statusTransitions = {
     pending: ['payment_requested', 'completed'],
     payment_requested: ['paid', 'completed'],
-    paid: ['dispatched', 'completed'],
+    paid: ['ready_for_pickup', 'dispatched', 'completed'], // ready_for_pickup for pickup orders, dispatched for delivery
     dispatched: ['completed'],
+    ready_for_pickup: ['completed'],
     completed: [],
     cancelled: []
   };
@@ -330,12 +331,22 @@ const ManageOrders = () => {
                       <div className="mt-6 pt-4 border-t border-white/20">
                         <h4 className="font-medium text-gray-800 mb-3">Update Status</h4>
                         <div className="flex flex-wrap gap-2">
-                          {statusTransitions[selectedOrder.status]?.map(status => (
+                          {statusTransitions[selectedOrder.status]?.filter(status => {
+                            // For pickup orders (delivery_type === 'pickup'), hide 'dispatched'
+                            if (selectedOrder.delivery_type === 'pickup' && status === 'dispatched') return false;
+                            // For delivery orders (!== 'pickup'), hide 'ready_for_pickup' 
+                            if (selectedOrder.delivery_type !== 'pickup' && status === 'ready_for_pickup') return false;
+                            return true;
+                          }).map(status => (
                             <GlassButton key={status} size="sm" variant="secondary" onClick={() => handleStatusUpdate(selectedOrder.id, status)} disabled={updatingStatus}>
                               {updatingStatus ? 'Updating...' : status.replace(/_/g, ' ')}
                             </GlassButton>
                           ))}
-                          {statusTransitions[selectedOrder.status]?.length === 0 && (
+                          {statusTransitions[selectedOrder.status]?.filter(status => {
+                            if (selectedOrder.delivery_type === 'pickup' && status === 'dispatched') return false;
+                            if (selectedOrder.delivery_type !== 'pickup' && status === 'ready_for_pickup') return false;
+                            return true;
+                          }).length === 0 && (
                             <p className="text-gray-600 text-sm">{selectedOrder.status === 'cancelled' ? 'This order has been cancelled.' : 'No status updates available'}</p>
                           )}
                           {['pending', 'payment_requested'].includes(selectedOrder.status) && (
