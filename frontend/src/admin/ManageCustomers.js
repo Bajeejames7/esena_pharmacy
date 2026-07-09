@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import AdminSidebar from '../components/AdminSidebar';
+import AdminHeader from '../components/AdminHeader';
 import GlassCard from '../components/GlassCard';
+import ThemeToggle from '../components/ThemeToggle';
+import { useBreakpoint } from '../utils/responsive';
 import api from '../services/api';
 
 const ManageCustomers = () => {
+  const { breakpoint } = useBreakpoint();
+  const isMobile = breakpoint === 'mobile';
+  const isTablet = breakpoint === 'tablet';
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile && !isTablet);
+
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -22,17 +31,34 @@ const ManageCustomers = () => {
   );
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-xl font-bold text-gray-800 dark:text-white">Registered Customers</h1>
-        <input
-          type="text"
-          placeholder="Search by name, email or phone..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 w-72"
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex">
+      <AdminSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+      
+      <div className="flex-1 flex flex-col min-w-0">
+        <AdminHeader 
+          onMenuClick={() => setSidebarOpen(!sidebarOpen)}
+          title="Manage Customers"
         />
-      </div>
+
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-1">Registered Customers</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Manage and view customer accounts
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              <input
+                type="text"
+                placeholder="Search by name, email or phone..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 w-72"
+              />
+            </div>
+          </div>
 
       {loading ? (
         <div className="flex justify-center py-16">
@@ -110,6 +136,8 @@ const ManageCustomers = () => {
           </div>
         </GlassCard>
       )}
+        </main>
+      </div>
     </div>
   );
 };
