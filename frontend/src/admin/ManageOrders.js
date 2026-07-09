@@ -29,6 +29,10 @@ const ManageOrders = () => {
   const [editShipping, setEditShipping] = useState('');
   const [savingShipping, setSavingShipping] = useState(false);
   const [shippingSaved, setShippingSaved] = useState(false);
+  const [drivers, setDrivers] = useState([]);
+  const [selectedDriver, setSelectedDriver] = useState('');
+  const [assigningDriver, setAssigningDriver] = useState(false);
+  const [driverAssigned, setDriverAssigned] = useState(false);
 
   const isMobile = breakpoint === 'mobile';
   const isTablet = breakpoint === 'tablet';
@@ -61,6 +65,24 @@ const ManageOrders = () => {
   useEffect(() => {
     loadOrders();
   }, [currentPage, searchTerm, statusFilter, dateFilter]);
+
+  // Load drivers for assignment
+  useEffect(() => {
+    loadDrivers();
+  }, []);
+
+  const loadDrivers = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${process.env.REACT_APP_API_URL || 'https://esena.co.ke/api'}/drivers/admin/list`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setDrivers((data.drivers || []).filter(d => d.status === 'active'));
+    } catch (err) {
+      console.error('Failed to load drivers:', err);
+    }
+  };
 
   const loadOrders = async () => {
     setLoading(true);
@@ -111,6 +133,8 @@ const ManageOrders = () => {
     setShowOrderDetails(true);
     setLoadingDetails(true);
     setShippingSaved(false);
+    setDriverAssigned(false);
+    setSelectedDriver('');
     try {
       const response = await ordersAPI.getById(order.id);
       setSelectedOrder(response.data);
@@ -188,6 +212,41 @@ const ManageOrders = () => {
       setError('Failed to cancel order: ' + (err.response?.data?.message || err.message));
     } finally {
       setUpdatingStatus(false);
+    }
+  };
+
+  const handleAssignDriver = async () => {
+    if (!selectedDriver) {
+      alert('Please select a driver');
+      return;
+    }
+    setAssigningDriver(true);
+    setDriverAssigned(false);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${process.env.REACT_APP_API_URL || 'https://esena.co.ke/api'}/drivers/admin/deliveries/assign`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          order_id: selectedOrder.id,
+          driver_id: parseInt(selectedDriver)
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to assign driver');
+      
+      // Update order status to dispatched
+      setSelectedOrder(prev => ({ ...prev, status: 'dispatched' }));
+      setOrders(prev => prev.map(o => o.id === selectedOrder.id ? { ...o, status: 'dispatched' } : o));
+      setDriverAssigned(true);
+      setSelectedDriver('');
+    } catch (err) {
+      setError('Failed to assign driver: ' + err.message);
+    } finally {
+      setAssigningDriver(false);
     }
   };
 
@@ -368,6 +427,54 @@ const ManageOrders = () => {
                         <GlassButton variant="secondary" size="sm" className="w-full" onClick={() => window.open(`mailto:${selectedOrder.email}?subject=Order ${selectedOrder.id}`)}>Email Customer</GlassButton>
                       </div>
                     </div>
+
+                    {/* Delivery Assignment */}
+                    {selectedOrder.status === 'paid' && selectedOrder.delivery_type !== 'pickup' && (
+                      <div className="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+                        <div className="flex items-center gap-2 mb-4">
+                          <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                          </svg>
+                          <h3 className="font-semibold text-gray-800 dark:text-white">Assign to Driver</h3>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                          Order is paid and ready for delivery. Assign a driver to start delivery.
+                        </p>
+                        <div className="space-y-3">
+                          <GlassSelect
+                            label="Select Driver"
+                            value={selectedDriver}
+                            onChange={(e) => setSelectedDriver(e.target.value)}
+                            disabled={assigningDriver}
+                          >
+                            <option value="">Choose a driver...</option>
+                            {drivers.map(driver => (
+                              <option key={driver.id} value={driver.id}>
+                                {driver.name} ({driver.vehicle_type}) - {driver.active_deliveries || 0} active
+                              </option>
+                            ))}
+                          </GlassSelect>
+                          <GlassButton
+                            size="sm"
+                            className="w-full"
+                            onClick={handleAssignDriver}
+                            disabled={!selectedDriver || assigningDriver}
+                          >
+                            {assigningDriver ? 'Assigning...' : 'Assign Delivery'}
+                          </GlassButton>
+                          {driverAssigned && (
+                            <p className="text-xs text-green-600 dark:text-green-400">
+                              ✓ Driver assigned! Order status updated to "Dispatched"
+                            </p>
+                          )}
+                          {drivers.length === 0 && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              No active drivers available. <a href="/admin/drivers" className="text-blue-600 hover:underline">Register drivers</a>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </GlassCard>

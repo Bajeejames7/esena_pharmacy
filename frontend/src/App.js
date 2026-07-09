@@ -4,6 +4,7 @@ import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { CartProvider } from './contexts/CartContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { CustomerAuthProvider, useCustomerAuth } from './contexts/CustomerAuthContext';
+import { DriverAuthProvider } from './contexts/DriverAuthContext';
 import { initPerformanceMonitoring } from './utils/performance';
 import { cacheManager } from './utils/cacheManager';
 import { compatibilityManager } from './utils/browserCompat';
@@ -46,10 +47,14 @@ import ManageAppointments from './admin/ManageAppointments';
 import ManageBlogs from './admin/ManageBlogs';
 import ManagePrescriptions from './admin/ManagePrescriptions';
 import ManageEmployees from './admin/ManageEmployees';
+import ManageDrivers from './admin/ManageDrivers';
+import ManageDeliveries from './admin/ManageDeliveries';
 import ManageCustomers from './admin/ManageCustomers';
 import ActivityLog from './admin/ActivityLog';
 import AdminProfile from './admin/AdminProfile';
 import SalesReport from './admin/SalesReport';
+import DriverLogin from './driver/DriverLogin';
+import DriverDashboard from './driver/DriverDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import NotFound from './pages/NotFound';
 
@@ -72,6 +77,8 @@ const PAGE_TITLES = {
   '/privacy-policy': 'Privacy Policy',
   '/terms': 'Terms of Use',
   '/track-order': 'Track Order',
+  '/driver/login': 'Driver Login',
+  '/driver/dashboard': 'Driver Dashboard',
   '/admin/login': 'Admin Login',
   '/admin/dashboard': 'Dashboard',
   '/admin/products': 'Manage Products',
@@ -79,6 +86,12 @@ const PAGE_TITLES = {
   '/admin/appointments': 'Manage Appointments',
   '/admin/blogs': 'Manage Blogs',
   '/admin/prescriptions': 'Prescriptions',
+  '/admin/employees': 'Manage Employees',
+  '/admin/drivers': 'Manage Drivers',
+  '/admin/deliveries': 'Delivery Tracking',
+  '/admin/customers': 'Customers',
+  '/admin/activity-log': 'Activity Log',
+  '/admin/reports': 'Sales Report',
 };
 
 // Component to handle focus management and page title on route changes
@@ -159,7 +172,8 @@ function App() {
       <GoogleReCaptchaProvider reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || ''}>
         <ThemeProvider>
           <CustomerAuthProvider>
-            <CartProvider>
+            <DriverAuthProvider>
+              <CartProvider>
               <Router>
                 <AppContent 
                   showCookiePreferences={showCookiePreferences}
@@ -168,6 +182,7 @@ function App() {
                 />
               </Router>
             </CartProvider>
+            </DriverAuthProvider>
           </CustomerAuthProvider>
         </ThemeProvider>
       </GoogleReCaptchaProvider>
@@ -182,6 +197,7 @@ const AppContent = ({ showCookiePreferences, setShowCookiePreferences, handleSav
   
   // Determine if header/footer should be hidden
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isDriverRoute = location.pathname.startsWith('/driver');
   
   // Hide header/footer if:
   // 1. Not loading (auth state is known)
@@ -236,7 +252,7 @@ const AppContent = ({ showCookiePreferences, setShowCookiePreferences, handleSav
         <ProfileGuard>
           <div className="min-h-screen w-full overflow-x-hidden flex flex-col">
             {/* Conditional Header */}
-            {!isAdminRoute && !hideHeaderFooter && (
+            {!isAdminRoute && !isDriverRoute && !hideHeaderFooter && (
               <>
                 <Header />
                 <div className="h-16 flex-shrink-0" aria-hidden="true" />
@@ -272,6 +288,10 @@ const AppContent = ({ showCookiePreferences, setShowCookiePreferences, handleSav
               <Route path="/whatsapp-order" element={<WhatsAppOrder />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfUse />} />
+              
+              {/* Driver Routes */}
+              <Route path="/driver/login" element={<DriverLogin />} />
+              <Route path="/driver/dashboard" element={<DriverDashboard />} />
               
               {/* Admin Routes */}
               <Route path="/admin" element={<AdminLogin />} />
@@ -311,6 +331,16 @@ const AppContent = ({ showCookiePreferences, setShowCookiePreferences, handleSav
                   <ManageEmployees />
                 </ProtectedRoute>
               } />
+              <Route path="/admin/drivers" element={
+                <ProtectedRoute>
+                  <ManageDrivers />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/deliveries" element={
+                <ProtectedRoute>
+                  <ManageDeliveries />
+                </ProtectedRoute>
+              } />
               <Route path="/admin/customers" element={
                 <ProtectedRoute>
                   <ManageCustomers />
@@ -338,19 +368,19 @@ const AppContent = ({ showCookiePreferences, setShowCookiePreferences, handleSav
             </MainContentWrapper>
             
             {/* Conditional Footer */}
-            {!isAdminRoute && !hideHeaderFooter && <Footer />}
+            {!isAdminRoute && !isDriverRoute && !hideHeaderFooter && <Footer />}
             
             {/* WhatsApp floating button - only show on public pages when profile complete */}
-            {!isAdminRoute && !hideHeaderFooter && <WhatsAppButton />}
+            {!isAdminRoute && !isDriverRoute && !hideHeaderFooter && <WhatsAppButton />}
 
             {/* Ivo Bot - only show on public pages when profile complete */}
-            {!isAdminRoute && !hideHeaderFooter && <IvoBot />}
+            {!isAdminRoute && !isDriverRoute && !hideHeaderFooter && <IvoBot />}
             
             {/* Cookie Consent Banner - only show on public pages when profile complete */}
-            {!isAdminRoute && !hideHeaderFooter && <CookieConsent />}
+            {!isAdminRoute && !isDriverRoute && !hideHeaderFooter && <CookieConsent />}
 
             {/* Cookie Settings Button - only show on public pages after consent when profile complete */}
-            {!isAdminRoute && !hideHeaderFooter && (
+            {!isAdminRoute && !isDriverRoute && !hideHeaderFooter && (
               <CookieSettingsButton 
                 onOpenPreferences={() => setShowCookiePreferences(true)} 
               />

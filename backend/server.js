@@ -108,6 +108,7 @@ app.use(["/mpesa", "/api/mpesa"], require("./routes/mpesa")); // Legacy M-Pesa D
 app.use(["/k2", "/api/k2"], require("./routes/k2")); // K2 Connect (Kopo Kopo) - Primary payment method
 app.use(["/customers", "/api/customers"], require("./routes/customers"));
 app.use(["/admin/customers", "/api/admin/customers"], require("./routes/customers"));
+app.use(["/drivers", "/api/drivers"], require("./routes/drivers")); // Driver delivery management
 
 // 7. DB TEST ROUTE (remove in production if desired)
 app.get("/db-test", async (req, res) => {
