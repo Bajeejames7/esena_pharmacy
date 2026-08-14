@@ -155,4 +155,172 @@ router.get('/sales', auth, async (req, res) => {
   }
 });
 
+/**
+ * GET /api/reports/profit
+ * Profit is calculated ONLY on completed orders where cost_price_at_sale
+ * was captured at order-time (i.e. products linked to the POS).
+ *
+ * Revenue  = SUM(oi.price * oi.quantity)          — what customer paid
+ * Cost     = SUM(oi.cost_price_at_sale * oi.quantity) — what it cost us
+ * Profit   = Revenue - Cost
+ * Margin % = (Profit / Revenue) * 100
+ *
+ * Items without cost_price_at_sale are excluded from profit maths but are
+ * still visible in the "untracked_revenue" figure so nothing is hidden.
+ *
+ * Query params: period, date_from, date_to
+ */
+router.get('/profit', auth, async (req, res) => {
+  try {
+    const { period = 'month', date_from, date_to } = req.query;
+
+    const { conditions, params } = buildDateFilter(period, date_from, date_to);
+    const baseConditions = ["o.status = 'completed'", ...conditions];
+    const baseWhere      = 'WHERE ' + baseConditions.join(' AND ');
+
+    // ── Overall profit summary ─────────────────────────────────────────
+    const [[summary]] = await db.query(
+      `SELECT
+         COUNT(DISTINCT o.id)                                             AS total_orders,
+
+         /* Revenue on ALL completed order items */
+         COALESCE(SUM(oi.price * oi.quantity), 0)                        AS total_revenue,
+
+         /* Revenue only where we have a cost price (POS-linked items) */
+         COALESCE(SUM(
+           CASE WHEN oi.cost_price_at_sale IS NOT NULL
+                THEN oi.price * oi.quantity ELSE 0 END
+         ), 0)                                                            AS tracked_revenue,
+
+         /* Cost of goods sold (POS-linked items only) */
+         COALESCE(SUM(
+           CASE WHEN oi.cost_price_at_sale IS NOT NULL
+                THEN oi.cost_price_at_sale * oi.quantity ELSE 0 END
+         ), 0)                                                            AS total_cost,
+
+         /* Gross profit */
+         COALESCE(SUM(
+           CASE WHEN oi.cost_price_at_sale IS NOT NULL
+                THEN (oi.price - oi.cost_price_at_sale) * oi.quantity
+                ELSE 0 END
+         ), 0)                                                            AS gross_profit,
+
+         /* Revenue from items we have NO cost data for */
+         COALESCE(SUM(
+           CASE WHEN oi.cost_price_at_sale IS NULL
+                THEN oi.price * oi.quantity ELSE 0 END
+         ), 0)                                                            AS untracked_revenue,
+
+         COUNT(DISTINCT CASE WHEN oi.cost_price_at_sale IS NOT NULL
+                             THEN oi.product_id END)                     AS tracked_product_count,
+         COUNT(DISTINCT CASE WHEN oi.cost_price_at_sale IS NULL
+                             THEN oi.product_id END)                     AS untracked_product_count
+       FROM orders o
+       JOIN order_items oi ON oi.order_id = o.id
+       ${baseWhere}`,
+      params
+    );
+
+    // Compute margin % safely
+    summary.gross_profit_margin =
+      summary.tracked_revenue > 0
+        ? parseFloat(((summary.gross_profit / summary.tracked_revenue) * 100).toFixed(2))
+        : null;
+
+    // ── Profit by product (top 50) ────────────────────────────────────
+    const [byProduct] = await db.query(
+      `SELECT
+         COALESCE(oi.item_name, p.name, 'Unknown')     AS product_name,
+         COALESCE(p.category, 'Uncategorised')         AS category,
+         pm.pos_id                                     AS pos_medicine_id,
+         pm.name                                       AS pos_medicine_name,
+         SUM(oi.quantity)                              AS units_sold,
+         SUM(oi.price * oi.quantity)                   AS revenue,
+         SUM(oi.cost_price_at_sale * oi.quantity)      AS cost,
+         SUM((oi.price - oi.cost_price_at_sale) * oi.quantity)  AS profit,
+         ROUND(
+           SUM((oi.price - oi.cost_price_at_sale) * oi.quantity)
+           / NULLIF(SUM(oi.price * oi.quantity), 0) * 100, 2
+         )                                             AS margin_pct
+       FROM orders o
+       JOIN order_items oi ON oi.order_id = o.id
+       LEFT JOIN products p ON p.id = oi.product_id
+       LEFT JOIN pos_medicines pm ON pm.pos_id = oi.pos_medicine_id
+       ${baseWhere}
+         AND oi.cost_price_at_sale IS NOT NULL
+       GROUP BY oi.product_id, oi.item_name, p.name, p.category, pm.pos_id, pm.name
+       ORDER BY profit DESC
+       LIMIT 50`,
+      params
+    );
+
+    // ── Profit by day (for chart) ─────────────────────────────────────
+    const [byDay] = await db.query(
+      `SELECT
+         DATE_FORMAT(o.created_at, '%Y-%m-%d')         AS date,
+         COALESCE(SUM(oi.price * oi.quantity), 0)      AS revenue,
+         COALESCE(SUM(oi.cost_price_at_sale * oi.quantity), 0)  AS cost,
+         COALESCE(SUM(
+           (oi.price - oi.cost_price_at_sale) * oi.quantity
+         ), 0)                                         AS profit
+       FROM orders o
+       JOIN order_items oi ON oi.order_id = o.id
+       ${baseWhere}
+         AND oi.cost_price_at_sale IS NOT NULL
+       GROUP BY DATE_FORMAT(o.created_at, '%Y-%m-%d')
+       ORDER BY date ASC`,
+      params
+    );
+
+    // ── Products sold but NOT yet linked to POS (no profit data) ──────
+    const [untracked] = await db.query(
+      `SELECT
+         COALESCE(oi.item_name, p.name, 'Unknown')     AS product_name,
+         COALESCE(p.category, 'Uncategorised')         AS category,
+         SUM(oi.quantity)                              AS units_sold,
+         SUM(oi.price * oi.quantity)                   AS revenue
+       FROM orders o
+       JOIN order_items oi ON oi.order_id = o.id
+       LEFT JOIN products p ON p.id = oi.product_id
+       ${baseWhere}
+         AND oi.cost_price_at_sale IS NULL
+       GROUP BY oi.product_id, oi.item_name, p.name, p.category
+       ORDER BY revenue DESC
+       LIMIT 50`,
+      params
+    );
+
+    // ── Recent POS deduction status (last 20) ─────────────────────────
+    const [recentDeductions] = await db.query(
+      `SELECT
+         psd.order_id,
+         psd.pos_medicine_id,
+         pm.name          AS medicine_name,
+         psd.quantity,
+         psd.status,
+         psd.response,
+         psd.created_at
+       FROM pos_stock_deductions psd
+       LEFT JOIN pos_medicines pm ON pm.pos_id = psd.pos_medicine_id
+       ORDER BY psd.created_at DESC
+       LIMIT 20`
+    );
+
+    res.json({
+      period,
+      date_from:  date_from || null,
+      date_to:    date_to   || null,
+      summary,
+      by_product:         byProduct,
+      by_day:             byDay,
+      untracked_products: untracked,
+      recent_pos_deductions: recentDeductions,
+    });
+
+  } catch (err) {
+    console.error('Profit report error:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 module.exports = router;

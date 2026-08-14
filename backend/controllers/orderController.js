@@ -10,6 +10,7 @@ const {
 } = require("../config/mail");
 const { generateUniqueToken } = require("../utils/tokenGenerator");
 const { logActivity } = require("../utils/activityLog");
+const { deductStockOnPOS } = require("../services/posSync");
 
 /**
  * Cancel an order - restores stock, sends cancellation email
@@ -241,26 +242,60 @@ exports.createOrder = async (req, res) => {
     const orderId = orderResult.insertId;
     
     // Insert order items, decrement stock, and log movements (Req 5.7)
+    // Also capture POS medicine link + cost price snapshot for profit tracking
     for (const item of items) {
-      await connection.query(
-        "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)",
-        [orderId, item.product_id, item.quantity, item.price]
+      // Pull pos_medicine_id and cost_price from the product row so we
+      // can snapshot them at the moment of sale (prices may change later).
+      const [[productRow]] = await connection.query(
+        "SELECT name, pos_medicine_id, cost_price FROM products WHERE id = ?",
+        [item.product_id]
       );
-      // Decrement product stock
+
+      const posMedicineId   = productRow?.pos_medicine_id   ?? null;
+      const costPriceAtSale = productRow?.cost_price        ?? null;
+      const itemName        = productRow?.name              ?? item.item_name ?? null;
+
+      await connection.query(
+        `INSERT INTO order_items
+           (order_id, product_id, quantity, price, pos_medicine_id, cost_price_at_sale, item_name)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [orderId, item.product_id, item.quantity, item.price,
+         posMedicineId, costPriceAtSale, itemName]
+      );
+
+      // Decrement local product stock
       await connection.query(
         "UPDATE products SET stock = GREATEST(stock - ?, 0) WHERE id = ?",
         [item.quantity, item.product_id]
       );
+
       // Log stock movement
       await connection.query(
-        `INSERT INTO stock_movements (product_id, type, quantity, note, reference_id, performed_by_name)
+        `INSERT INTO stock_movements
+           (product_id, type, quantity, note, reference_id, performed_by_name)
          VALUES (?, 'sale', ?, ?, ?, 'Customer Order')`,
         [item.product_id, -item.quantity, `Order #${orderId}`, orderId]
       );
     }
-    
-    // Commit transaction
+
+    // Commit transaction before firing the async POS deduction
     await connection.commit();
+
+    // ── POS Stock Deduction (fire-and-forget after commit) ──────────────
+    // We don't block the order response on the POS call. If it fails it is
+    // logged to pos_stock_deductions for admin review / manual reconciliation.
+    const [savedItems] = await connection.query(
+      `SELECT pos_medicine_id, quantity, item_name
+       FROM order_items
+       WHERE order_id = ? AND pos_medicine_id IS NOT NULL`,
+      [orderId]
+    );
+
+    if (savedItems.length > 0) {
+      deductStockOnPOS(orderId, savedItems).catch(err =>
+        console.error(`POS deduction async error for order #${orderId}:`, err.message)
+      );
+    }
     
     // Get order items with product names for email
     const [orderItems] = await connection.query(

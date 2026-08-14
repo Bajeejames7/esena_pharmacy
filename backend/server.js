@@ -92,6 +92,7 @@ app.use(["/admin/logs", "/api/admin/logs"], require("./routes/logs"));
 app.use(["/admin/employees", "/api/admin/employees"], require("./routes/employees"));
 app.use(["/inventory", "/api/inventory"], require("./routes/inventory"));
 app.use(["/reports", "/api/reports"], require("./routes/reports"));
+app.use(["/pos-medicines", "/api/pos-medicines"], require("./routes/posMedicines"));
 
 // 7. DB TEST ROUTE (remove in production if desired)
 app.get("/db-test", async (req, res) => {
@@ -109,6 +110,10 @@ const startBackgroundTasks = async () => {
     logger.info("Starting background database maintenance...");
     await initializeDatabase();
     logger.info("Background tasks completed successfully");
+
+    // Start POS auto-sync AFTER the DB is confirmed ready
+    const { startAutoSync } = require("./services/posSync");
+    startAutoSync();
   } catch (error) {
     console.error("Background task error details:", error);
     logger.error("Background task error: " + (error.message || error.sqlMessage || JSON.stringify(error)));
