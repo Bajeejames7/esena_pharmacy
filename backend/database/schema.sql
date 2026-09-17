@@ -100,9 +100,9 @@ CREATE TABLE contacts (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Insert default admin user (password: admin123)
-INSERT INTO users (username, password, role) 
-VALUES ('admin', '$2a$10$rZ5qH8qF9xK3yL7mN9pO4.xJ5vK8wL9mN6pO4xJ5vK8wL9mN6pO4x', 'admin');
+-- Insert default admin user (password: admin123 — change this after first login)
+INSERT INTO users (username, password, role)
+VALUES ('admin', '$2a$10$vD4M5MdUxmD1s7r2Pj.rUeO3CWMbWUsYGnaik0QRXbt61TpbxtdVq', 'admin');
 -- Blogs
 CREATE TABLE blogs (
   id INT AUTO_INCREMENT PRIMARY KEY,

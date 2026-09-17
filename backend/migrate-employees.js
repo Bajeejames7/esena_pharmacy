@@ -4,26 +4,52 @@
  */
 const db = require('./config/db');
 
+async function columnExists(table, column) {
+  const [rows] = await db.query(
+    `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
+    [table, column]
+  );
+  return rows.length > 0;
+}
+
+async function indexExists(table, indexName) {
+  const [rows] = await db.query(
+    `SELECT DISTINCT INDEX_NAME FROM information_schema.STATISTICS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND INDEX_NAME = ?`,
+    [table, indexName]
+  );
+  return rows.length > 0;
+}
+
+async function addColumnIfMissing(table, column, ddl) {
+  if (await columnExists(table, column)) {
+    console.log(`Skip: ${table}.${column} already exists`);
+    return;
+  }
+  await db.query(ddl);
+  console.log(`OK: added ${table}.${column}`);
+}
+
 async function migrate() {
   console.log('Running employee management migration...');
 
   // 1. Extend users table
-  const userAlters = [
-    "ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255) NULL",
-    "ALTER TABLE users ADD COLUMN IF NOT EXISTS status ENUM('active','inactive','pending') NOT NULL DEFAULT 'active'",
-    "ALTER TABLE users ADD COLUMN IF NOT EXISTS otp VARCHAR(10) NULL",
-    "ALTER TABLE users ADD COLUMN IF NOT EXISTS otp_expires DATETIME NULL",
-    "ALTER TABLE users ADD COLUMN IF NOT EXISTS two_fa_enabled TINYINT(1) NOT NULL DEFAULT 0",
-    "ALTER TABLE users ADD COLUMN IF NOT EXISTS two_fa_secret VARCHAR(64) NULL",
-    "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login DATETIME NULL",
-    "ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name VARCHAR(255) NULL",
-    "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20) NULL",
-    "ALTER TABLE users ADD UNIQUE INDEX IF NOT EXISTS idx_users_email (email)",
-  ];
+  await addColumnIfMissing('users', 'email', "ALTER TABLE users ADD COLUMN email VARCHAR(255) NULL");
+  await addColumnIfMissing('users', 'status', "ALTER TABLE users ADD COLUMN status ENUM('active','inactive','pending') NOT NULL DEFAULT 'active'");
+  await addColumnIfMissing('users', 'otp', "ALTER TABLE users ADD COLUMN otp VARCHAR(10) NULL");
+  await addColumnIfMissing('users', 'otp_expires', "ALTER TABLE users ADD COLUMN otp_expires DATETIME NULL");
+  await addColumnIfMissing('users', 'two_fa_enabled', "ALTER TABLE users ADD COLUMN two_fa_enabled TINYINT(1) NOT NULL DEFAULT 0");
+  await addColumnIfMissing('users', 'two_fa_secret', "ALTER TABLE users ADD COLUMN two_fa_secret VARCHAR(64) NULL");
+  await addColumnIfMissing('users', 'last_login', "ALTER TABLE users ADD COLUMN last_login DATETIME NULL");
+  await addColumnIfMissing('users', 'full_name', "ALTER TABLE users ADD COLUMN full_name VARCHAR(255) NULL");
+  await addColumnIfMissing('users', 'phone', "ALTER TABLE users ADD COLUMN phone VARCHAR(20) NULL");
 
-  for (const sql of userAlters) {
-    try { await db.query(sql); console.log('OK:', sql.substring(0, 60)); }
-    catch (e) { console.warn('Skip (may already exist):', e.message.substring(0, 80)); }
+  if (await indexExists('users', 'idx_users_email')) {
+    console.log('Skip: users.idx_users_email already exists');
+  } else {
+    await db.query('ALTER TABLE users ADD UNIQUE INDEX idx_users_email (email)');
+    console.log('OK: added unique index users.idx_users_email');
   }
 
   // 2. Update admin user to have email and active status
@@ -33,10 +59,8 @@ async function migrate() {
   console.log('Admin email set');
 
   // 3. Update role enum to include employee
-  try {
-    await db.query("ALTER TABLE users MODIFY COLUMN role ENUM('admin','employee','doctor') DEFAULT 'employee'");
-    console.log('Role enum updated');
-  } catch (e) { console.warn('Role enum skip:', e.message.substring(0, 80)); }
+  await db.query("ALTER TABLE users MODIFY COLUMN role ENUM('admin','employee','doctor') DEFAULT 'employee'");
+  console.log('Role enum updated');
 
   // 4. Create activity_log table
   await db.query(`
@@ -60,21 +84,14 @@ async function migrate() {
   console.log('activity_log table ready');
 
   // 5. Add handled_by columns to orders, appointments, prescriptions
-  const resourceAlters = [
-    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS handled_by INT NULL",
-    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS handled_by_name VARCHAR(100) NULL",
-    "ALTER TABLE appointments ADD COLUMN IF NOT EXISTS handled_by INT NULL",
-    "ALTER TABLE appointments ADD COLUMN IF NOT EXISTS handled_by_name VARCHAR(100) NULL",
-    "ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS handled_by INT NULL",
-    "ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS handled_by_name VARCHAR(100) NULL",
-    "ALTER TABLE blogs ADD COLUMN IF NOT EXISTS created_by INT NULL",
-    "ALTER TABLE blogs ADD COLUMN IF NOT EXISTS created_by_name VARCHAR(100) NULL",
-  ];
-
-  for (const sql of resourceAlters) {
-    try { await db.query(sql); console.log('OK:', sql.substring(0, 60)); }
-    catch (e) { console.warn('Skip:', e.message.substring(0, 80)); }
-  }
+  await addColumnIfMissing('orders', 'handled_by', "ALTER TABLE orders ADD COLUMN handled_by INT NULL");
+  await addColumnIfMissing('orders', 'handled_by_name', "ALTER TABLE orders ADD COLUMN handled_by_name VARCHAR(100) NULL");
+  await addColumnIfMissing('appointments', 'handled_by', "ALTER TABLE appointments ADD COLUMN handled_by INT NULL");
+  await addColumnIfMissing('appointments', 'handled_by_name', "ALTER TABLE appointments ADD COLUMN handled_by_name VARCHAR(100) NULL");
+  await addColumnIfMissing('prescriptions', 'handled_by', "ALTER TABLE prescriptions ADD COLUMN handled_by INT NULL");
+  await addColumnIfMissing('prescriptions', 'handled_by_name', "ALTER TABLE prescriptions ADD COLUMN handled_by_name VARCHAR(100) NULL");
+  await addColumnIfMissing('blogs', 'created_by', "ALTER TABLE blogs ADD COLUMN created_by INT NULL");
+  await addColumnIfMissing('blogs', 'created_by_name', "ALTER TABLE blogs ADD COLUMN created_by_name VARCHAR(100) NULL");
 
   console.log('\nMigration complete!');
   process.exit(0);

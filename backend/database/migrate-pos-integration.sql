@@ -18,22 +18,25 @@ CREATE TABLE IF NOT EXISTS pos_medicines (
 
 -- 2. Link our website products back to a POS medicine
 --    NULL means the product has no POS counterpart (web-only item).
+-- NOTE: plain ALTER TABLE (no IF NOT EXISTS) — that syntax is MariaDB-only,
+-- not standard MySQL. Run this once against a fresh DB; if you need to
+-- re-run it, drop the columns it already added first.
 ALTER TABLE products
-  ADD COLUMN IF NOT EXISTS pos_medicine_id INT NULL DEFAULT NULL
+  ADD COLUMN pos_medicine_id INT NULL DEFAULT NULL
     COMMENT 'FK to pos_medicines.pos_id — links website product to POS catalogue',
-  ADD COLUMN IF NOT EXISTS cost_price DECIMAL(10,2) NULL DEFAULT NULL
+  ADD COLUMN cost_price DECIMAL(10,2) NULL DEFAULT NULL
     COMMENT 'Purchase / cost price used for profit margin calculation',
-  ADD INDEX IF NOT EXISTS idx_pos_medicine_id (pos_medicine_id);
+  ADD INDEX idx_pos_medicine_id (pos_medicine_id);
 
 -- 3. Extend order_items so we know which POS medicine was sold
 --    Captured at order-time so profit is correct even if prices change later.
+-- item_name is added by migrate-prescription-orders.js — only add it here if
+-- that migration hasn't run yet on this DB.
 ALTER TABLE order_items
-  ADD COLUMN IF NOT EXISTS pos_medicine_id  INT NULL DEFAULT NULL
+  ADD COLUMN pos_medicine_id  INT NULL DEFAULT NULL
     COMMENT 'pos_medicines.pos_id at time of sale',
-  ADD COLUMN IF NOT EXISTS cost_price_at_sale DECIMAL(10,2) NULL DEFAULT NULL
-    COMMENT 'Cost price snapshot at the moment the order was placed',
-  ADD COLUMN IF NOT EXISTS item_name VARCHAR(255) NULL DEFAULT NULL
-    COMMENT 'Denormalised product name — survives product deletion';
+  ADD COLUMN cost_price_at_sale DECIMAL(10,2) NULL DEFAULT NULL
+    COMMENT 'Cost price snapshot at the moment the order was placed';
 
 -- 4. POS sync audit log
 --    Keeps a record of every sync run for debugging / admin review.

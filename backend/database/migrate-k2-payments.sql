@@ -27,9 +27,11 @@ CREATE TABLE IF NOT EXISTS mpesa_payments (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 2. Payment method + receipt tracking on orders
+-- Plain ALTER TABLE (no IF NOT EXISTS) — that syntax is MariaDB-only, not
+-- standard MySQL. Run once against a fresh DB.
 ALTER TABLE orders
-  ADD COLUMN IF NOT EXISTS payment_method ENUM('cash','mpesa','bank_transfer','card') NULL DEFAULT NULL
+  ADD COLUMN payment_method ENUM('cash','mpesa','bank_transfer','card') NULL DEFAULT NULL
     COMMENT 'How the order was actually paid for',
-  ADD COLUMN IF NOT EXISTS mpesa_receipt VARCHAR(50) NULL DEFAULT NULL
+  ADD COLUMN mpesa_receipt VARCHAR(50) NULL DEFAULT NULL
     COMMENT 'M-Pesa receipt number when payment_method = mpesa',
-  ADD INDEX IF NOT EXISTS idx_payment_method (payment_method);
+  ADD INDEX idx_payment_method (payment_method);
