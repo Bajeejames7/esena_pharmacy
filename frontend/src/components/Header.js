@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import ThemeToggle from './ThemeToggle';
 
@@ -13,7 +13,6 @@ const Header = () => {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const { itemCount } = useCart();
   const location = useLocation();
-  const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
   // Use the pre-calculated item count
@@ -58,15 +57,12 @@ const Header = () => {
     setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
   };
 
-  const handleMobileNavigation = (path) => {
-    console.log('Navigating to:', path);
-    console.log('Current location:', location.pathname);
+  // Closes the mobile menu/dropdown after a nav Link's own click already
+  // handles the navigation — no need to intercept the event or navigate
+  // manually, that's what caused inconsistent double-firing on touch devices.
+  const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
     setActiveDropdown(null);
-    // Use setTimeout to ensure state updates before navigation
-    setTimeout(() => {
-      navigate(path);
-    }, 100);
   };
 
   const handleKeyDown = (event, action) => {
@@ -161,7 +157,7 @@ const Header = () => {
               </button>
               
               {activeDropdown === 'home' && (
-                <div className="absolute top-full left-0 mt-1 w-48 bg-white/85 dark:bg-gray-800/85 backdrop-blur-md border border-white/30 dark:border-gray-600/50 rounded-lg shadow-xl py-2 z-50">
+                <div className="absolute top-full left-0 mt-1 w-48 bg-white/85 dark:bg-gray-800/85 backdrop-blur-md border border-white/30 dark:border-gray-600/50 rounded-lg shadow-xl py-2 z-50 animate-dropdown-in">
                   <Link to="/" className={navLinkClass('/')}>
                     Home
                   </Link>
@@ -195,7 +191,7 @@ const Header = () => {
               </button>
               
               {activeDropdown === 'products' && (
-                <div className="absolute top-full left-0 mt-1 w-56 bg-white/85 dark:bg-gray-800/85 backdrop-blur-md border border-white/30 dark:border-gray-600/50 rounded-lg shadow-xl py-2 z-50">
+                <div className="absolute top-full left-0 mt-1 w-56 bg-white/85 dark:bg-gray-800/85 backdrop-blur-md border border-white/30 dark:border-gray-600/50 rounded-lg shadow-xl py-2 z-50 animate-dropdown-in">
                   {dropdownItems.products.map((item) => (
                     <Link
                       key={item.name}
@@ -231,7 +227,7 @@ const Header = () => {
               </button>
               
               {activeDropdown === 'services' && (
-                <div className="absolute top-full left-0 mt-1 w-56 bg-white/85 dark:bg-gray-800/85 backdrop-blur-md border border-white/30 dark:border-gray-600/50 rounded-lg shadow-xl py-2 z-50">
+                <div className="absolute top-full left-0 mt-1 w-56 bg-white/85 dark:bg-gray-800/85 backdrop-blur-md border border-white/30 dark:border-gray-600/50 rounded-lg shadow-xl py-2 z-50 animate-dropdown-in">
                   {dropdownItems.services.map((item) => (
                     <Link key={item.path} to={item.path} className={navLinkClass(item.path)}>
                       {item.name}
@@ -301,8 +297,8 @@ const Header = () => {
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div 
-            className="lg:hidden py-4 space-y-2"
+          <div
+            className="lg:hidden py-4 space-y-2 animate-menu-panel-in"
           >
             {/* Home Section */}
             <div className="px-2">
@@ -323,42 +319,20 @@ const Header = () => {
               </button>
             </div>
             {activeDropdown === 'mobile-home' && (
-              <div className="px-2 ml-4 space-y-1">
-                <Link 
+              <div className="px-2 ml-4 space-y-1 animate-menu-panel-in">
+                <Link
                   to="/"
                   className="block px-4 py-3 text-gray-700 dark:text-gray-200 bg-white/10 dark:bg-slate-700/30 hover:bg-white/20 dark:hover:bg-slate-600/40 rounded-lg font-medium"
-                  onClick={(e) => {
-                    console.log('Home clicked');
-                    setIsMobileMenuOpen(false);
-                    setActiveDropdown(null);
-                  }}
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    console.log('Home touched');
-                    navigate('/');
-                    setIsMobileMenuOpen(false);
-                    setActiveDropdown(null);
-                  }}
+                  onClick={closeMobileMenu}
                 >
                   Home
                 </Link>
                 {dropdownItems.home.map((item) => (
-                  <Link 
+                  <Link
                     key={item.path}
                     to={item.path}
                     className="block px-4 py-3 text-gray-700 dark:text-gray-200 bg-white/10 dark:bg-slate-700/30 hover:bg-white/20 dark:hover:bg-slate-600/40 rounded-lg font-medium"
-                    onClick={(e) => {
-                      console.log('Clicked:', item.name);
-                      setIsMobileMenuOpen(false);
-                      setActiveDropdown(null);
-                    }}
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      console.log('Touched:', item.name);
-                      navigate(item.path);
-                      setIsMobileMenuOpen(false);
-                      setActiveDropdown(null);
-                    }}
+                    onClick={closeMobileMenu}
                   >
                     {item.name}
                   </Link>
@@ -385,19 +359,13 @@ const Header = () => {
               </button>
             </div>
             {activeDropdown === 'mobile-products' && (
-              <div className="px-2 ml-4 space-y-1">
+              <div className="px-2 ml-4 space-y-1 animate-menu-panel-in">
                 {dropdownItems.products.map((item) => (
-                  <Link 
+                  <Link
                     key={item.name}
                     to={{ pathname: item.path, search: item.search }}
                     className="block px-4 py-3 text-gray-700 dark:text-gray-200 bg-white/10 dark:bg-slate-700/30 hover:bg-white/20 dark:hover:bg-slate-600/40 rounded-lg font-medium"
-                    onClick={() => { setIsMobileMenuOpen(false); setActiveDropdown(null); }}
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      navigate({ pathname: item.path, search: item.search });
-                      setIsMobileMenuOpen(false);
-                      setActiveDropdown(null);
-                    }}
+                    onClick={closeMobileMenu}
                   >
                     {item.name}
                   </Link>
@@ -424,24 +392,13 @@ const Header = () => {
               </button>
             </div>
             {activeDropdown === 'mobile-services' && (
-              <div className="px-2 ml-4 space-y-1">
+              <div className="px-2 ml-4 space-y-1 animate-menu-panel-in">
                 {dropdownItems.services.map((item) => (
-                  <Link 
+                  <Link
                     key={item.path}
                     to={item.path}
                     className="block px-4 py-3 text-gray-700 dark:text-gray-200 bg-white/10 dark:bg-slate-700/30 hover:bg-white/20 dark:hover:bg-slate-600/40 rounded-lg font-medium"
-                    onClick={(e) => {
-                      console.log('Clicked:', item.name);
-                      setIsMobileMenuOpen(false);
-                      setActiveDropdown(null);
-                    }}
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      console.log('Touched:', item.name);
-                      navigate(item.path);
-                      setIsMobileMenuOpen(false);
-                      setActiveDropdown(null);
-                    }}
+                    onClick={closeMobileMenu}
                   >
                     {item.name}
                   </Link>
@@ -451,13 +408,10 @@ const Header = () => {
 
             {/* Shop Link */}
             <div className="px-2">
-              <Link 
+              <Link
                 to="/shop"
                 className="block px-4 py-3 text-gray-700 dark:text-gray-200 bg-white/10 dark:bg-slate-700/30 hover:bg-white/20 dark:hover:bg-slate-600/40 rounded-lg font-medium"
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  setActiveDropdown(null);
-                }}
+                onClick={closeMobileMenu}
               >
                 Shop
               </Link>

@@ -128,13 +128,13 @@ const AdminSidebar = ({ isOpen, onToggle }) => {
     return (
       <>
         {/* Backdrop */}
-        <div 
-          className="fixed inset-0 bg-black/50 z-40"
+        <div
+          className="fixed inset-0 bg-black/50 z-40 animate-backdrop-fade-in"
           onClick={onToggle}
         />
-        
+
         {/* Sidebar */}
-        <div className="fixed left-0 top-0 h-full w-64 z-50 transform transition-transform">
+        <div className="fixed left-0 top-0 h-full w-64 z-50 animate-sidebar-slide-in">
           <GlassCard className="h-full rounded-none p-6">
             <SidebarContent 
               menuItems={menuItems}

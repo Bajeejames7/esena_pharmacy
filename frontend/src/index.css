@@ -444,6 +444,44 @@
   to { transform: rotate(360deg); }
 }
 
+/* Smooth entrance for menus/dropdowns that mount on open — without this
+   they pop into existence instantly, which reads as glitchy navigation. */
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-dropdown-in {
+  animation: dropdown-in 0.15s ease-out;
+}
+
+@keyframes menu-panel-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-menu-panel-in {
+  animation: menu-panel-in 0.2s ease-out;
+}
+
+@keyframes sidebar-slide-in {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-sidebar-slide-in {
+  animation: sidebar-slide-in 0.25s ease-out;
+}
+
+@keyframes backdrop-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-backdrop-fade-in {
+  animation: backdrop-fade-in 0.2s ease-out;
+}
+
 /* Error states */
 [aria-invalid="true"] {
   border-color: #ef4444 !important;

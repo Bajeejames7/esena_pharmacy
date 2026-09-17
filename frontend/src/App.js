@@ -89,10 +89,16 @@ const FocusManager = ({ children }) => {
       ? `${pageTitle} | Esena Pharmacy`
       : 'Esena Pharmacy | Kenya\'s Trusted Pharmacy';
 
-    // Focus the main content area when route changes
+    // Reset scroll position on every navigation — without this, a new page
+    // opens at whatever scroll offset the previous page was left at, which
+    // reads as a broken/glitchy jump.
+    window.scrollTo(0, 0);
+
+    // Focus the main content area when route changes (without re-scrolling —
+    // we already positioned the viewport above).
     const mainContent = document.getElementById('main-content');
     if (mainContent) {
-      mainContent.focus();
+      mainContent.focus({ preventScroll: true });
     }
   }, [location.pathname]);
 

@@ -162,7 +162,7 @@ const ThemeToggle = ({ className = '', showLabel = false }) => {
           onClick={handleQuickToggle}
           className={`
             relative inline-flex items-center justify-center
-            w-12 h-12 rounded-xl
+            w-12 h-12 p-0 rounded-xl
             glass-button
             transition-all duration-300
             hover:scale-105 transform
