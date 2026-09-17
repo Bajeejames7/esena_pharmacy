@@ -8,6 +8,7 @@ import { countyOptions, getTownOptions } from '../utils/kenyaLocations';
 import GlassInput from '../components/forms/GlassInput';
 import GlassSelect from '../components/forms/GlassSelect';
 import GlassButton from '../components/forms/GlassButton';
+import MpesaPaymentModal from '../components/MpesaPaymentModal';
 
 const PICKUP_ADDRESS = 'Esena Pharmacy, Outering Road, Behind Eastmart Supermarket, Ruaraka, Nairobi';
 
@@ -31,6 +32,14 @@ const Checkout = () => {
     pickup_cost: 0
   });
   const [loadingPrices, setLoadingPrices] = useState(true);
+
+  // M-Pesa STK Push modal state
+  const [mpesaModal, setMpesaModal] = useState({
+    show: false,
+    orderId: null,
+    orderToken: null,
+    amount: 0,
+  });
 
   const paymentOptions = [
     { value: 'mpesa', label: 'M-Pesa' },
@@ -111,6 +120,25 @@ const Checkout = () => {
       };
 
       const response = await ordersAPI.create(orderPayload);
+      const orderData = response.data; // axios wraps the actual body in .data
+
+      if (!orderData?.orderId || !orderData?.token) {
+        throw new Error('Server returned incomplete order data. Please try again.');
+      }
+
+      // M-Pesa: hold off clearing the cart / navigating until payment is confirmed
+      // (or the customer chooses to pay later) via the STK Push modal.
+      if (formData.paymentMethod === 'mpesa') {
+        setMpesaModal({
+          show: true,
+          orderId: orderData.orderId,
+          orderToken: orderData.token,
+          amount: finalTotal,
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       clearCart();
       navigate('/order-success', {
         state: {
@@ -120,8 +148,8 @@ const Checkout = () => {
             subtotal: safeTotal,
             shipping: shippingCost,
             total: finalTotal,
-            orderId: response.orderId,
-            trackingToken: response.token,
+            orderId: orderData.orderId,
+            trackingToken: orderData.token,
             deliveryType: formData.deliveryType,
             deliveryZone: formData.deliveryZone,
             timestamp: new Date().toISOString()
@@ -157,6 +185,7 @@ const Checkout = () => {
       : 'Within Nairobi';
 
   return (
+    <>
     <div className="pt-24 pb-16">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -357,6 +386,56 @@ const Checkout = () => {
         </div>
       </div>
     </div>
+
+    {mpesaModal.show && (
+      <MpesaPaymentModal
+        orderId={mpesaModal.orderId}
+        orderToken={mpesaModal.orderToken}
+        amount={mpesaModal.amount}
+        defaultPhone={formData.phone}
+        onSuccess={({ orderId, orderToken }) => {
+          clearCart();
+          navigate('/order-success', {
+            state: {
+              orderData: {
+                ...formData,
+                items,
+                subtotal: safeTotal,
+                shipping: shippingCost,
+                total: finalTotal,
+                orderId,
+                trackingToken: orderToken,
+                deliveryType: formData.deliveryType,
+                deliveryZone: formData.deliveryZone,
+                timestamp: new Date().toISOString()
+              }
+            }
+          });
+        }}
+        onClose={() => {
+          // Order already exists as payment_requested — let them track/pay later
+          // (e.g. cash on delivery/pickup, or retry M-Pesa from the tracking page).
+          clearCart();
+          navigate('/order-success', {
+            state: {
+              orderData: {
+                ...formData,
+                items,
+                subtotal: safeTotal,
+                shipping: shippingCost,
+                total: finalTotal,
+                orderId: mpesaModal.orderId,
+                trackingToken: mpesaModal.orderToken,
+                deliveryType: formData.deliveryType,
+                deliveryZone: formData.deliveryZone,
+                timestamp: new Date().toISOString()
+              }
+            }
+          });
+        }}
+      />
+    )}
+    </>
   );
 };
 

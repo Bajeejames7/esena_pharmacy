@@ -119,6 +119,27 @@ export const ordersAPI = {
   getByToken: (token) => api.get(`/orders/${token}`),
 };
 
+// K2 Connect (Kopo Kopo) M-Pesa payment methods
+export const mpesaAPI = {
+  /**
+   * Trigger STK Push on customer's phone (via K2 Connect)
+   * @param {{ orderId: number, phoneNumber: string, amount: number }} data
+   */
+  initiateSTKPush: (data) => api.post('/k2/stkpush', data),
+
+  /**
+   * Poll payment status
+   * @param {string} checkoutRequestId - ID returned by initiateSTKPush
+   */
+  checkStatus: (checkoutRequestId) => api.get(`/k2/status/${checkoutRequestId}`),
+
+  /**
+   * Get all payment attempts for an order (admin)
+   * @param {number} orderId
+   */
+  getOrderPayments: (orderId) => api.get(`/k2/order/${orderId}/payments`),
+};
+
 // Appointments API methods
 export const appointmentsAPI = {
   create: (data) => api.post('/appointments', data),

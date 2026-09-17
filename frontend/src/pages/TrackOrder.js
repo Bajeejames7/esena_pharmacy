@@ -4,6 +4,7 @@ import { useBreakpoint } from '../utils/responsive';
 import GlassCard from '../components/GlassCard';
 import GlassInput from '../components/forms/GlassInput';
 import GlassButton from '../components/forms/GlassButton';
+import MpesaPaymentModal from '../components/MpesaPaymentModal';
 
 /**
  * Track Order page with enhanced UI and status timeline
@@ -20,6 +21,7 @@ const TrackOrder = () => {
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState('');
   const [cancelled, setCancelled] = useState(false);
+  const [showMpesaModal, setShowMpesaModal] = useState(false);
 
   const handleCancelOrder = async () => {
     if (!window.confirm('Are you sure you want to cancel this order?')) return;
@@ -188,29 +190,40 @@ const TrackOrder = () => {
             <div className={breakpoint === 'desktop' ? 'col-span-2' : ''}>
               {/* Status Card */}
               <GlassCard className="p-6 mb-6">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
                   <h2 className="text-gray-800 dark:text-white">Order Status</h2>
-                  <GlassButton
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => {
-                      setOrderData(null);
-                      setTrackingToken('');
-                      setError('');
-                    }}
-                  >
-                    Track Another Order
-                  </GlassButton>
-                  {['pending', 'payment_requested'].includes(orderData.status) && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    {['pending', 'payment_requested'].includes(orderData.status) && (
+                      <GlassButton
+                        variant="primary"
+                        size="sm"
+                        onClick={() => setShowMpesaModal(true)}
+                      >
+                        Pay Now with M-Pesa
+                      </GlassButton>
+                    )}
+                    {['pending', 'payment_requested'].includes(orderData.status) && (
+                      <GlassButton
+                        variant="danger"
+                        size="sm"
+                        onClick={handleCancelOrder}
+                        disabled={cancelling}
+                      >
+                        {cancelling ? 'Cancelling...' : 'Cancel Order'}
+                      </GlassButton>
+                    )}
                     <GlassButton
-                      variant="danger"
+                      variant="secondary"
                       size="sm"
-                      onClick={handleCancelOrder}
-                      disabled={cancelling}
+                      onClick={() => {
+                        setOrderData(null);
+                        setTrackingToken('');
+                        setError('');
+                      }}
                     >
-                      {cancelling ? 'Cancelling...' : 'Cancel Order'}
+                      Track Another Order
                     </GlassButton>
-                  )}
+                  </div>
                 </div>
                 {cancelError && <p className="text-red-600 text-sm mt-2">{cancelError}</p>}
                 {cancelled && <p className="text-green-600 text-sm mt-2">Your order has been cancelled successfully.</p>}
@@ -244,7 +257,11 @@ const TrackOrder = () => {
                   </div>
                   <div>
                     <p className="text-gray-600 dark:text-gray-400 text-sm">Payment Method</p>
-                    <p className="text-gray-800 dark:text-white capitalize">{orderData.notes || 'N/A'}</p>                  </div>
+                    <p className="text-gray-800 dark:text-white capitalize">{orderData.payment_method || orderData.notes || 'N/A'}</p>
+                    {orderData.mpesa_receipt && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">Receipt: {orderData.mpesa_receipt}</p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Status Timeline */}
@@ -369,6 +386,20 @@ const TrackOrder = () => {
           </div>
         )}
       </div>
+
+      {showMpesaModal && orderData && (
+        <MpesaPaymentModal
+          orderId={orderData.id}
+          orderToken={orderData.token}
+          amount={orderData.total}
+          defaultPhone={orderData.phone}
+          onSuccess={() => {
+            setOrderData(prev => ({ ...prev, status: 'paid', payment_method: 'mpesa' }));
+            setShowMpesaModal(false);
+          }}
+          onClose={() => setShowMpesaModal(false)}
+        />
+      )}
     </div>
   );
 };

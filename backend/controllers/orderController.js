@@ -480,8 +480,16 @@ exports.updateOrderStatus = async (req, res) => {
     }
     
     // Update order status (Req 7.1)
-    await db.query("UPDATE orders SET status = ?, handled_by = ?, handled_by_name = ? WHERE id = ?",
-      [status, req.user?.userId || null, req.user?.username || null, id]);
+    // Manually flipping to 'paid' (cash on delivery/pickup, or an M-Pesa payment whose
+    // K2 webhook never arrived) — record how it was actually paid if not already set
+    // by the K2 callback, so reporting stays accurate either way.
+    if (status === 'paid' && !order.payment_method) {
+      await db.query("UPDATE orders SET status = ?, handled_by = ?, handled_by_name = ?, payment_method = COALESCE(payment_method, 'cash') WHERE id = ?",
+        [status, req.user?.userId || null, req.user?.username || null, id]);
+    } else {
+      await db.query("UPDATE orders SET status = ?, handled_by = ?, handled_by_name = ? WHERE id = ?",
+        [status, req.user?.userId || null, req.user?.username || null, id]);
+    }
 
     // Log activity
     await logActivity({

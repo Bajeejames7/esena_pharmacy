@@ -31,7 +31,9 @@ app.set('trust proxy', 1);
 app.use(requestSizeLimit);
 app.use(requestLogger);
 app.use(cors(corsOptions));
-app.use(express.json({ limit: '10mb' }));
+// K2 Connect webhook signatures are computed over the exact raw bytes we
+// received, so stash them before body-parser reserializes into req.body.
+app.use(express.json({ limit: '10mb', verify: (req, res, buf) => { req.rawBody = buf; } }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // 2. TRAILING SLASH HANDLER
@@ -93,6 +95,7 @@ app.use(["/admin/employees", "/api/admin/employees"], require("./routes/employee
 app.use(["/inventory", "/api/inventory"], require("./routes/inventory"));
 app.use(["/reports", "/api/reports"], require("./routes/reports"));
 app.use(["/pos-medicines", "/api/pos-medicines"], require("./routes/posMedicines"));
+app.use(["/k2", "/api/k2"], require("./routes/k2"));
 
 // 7. DB TEST ROUTE (remove in production if desired)
 app.get("/db-test", async (req, res) => {
