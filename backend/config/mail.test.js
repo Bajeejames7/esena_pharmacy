@@ -1,18 +1,15 @@
 // Set test environment before any imports
 process.env.NODE_ENV = 'test';
 process.env.EMAIL_USER = 'test@example.com';
+process.env.RESEND_API_KEY = 'test_resend_key';
 process.env.FRONTEND_URL = 'http://localhost:3000';
 
-// Create mock transporter
-const mockSendMail = jest.fn();
-const mockTransporter = {
-  sendMail: mockSendMail,
-  verify: jest.fn((callback) => callback(null, true))
-};
-
-// Mock nodemailer before requiring mail module
-jest.mock("nodemailer", () => ({
-  createTransport: jest.fn(() => mockTransporter)
+// Mock the Resend SDK before requiring mail module
+const mockSend = jest.fn();
+jest.mock("resend", () => ({
+  Resend: jest.fn(() => ({
+    emails: { send: mockSend }
+  }))
 }));
 
 const {
@@ -45,19 +42,19 @@ describe("Email Service Unit Tests", () => {
      * **Validates: Requirements 14.9**
      */
     test("should send email successfully and return true", async () => {
-      // Mock successful email send
-      mockSendMail.mockResolvedValue({ messageId: "test-message-id" });
-      
+      // Mock successful email send (Resend SDK response shape)
+      mockSend.mockResolvedValue({ data: { id: "test-message-id" }, error: null });
+
       const mailOptions = {
         to: "customer@example.com",
         subject: "Test Email",
         html: "<p>Test content</p>"
       };
-      
+
       const result = await sendEmail(mailOptions);
-      
+
       expect(result).toBe(true);
-      expect(mockSendMail).toHaveBeenCalledWith(
+      expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           to: "customer@example.com",
           subject: "Test Email",
@@ -67,100 +64,52 @@ describe("Email Service Unit Tests", () => {
     });
 
     /**
-     * Test: Email sending with SMTP error
+     * Test: Email sending with an API-level error (Resend returns { error }
+     * rather than throwing, for things like invalid recipient/auth failure)
      * **Validates: Requirements 14.9, 14.10**
      */
-    test("should handle email sending failure and return false", async () => {
-      // Mock email send failure
-      mockSendMail.mockRejectedValue(new Error("SMTP connection failed"));
-      
-      const mailOptions = {
-        to: "customer@example.com",
-        subject: "Test Email",
-        html: "<p>Test content</p>"
-      };
-      
-      // Suppress console.error for this test
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
-      
-      const result = await sendEmail(mailOptions);
-      
-      expect(result).toBe(false);
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "Email sending failed:",
-        "SMTP connection failed"
-      );
-      
-      consoleErrorSpy.mockRestore();
-    });
+    test("should handle an API-level error and return false", async () => {
+      mockSend.mockResolvedValue({ data: null, error: { message: "Invalid recipient" } });
 
-    /**
-     * Test: Email sending with network timeout
-     * **Validates: Requirements 14.9, 14.10**
-     */
-    test("should handle network timeout and return false", async () => {
-      // Mock timeout error
-      mockSendMail.mockRejectedValue(new Error("Connection timeout"));
-      
-      const mailOptions = {
-        to: "customer@example.com",
-        subject: "Test Email",
-        html: "<p>Test content</p>"
-      };
-      
-      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
-      
-      const result = await sendEmail(mailOptions);
-      
-      expect(result).toBe(false);
-      expect(mockSendMail).toHaveBeenCalled();
-      
-      consoleErrorSpy.mockRestore();
-    });
-
-    /**
-     * Test: Email sending with invalid recipient
-     * **Validates: Requirements 14.9, 14.10**
-     */
-    test("should handle invalid recipient email and return false", async () => {
-      // Mock invalid recipient error
-      mockSendMail.mockRejectedValue(new Error("Invalid recipient"));
-      
       const mailOptions = {
         to: "invalid-email",
         subject: "Test Email",
         html: "<p>Test content</p>"
       };
-      
+
       const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
-      
+
       const result = await sendEmail(mailOptions);
-      
+
       expect(result).toBe(false);
-      
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Email sending failed:",
+        "Invalid recipient"
+      );
+
       consoleErrorSpy.mockRestore();
     });
 
     /**
-     * Test: Email sending with authentication failure
+     * Test: Email sending with a thrown network-level error
      * **Validates: Requirements 14.9, 14.10**
      */
-    test("should handle authentication failure and return false", async () => {
-      // Mock authentication error
-      mockSendMail.mockRejectedValue(new Error("Authentication failed"));
-      
+    test("should handle a thrown network error and return false", async () => {
+      mockSend.mockRejectedValue(new Error("Connection timeout"));
+
       const mailOptions = {
         to: "customer@example.com",
         subject: "Test Email",
         html: "<p>Test content</p>"
       };
-      
+
       const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
-      
+
       const result = await sendEmail(mailOptions);
-      
+
       expect(result).toBe(false);
-      
+      expect(mockSend).toHaveBeenCalled();
+
       consoleErrorSpy.mockRestore();
     });
   });
@@ -369,7 +318,7 @@ describe("Email Service Unit Tests", () => {
      */
     test("should not throw error when email fails", async () => {
       // Mock email send failure
-      mockSendMail.mockRejectedValue(new Error("Email service unavailable"));
+      mockSend.mockRejectedValue(new Error("Email service unavailable"));
       
       const mailOptions = {
         to: "customer@example.com",
@@ -391,7 +340,7 @@ describe("Email Service Unit Tests", () => {
      */
     test("should handle multiple email failures independently", async () => {
       // Mock email send failure
-      mockSendMail.mockRejectedValue(new Error("SMTP error"));
+      mockSend.mockRejectedValue(new Error("SMTP error"));
       
       const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
       
@@ -411,7 +360,7 @@ describe("Email Service Unit Tests", () => {
       // Both should fail independently
       expect(result1).toBe(false);
       expect(result2).toBe(false);
-      expect(mockSendMail).toHaveBeenCalledTimes(2);
+      expect(mockSend).toHaveBeenCalledTimes(2);
       
       consoleErrorSpy.mockRestore();
     });
@@ -422,7 +371,7 @@ describe("Email Service Unit Tests", () => {
      */
     test("should log error message when email fails", async () => {
       const errorMessage = "Connection refused";
-      mockSendMail.mockRejectedValue(new Error(errorMessage));
+      mockSend.mockRejectedValue(new Error(errorMessage));
       
       const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
       

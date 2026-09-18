@@ -1,37 +1,24 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
 // Strip trailing slash so URLs like FRONTEND_URL + "/path" never produce double slashes
 const FRONTEND_URL = (process.env.FRONTEND_URL || 'https://esena.co.ke').replace(/\/$/, '');
 
-/**
- * Email transporter configuration with SMTP settings
- * Implements Requirements 14.9, 14.10
- */
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  // Connection timeout and retry settings
-  connectionTimeout: 10000, // 10 seconds
-  greetingTimeout: 10000,
-  socketTimeout: 10000
-});
+// Sends over HTTPS rather than raw SMTP — many free hosts (Render's free tier
+// included) block outbound SMTP ports 25/465/587 entirely, which raw SMTP
+// (nodemailer + Gmail) can never work around there.
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
-/**
- * Verify transporter configuration on startup
- * Logs error but doesn't crash the application (Req 14.9)
- */
+// Until esena.co.ke is verified as a sending domain in Resend, mail can only
+// go out from their shared onboarding domain. Switch EMAIL_FROM to something
+// like "Esena Pharmacy <orders@esena.co.ke>" once that domain is verified.
+const EMAIL_FROM = process.env.EMAIL_FROM || "Esena Pharmacy <onboarding@resend.dev>";
+
 if (process.env.NODE_ENV !== 'test') {
-  transporter.verify((error, success) => {
-    if (error) {
-      console.error("Email transporter configuration error:", error.message);
-      console.error("Email notifications will not be sent. Please check your SMTP settings.");
-    } else {
-      console.log("Email server is ready to send messages");
-    }
-  });
+  if (!resend) {
+    console.error("RESEND_API_KEY not set — email notifications will not be sent.");
+  } else {
+    console.log("Resend email client configured.");
+  }
 }
 
 /**
@@ -451,12 +438,20 @@ const appointmentAdminNotificationTemplate = (appointment) => {
  * @returns {Promise<boolean>} - Returns true if sent successfully, false otherwise
  */
 const sendEmail = async (mailOptions) => {
+  if (!resend) {
+    console.error("Email sending failed: RESEND_API_KEY not configured");
+    return false;
+  }
   try {
-    const info = await transporter.sendMail({
-      from: `"Esena Pharmacy" <${process.env.EMAIL_USER}>`,
+    const { data, error } = await resend.emails.send({
+      from: EMAIL_FROM,
       ...mailOptions
     });
-    console.log("Email sent successfully:", info.messageId);
+    if (error) {
+      console.error("Email sending failed:", error.message || error);
+      return false;
+    }
+    console.log("Email sent successfully:", data.id);
     return true;
   } catch (error) {
     console.error("Email sending failed:", error.message);
@@ -878,7 +873,6 @@ const prescriptionStatusUpdateTemplate = (prescription, newStatus) => {
 };
 
 module.exports = {
-  transporter,
   sendEmail,
   orderConfirmationTemplate,
   orderAdminNotificationTemplate,
