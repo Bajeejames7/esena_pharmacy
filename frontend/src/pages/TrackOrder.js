@@ -47,13 +47,6 @@ const TrackOrder = () => {
     }
   };
 
-  // Auto-track if token is provided in URL
-  useEffect(() => {
-    if (token) {
-      handleTrackOrder();
-    }
-  }, [token]);
-
   const handleTrackOrder = async (e) => {
     if (e) e.preventDefault();
     
@@ -86,6 +79,16 @@ const TrackOrder = () => {
       setLoading(false);
     }
   };
+
+  // Auto-track if token is provided in URL — intentionally runs only once on
+  // mount using whatever trackingToken/handleTrackOrder are at that time;
+  // adding them as deps would re-trigger this on every keystroke instead.
+  useEffect(() => {
+    if (token) {
+      handleTrackOrder();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   const getStatusInfo = (status) => {
     switch (status) {

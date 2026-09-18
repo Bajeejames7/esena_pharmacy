@@ -1,5 +1,3 @@
-import { useMemo } from 'react';
-import { useBreakpoint } from '../utils/responsive';
 import ProductCard from './ProductCard';
 import GlassCard from './GlassCard';
 
@@ -15,16 +13,6 @@ const ProductGrid = ({
   layout = 'grid',
   className = ''
 }) => {
-  const { breakpoint } = useBreakpoint();
-
-  const gridColumns = useMemo(() => {
-    switch (breakpoint) {
-      case 'mobile': return 1;
-      case 'tablet': return 2;
-      default: return 3;
-    }
-  }, [breakpoint]);
-
   if (loading) {
     return (
       <div

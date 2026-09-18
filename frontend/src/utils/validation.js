@@ -11,7 +11,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /**
  * Phone number validation regex (supports various formats)
  */
-const PHONE_REGEX = /^[\+]?[1-9][\d]{0,15}$/;
+const PHONE_REGEX = /^[+]?[1-9][\d]{0,15}$/;
 
 /**
  * Validate email format
@@ -47,7 +47,7 @@ export const validatePhone = (phone) => {
     return { isValid: false, error: 'Phone number is required' };
   }
   
-  const cleanPhone = phone.replace(/[\s\-\(\)\.]/g, '');
+  const cleanPhone = phone.replace(/[\s\-().]/g, '');
   
   if (cleanPhone.length === 0) {
     return { isValid: false, error: 'Phone number is required' };

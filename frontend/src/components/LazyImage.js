@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { cacheManager } from '../utils/cacheManager';
 
 /**
@@ -56,14 +56,7 @@ const LazyImage = ({
     return () => observer.disconnect();
   }, [priority]);
 
-  // Load optimized image when in view
-  useEffect(() => {
-    if ((isInView || priority) && src && !isLoaded && !hasError) {
-      loadOptimizedImage();
-    }
-  }, [isInView, priority, src, isLoaded, hasError]);
-
-  const loadOptimizedImage = async () => {
+  const loadOptimizedImage = useCallback(async () => {
     try {
       const cachedUrl = await cacheManager.getOptimizedImageUrl(src);
       if (cachedUrl && cachedUrl !== src) {
@@ -72,7 +65,14 @@ const LazyImage = ({
     } catch (e) {
       console.warn('Failed to load cached image, using original:', e);
     }
-  };
+  }, [src]);
+
+  // Load optimized image when in view
+  useEffect(() => {
+    if ((isInView || priority) && src && !isLoaded && !hasError) {
+      loadOptimizedImage();
+    }
+  }, [isInView, priority, src, isLoaded, hasError, loadOptimizedImage]);
 
   const handleLoad = (e) => {
     setIsLoaded(true);

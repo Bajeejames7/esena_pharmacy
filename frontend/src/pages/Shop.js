@@ -1,4 +1,4 @@
-﻿import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useBreakpoint } from '../utils/responsive';
 import GlassCard from '../components/GlassCard';

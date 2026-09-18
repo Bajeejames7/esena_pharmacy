@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useBreakpoint } from '../utils/responsive';
 import AdminSidebar from '../components/AdminSidebar';
 import AdminHeader from '../components/AdminHeader';
@@ -66,11 +66,7 @@ const ManageAppointments = () => {
     }
   }, [isMobile]);
 
-  useEffect(() => {
-    loadAppointments();
-  }, [currentPage, searchTerm, statusFilter, serviceFilter, dateFilter]);
-
-  const loadAppointments = async () => {
+  const loadAppointments = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -118,9 +114,11 @@ const ManageAppointments = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchTerm, statusFilter, serviceFilter, dateFilter, itemsPerPage]);
 
-
+  useEffect(() => {
+    loadAppointments();
+  }, [loadAppointments]);
 
   const getStatusColor = (status) => {
     switch (status) {

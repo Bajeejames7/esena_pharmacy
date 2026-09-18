@@ -50,7 +50,7 @@ const AdminDashboard = () => {
     loadDashboardStats();
     loadRecentData();
     if (isAdmin) loadRevenueData();
-  }, []);
+  }, [isAdmin]);
 
   const loadDashboardStats = async () => {
     try {

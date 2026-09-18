@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useBreakpoint } from '../utils/responsive';
 import AdminSidebar from '../components/AdminSidebar';
 import AdminHeader from '../components/AdminHeader';
@@ -58,11 +58,7 @@ const ManageOrders = () => {
     setSidebarOpen(!isMobile);
   }, [isMobile]);
 
-  useEffect(() => {
-    loadOrders();
-  }, [currentPage, searchTerm, statusFilter, dateFilter]);
-
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -104,7 +100,11 @@ const ManageOrders = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchTerm, statusFilter, dateFilter, itemsPerPage]);
+
+  useEffect(() => {
+    loadOrders();
+  }, [loadOrders]);
 
   const handleViewDetails = async (order) => {
     setSelectedOrder(order);

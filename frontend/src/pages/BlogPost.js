@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { blogsAPI } from '../services/api';
 import GlassCard from '../components/GlassCard';
 
@@ -8,18 +8,11 @@ import GlassCard from '../components/GlassCard';
  */
 const BlogPost = () => {
   const { slug } = useParams();
-  const navigate = useNavigate();
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (slug) {
-      fetchBlog();
-    }
-  }, [slug]);
-
-  const fetchBlog = async () => {
+  const fetchBlog = useCallback(async () => {
     try {
       setLoading(true);
       const response = await blogsAPI.getBySlug(slug);
@@ -34,7 +27,13 @@ const BlogPost = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug]);
+
+  useEffect(() => {
+    if (slug) {
+      fetchBlog();
+    }
+  }, [slug, fetchBlog]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {

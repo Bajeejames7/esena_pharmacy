@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useBreakpoint } from '../utils/responsive';
 import GlassCard from '../components/GlassCard';
 import GlassInput from '../components/forms/GlassInput';
 import GlassTextarea from '../components/forms/GlassTextarea';
@@ -11,7 +10,6 @@ import { prescriptionsAPI } from '../services/api';
  * Allows customers to upload prescriptions for pharmacist review
  */
 const UploadPrescription = () => {
-  const { breakpoint } = useBreakpoint();
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
