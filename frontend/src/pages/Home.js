@@ -504,7 +504,7 @@ const Home = () => {
             </p>
           </div>
 
-          {/* Row 1: portrait hero left, 3 original images stacked right */}
+          {/* Row 1: portrait hero left, 2 images stacked right */}
           <div className="flex gap-4 mb-4" style={{ height: '600px' }}>
 
             {/* Left: portrait image fills full height */}
@@ -520,12 +520,11 @@ const Home = () => {
               </GlassCard>
             </a>
 
-            {/* Right: 3 original images stacked */}
+            {/* Right: 2 images stacked */}
             <div className="flex-1 min-w-0 flex flex-col gap-4">
               {[
                 { src: '/esena_pharmacy_images/image_1_pharmacy.webp', alt: 'Esena Pharmacy entrance' },
                 { src: '/esena_pharmacy_images/image_2_pharmacy.webp', alt: 'Esena Pharmacy interior' },
-                { src: '/esena_pharmacy_images/image_5_pharmacy.webp', alt: 'Esena Pharmacy team' },
               ].map((img, i) => (
                 <a key={i} href={img.src} target="_blank" rel="noopener noreferrer" className="group flex-1 min-h-0 block">
                   <GlassCard className="overflow-hidden p-0 h-full">
