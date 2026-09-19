@@ -48,36 +48,32 @@ const BrandingSlider = () => {
           className="flex transition-transform duration-500 ease-in-out"
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
         >
-          {brandingImages.map((image, index) => {
-            const desktopHeight = breakpoint === 'desktop' ? '420px' : breakpoint === 'tablet' ? '320px' : '220px';
-
-            return (
-              <div key={index} className="w-full flex-shrink-0">
-                <Link
-                  to={image.link}
-                  className="block w-full cursor-pointer group"
-                  aria-label={`Navigate to ${image.description}`}
+          {brandingImages.map((image, index) => (
+            <div key={index} className="w-full flex-shrink-0">
+              <Link
+                to={image.link}
+                className="block w-full cursor-pointer group"
+                aria-label={`Navigate to ${image.description}`}
+              >
+                {/* Fixed aspect ratio (matches the source images' 1600x420 canvas) so the
+                    crop ratio is identical at every viewport width — a fixed pixel height
+                    here would crop wildly differently on a narrow phone vs desktop,
+                    cutting off text/icons on mobile. max-h caps it on ultra-wide screens. */}
+                <div
+                  className="relative w-full overflow-hidden aspect-[1600/420] max-h-[420px]"
+                  style={{ backgroundColor: '#e5e7eb' /* placeholder bg while image loads */ }}
                 >
-                  {/* Fixed aspect ratio container prevents CLS */}
-                  <div
-                    className="relative w-full overflow-hidden"
-                    style={{
-                      height: desktopHeight,
-                      backgroundColor: '#e5e7eb' /* placeholder bg while image loads */
-                    }}
-                  >
-                    <LazyImage
-                      src={image.src}
-                      alt={image.alt}
-                      className="absolute inset-0 w-full h-full object-cover transition-all duration-300 group-hover:brightness-110"
-                      priority={index === 0}
-                      preload={index < 3}
-                    />
-                  </div>
-                </Link>
-              </div>
-            );
-          })}
+                  <LazyImage
+                    src={image.src}
+                    alt={image.alt}
+                    className="absolute inset-0 w-full h-full object-cover transition-all duration-300 group-hover:brightness-110"
+                    priority={index === 0}
+                    preload={index < 3}
+                  />
+                </div>
+              </Link>
+            </div>
+          ))}
         </div>
 
         <button
