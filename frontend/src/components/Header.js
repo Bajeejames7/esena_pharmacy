@@ -18,8 +18,16 @@ const Header = () => {
   // Use the pre-calculated item count
   const totalItems = itemCount || 0;
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside (desktop hover-dropdowns only —
+  // dropdownRef wraps just the desktop <nav>, so on mobile every tap counts
+  // as "outside" it. Left enabled during a mobile tap, this fires on
+  // mousedown and unmounts the accordion panel before the tapped Link's own
+  // click can fire, silently swallowing mobile navigation. The mobile menu
+  // already closes itself via closeMobileMenu/route changes, so skip this
+  // entirely while it's open.
   useEffect(() => {
+    if (isMobileMenuOpen) return undefined;
+
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setActiveDropdown(null);
@@ -28,7 +36,7 @@ const Header = () => {
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isMobileMenuOpen]);
 
   // Close mobile menu when route changes
   useEffect(() => {
