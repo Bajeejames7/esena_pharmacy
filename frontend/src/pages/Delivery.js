@@ -40,7 +40,7 @@ const Delivery = () => {
         {/* Free Delivery Banner */}
         <GlassCard className="p-5 mb-8 text-center border-green-400/30 dark:border-green-500/30">
           <p className="text-green-700 dark:text-green-400 font-semibold text-lg">
-            🎉 FREE DELIVERY on orders above KSh 3,000
+            🎉 FREE DELIVERY on orders above KSh 10,000
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Perfect for monthly medication refills and bulk orders.

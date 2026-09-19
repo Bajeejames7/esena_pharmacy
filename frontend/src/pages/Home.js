@@ -383,7 +383,7 @@ const Home = () => {
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center">
                     <span className="text-green-600 dark:text-green-400 font-medium">Free Delivery</span>
-                    <span className="text-gray-600 dark:text-gray-400">Orders above KSh 3,000</span>
+                    <span className="text-gray-600 dark:text-gray-400">Orders above KSh 10,000</span>
                   </div>
                 </div>
               </div>
@@ -508,8 +508,7 @@ const Home = () => {
           <div className="flex gap-4 mb-4" style={{ height: '600px' }}>
 
             {/* Left: portrait image fills full height */}
-            <a href="/esena_pharmacy_images/image_4_pharmacy.webp" target="_blank" rel="noopener noreferrer"
-              className="group flex-1 min-w-0 block">
+            <div className="group flex-1 min-w-0 block">
               <GlassCard className="overflow-hidden p-0 h-full">
                 <img
                   src="/esena_pharmacy_images/image_4_pharmacy.webp"
@@ -518,7 +517,7 @@ const Home = () => {
                   loading="lazy"
                 />
               </GlassCard>
-            </a>
+            </div>
 
             {/* Right: 2 images stacked */}
             <div className="flex-1 min-w-0 flex flex-col gap-4">
@@ -526,7 +525,7 @@ const Home = () => {
                 { src: '/esena_pharmacy_images/image_1_pharmacy.webp', alt: 'Esena Pharmacy entrance' },
                 { src: '/esena_pharmacy_images/image_2_pharmacy.webp', alt: 'Esena Pharmacy interior' },
               ].map((img, i) => (
-                <a key={i} href={img.src} target="_blank" rel="noopener noreferrer" className="group flex-1 min-h-0 block">
+                <div key={i} className="group flex-1 min-h-0 block">
                   <GlassCard className="overflow-hidden p-0 h-full">
                     <img
                       src={img.src}
@@ -535,7 +534,7 @@ const Home = () => {
                       loading="lazy"
                     />
                   </GlassCard>
-                </a>
+                </div>
               ))}
             </div>
 
@@ -547,7 +546,7 @@ const Home = () => {
               { src: '/esena_pharmacy_images/inside_esena_image1.webp', alt: 'Inside Esena Pharmacy' },
               { src: '/esena_pharmacy_images/inside_esena_image2.webp', alt: 'Inside Esena Pharmacy' },
             ].map((img, i) => (
-              <a key={i} href={img.src} target="_blank" rel="noopener noreferrer" className="group flex-1 min-w-0 block">
+              <div key={i} className="group flex-1 min-w-0 block">
                 <GlassCard className="overflow-hidden p-0 h-full">
                   <img
                     src={img.src}
@@ -556,7 +555,7 @@ const Home = () => {
                     loading="lazy"
                   />
                 </GlassCard>
-              </a>
+              </div>
             ))}
           </div>
 
