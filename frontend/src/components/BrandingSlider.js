@@ -96,24 +96,22 @@ const BrandingSlider = () => {
           </svg>
         </button>
 
-        <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 flex z-10 ${
-          breakpoint === 'mobile' ? 'space-x-2' : 'space-x-3'
-        }`}>
-          {brandingImages.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              className={`${
-                breakpoint === 'mobile' ? 'w-2 h-2' : 'w-3 h-3'
-              } rounded-full transition-all duration-200 ${
-                currentSlide === index
-                  ? 'bg-white shadow-lg scale-125'
-                  : 'bg-white/60 hover:bg-white/80'
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
+        {breakpoint !== 'mobile' && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex z-10 space-x-3">
+            {brandingImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                  currentSlide === index
+                    ? 'bg-white shadow-lg scale-125'
+                    : 'bg-white/60 hover:bg-white/80'
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="absolute bottom-0 left-0 w-full h-1 bg-black/20">
