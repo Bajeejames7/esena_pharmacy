@@ -14,21 +14,27 @@ const Header = () => {
   const { itemCount } = useCart();
   const location = useLocation();
   const dropdownRef = useRef(null);
+  const headerRef = useRef(null);
 
   // Use the pre-calculated item count
   const totalItems = itemCount || 0;
 
-  // Close dropdown when clicking outside (desktop hover-dropdowns only —
-  // dropdownRef wraps just the desktop <nav>, so on mobile every tap counts
-  // as "outside" it. Left enabled during a mobile tap, this fires on
-  // mousedown and unmounts the accordion panel before the tapped Link's own
-  // click can fire, silently swallowing mobile navigation. The mobile menu
-  // already closes itself via closeMobileMenu/route changes, so skip this
-  // entirely while it's open.
+  // Close on outside click. Desktop hover-dropdowns close as soon as a tap
+  // lands outside dropdownRef (just the desktop <nav>). The mobile menu
+  // instead closes against headerRef (the whole header, button + panel) —
+  // any tap inside the header, including on a nav Link, is left alone here
+  // so the Link's own click still fires; only a tap truly outside the
+  // header (mousedown fires before click) collapses the mobile menu.
   useEffect(() => {
-    if (isMobileMenuOpen) return undefined;
-
     const handleClickOutside = (event) => {
+      if (isMobileMenuOpen) {
+        if (headerRef.current && !headerRef.current.contains(event.target)) {
+          setIsMobileMenuOpen(false);
+          setActiveDropdown(null);
+        }
+        return;
+      }
+
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setActiveDropdown(null);
       }
@@ -118,7 +124,8 @@ const Header = () => {
   };
 
   return (
-    <header 
+    <header
+      ref={headerRef}
       className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-white/20 dark:border-slate-600/30"
       id="navigation"
     >
