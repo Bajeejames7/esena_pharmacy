@@ -17,21 +17,6 @@ const ProductCard = ({
   const [expandedDescription, setExpandedDescription] = useState(false);
   const [zoomOpen, setZoomOpen] = useState(false);
   const touchStartX = useRef(null);
-  const openTimer = useRef(null);   // delay before opening
-  const closeTimer = useRef(null);  // grace period before closing
-
-  const openZoom = () => {
-    clearTimeout(closeTimer.current);
-    openTimer.current = setTimeout(() => setZoomOpen(true), 3000);
-  };
-
-  const closeZoom = () => {
-    clearTimeout(openTimer.current);
-    // 400ms grace period — prevents accidental close when moving to the overlay
-    closeTimer.current = setTimeout(() => setZoomOpen(false), 400);
-  };
-
-  const cancelClose = () => clearTimeout(closeTimer.current);
 
   // Close on Escape
   const handleKeyUp = useCallback((e) => {
@@ -115,7 +100,6 @@ const ProductCard = ({
         hover={!!onProductClick}
         onClick={onProductClick ? handleCardClick : undefined}
         onKeyDown={onProductClick ? handleKeyDown : undefined}
-        onMouseLeave={closeZoom}
         tabIndex={onProductClick ? 0 : -1}
         role={onProductClick ? 'button' : 'article'}
         aria-label={onProductClick ? `View details for ${product.name}` : undefined}
@@ -126,8 +110,11 @@ const ProductCard = ({
           className={`${imageClasses[layout]} bg-white dark:bg-gray-800 rounded-lg ${layout === 'grid' ? 'mb-4' : 'mr-0'} relative overflow-hidden select-none group`}
           onTouchStart={totalSlides > 1 ? handleTouchStart : undefined}
           onTouchEnd={totalSlides > 1 ? handleTouchEnd : undefined}
-          onMouseEnter={() => {
-            if (imageUrl && currentSlide === 'image') openZoom();
+          onClick={(e) => {
+            if (imageUrl && currentSlide === 'image') {
+              e.stopPropagation();
+              setZoomOpen(true);
+            }
           }}
         >
           {/* Image slide */}
@@ -275,8 +262,6 @@ const ProductCard = ({
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fadeIn"
           onClick={() => setZoomOpen(false)}
-          onMouseLeave={closeZoom}
-          onMouseEnter={cancelClose}
           role="dialog"
           aria-modal="true"
           aria-label={`Zoomed view of ${product.name}`}
@@ -301,7 +286,6 @@ const ProductCard = ({
               animation: 'zoomIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
             }}
             onClick={(e) => e.stopPropagation()}
-            onMouseEnter={cancelClose}
           >
             <img
               src={imageUrl}
