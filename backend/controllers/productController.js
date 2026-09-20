@@ -82,6 +82,10 @@ exports.getAllProducts = async (req, res) => {
     const where = conditions.length ? " WHERE " + conditions.join(" AND ") : "";
 
     const [[{ total }]] = await db.query(`SELECT COUNT(*) as total FROM products${where}`, params);
+    const inStockWhere = conditions.length
+      ? " WHERE " + [...conditions, "stock > 0"].join(" AND ")
+      : " WHERE stock > 0";
+    const [[{ inStockTotal }]] = await db.query(`SELECT COUNT(*) as inStockTotal FROM products${inStockWhere}`, params);
     const [products] = await db.query(
       // In-stock items first — otherwise a catalog with far more out-of-stock
       // than in-stock rows (e.g. a bulk POS import) buries what customers can
@@ -90,7 +94,7 @@ exports.getAllProducts = async (req, res) => {
       [...params, pageLimit, pageOffset]
     );
 
-    res.json({ products, total, limit: pageLimit, offset: pageOffset });
+    res.json({ products, total, inStockTotal, limit: pageLimit, offset: pageOffset });
   } catch (error) {
     console.error("Error fetching products:", error);
     logger.error("Database error in getAllProducts", error);

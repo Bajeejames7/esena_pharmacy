@@ -20,6 +20,7 @@ const Products = () => {
     meta.content = 'Shop medications, vitamins, supplements, personal care and healthcare products at Esena Pharmacy, Outering Road, Ruaraka, Nairobi. Fast delivery across Kenya.';
   }, []);
   const [total, setTotal] = useState(0);
+  const [inStockTotal, setInStockTotal] = useState(0);
   const [loading, setLoading] = useState(true);       // true only on first load
   const [searching, setSearching] = useState(false);  // true on subsequent fetches
   const [loadingMore, setLoadingMore] = useState(false);
@@ -100,6 +101,7 @@ const Products = () => {
         const list = Array.isArray(data) ? data : (data.products || []);
         setProducts(list);
         setTotal(data.total ?? list.length);
+        setInStockTotal(data.inStockTotal ?? 0);
         offsetRef.current = list.length;
       } catch {
         setError('Failed to load products. Please try again.');
@@ -124,6 +126,7 @@ const Products = () => {
       const more = Array.isArray(data) ? data : (data.products || []);
       setProducts(prev => [...prev, ...more]);
       setTotal(data.total ?? total);
+      setInStockTotal(data.inStockTotal ?? inStockTotal);
       offsetRef.current += more.length;
     } catch {
       // silently fail
@@ -223,12 +226,19 @@ const Products = () => {
 
         {/* Results info + layout toggle */}
         <div className="flex justify-between items-center mb-6">
-          <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+          <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2 flex-wrap">
             {searching && (
               <span className="inline-block w-3 h-3 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></span>
             )}
-            Showing {displayProducts.length} of {total} product{total !== 1 ? 's' : ''}
-            {debouncedSearch && ` for "${debouncedSearch}"`}
+            <span>
+              Showing {displayProducts.length} of {total} product{total !== 1 ? 's' : ''}
+              {debouncedSearch && ` for "${debouncedSearch}"`}
+            </span>
+            {category && (
+              <span className="text-glass-blue dark:text-blue-300 font-medium">
+                — {inStockTotal} in stock of {total} in {CATEGORIES.find(c => c.value === category)?.label || category}
+              </span>
+            )}
           </p>
           {/* Layout toggle — hidden on mobile, list view doesn't work well on small screens */}
           <div className="hidden sm:flex items-center gap-2">
