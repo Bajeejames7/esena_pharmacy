@@ -96,22 +96,6 @@ const LazyImage = ({
     }
   };
 
-  // Generate responsive srcSet for better performance
-  const generateSrcSet = (baseSrc) => {
-    if (!baseSrc || baseSrc.startsWith('blob:') || srcSet) return srcSet;
-    
-    const sizes = [320, 640, 768, 1024, 1280];
-    return sizes.map(size => {
-      try {
-        const url = new URL(baseSrc, window.location.origin);
-        url.searchParams.set('w', size);
-        return `${url.toString()} ${size}w`;
-      } catch (e) {
-        return `${baseSrc} ${size}w`;
-      }
-    }).join(', ');
-  };
-
   const shouldLoad = loading === 'eager' || priority || isInView;
 
   return (
@@ -130,8 +114,8 @@ const LazyImage = ({
       {shouldLoad && (
         <img
           src={optimizedSrc}
-          srcSet={generateSrcSet(optimizedSrc)}
-          sizes={sizes || "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"}
+          srcSet={srcSet}
+          sizes={srcSet ? sizes : undefined}
           alt={alt}
           loading={priority ? 'eager' : loading}
           decoding="async"

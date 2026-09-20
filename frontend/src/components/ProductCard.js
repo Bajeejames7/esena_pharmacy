@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useCart } from '../contexts/CartContext';
 import GlassCard from './GlassCard';
 import LazyImage from './LazyImage';
-import { generateSrcSet } from '../utils/performance';
 
 const ProductCard = ({ 
   product, 
@@ -125,8 +124,6 @@ const ProductCard = ({
                   src={imageUrl}
                   alt={`${product.name} - ${product.category || 'Product'} priced at KSh ${parseFloat(product.price).toFixed(2)}`}
                   className="absolute inset-0 w-full h-full"
-                  srcSet={generateSrcSet(imageUrl)}
-                  sizes={layout === 'grid' ? '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw' : '96px'}
                 />
                 {/* Zoom hint */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">

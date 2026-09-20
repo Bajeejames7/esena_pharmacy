@@ -175,28 +175,6 @@ export const monitorBundleSize = () => {
 };
 
 /**
- * Image optimization utilities
- */
-export const optimizeImage = (src, width, height, quality = 80) => {
-  // This would typically integrate with a service like Cloudinary or ImageKit
-  // For now, return the original src with query parameters for services that support it
-  const params = new URLSearchParams();
-  if (width) params.append('w', width);
-  if (height) params.append('h', height);
-  if (quality !== 80) params.append('q', quality);
-  
-  const queryString = params.toString();
-  return queryString ? `${src}?${queryString}` : src;
-};
-
-/**
- * Generate responsive image srcSet
- */
-export const generateSrcSet = (baseSrc, sizes = [320, 640, 768, 1024, 1280]) => {
-  return sizes.map(size => `${optimizeImage(baseSrc, size)} ${size}w`).join(', ');
-};
-
-/**
  * Memory usage monitoring
  */
 export const monitorMemoryUsage = () => {
