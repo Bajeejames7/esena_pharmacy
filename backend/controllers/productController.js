@@ -83,7 +83,10 @@ exports.getAllProducts = async (req, res) => {
 
     const [[{ total }]] = await db.query(`SELECT COUNT(*) as total FROM products${where}`, params);
     const [products] = await db.query(
-      `SELECT * FROM products${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      // In-stock items first — otherwise a catalog with far more out-of-stock
+      // than in-stock rows (e.g. a bulk POS import) buries what customers can
+      // actually buy behind pages of unavailable items tied on created_at.
+      `SELECT * FROM products${where} ORDER BY (stock > 0) DESC, created_at DESC LIMIT ? OFFSET ?`,
       [...params, pageLimit, pageOffset]
     );
 

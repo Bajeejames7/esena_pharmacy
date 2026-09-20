@@ -144,6 +144,7 @@ const Products = () => {
   // Client-side sort
   const sortedProducts = [...products].sort((a, b) => {
     switch (sortBy) {
+      case 'name': return a.name.localeCompare(b.name);
       case 'name_desc': return b.name.localeCompare(a.name);
       case 'price_asc': return parseFloat(a.price) - parseFloat(b.price);
       case 'price_desc': return parseFloat(b.price) - parseFloat(a.price);
