@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import LazyImage from './LazyImage';
 import { useBreakpoint } from '../utils/responsive';
 
 const BrandingSlider = () => {
@@ -63,12 +62,15 @@ const BrandingSlider = () => {
                   className="relative w-full overflow-hidden aspect-[1600/420] max-h-[420px]"
                   style={{ backgroundColor: '#e5e7eb' /* placeholder bg while image loads */ }}
                 >
-                  <LazyImage
+                  {/* All 9 slides autoplay into view within ~36s anyway, so lazy-loading
+                      or showing a loading placeholder per-slide only adds a visible flash
+                      with no bandwidth benefit — load every slide eagerly instead. */}
+                  <img
                     src={image.src}
                     alt={image.alt}
                     className="absolute inset-0 w-full h-full object-cover transition-all duration-300 group-hover:brightness-110"
-                    priority={index === 0}
-                    preload={index < 3}
+                    loading="eager"
+                    decoding="async"
                   />
                 </div>
               </Link>
