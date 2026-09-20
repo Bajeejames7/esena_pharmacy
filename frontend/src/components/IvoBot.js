@@ -148,7 +148,7 @@ const IvoBot = () => {
   return (
     <>
       {/* Chat Button — left side, same height as WhatsApp button */}
-      <div className="fixed left-6 z-50" style={{ bottom: '6rem' }}>
+      <div className="fixed left-6 z-40" style={{ bottom: '6rem' }}>
         <button
           onClick={handleToggleChat}
           className="group relative"
@@ -210,7 +210,7 @@ const IvoBot = () => {
       {/* Chat Window — left side, fixed between header and bottom */}
       {isOpen && (
         <div
-          className="fixed left-4 z-50 w-80 sm:w-96 flex flex-col"
+          className="fixed left-4 z-40 w-80 sm:w-96 flex flex-col"
           style={{
             top: '4.5rem',
             bottom: '10rem',

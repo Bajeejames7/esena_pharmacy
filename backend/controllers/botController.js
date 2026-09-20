@@ -1,6 +1,15 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const axios = require('axios');
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const GROQ_MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-20b';
+const groqClient = axios.create({
+  baseURL: 'https://api.groq.com/openai/v1',
+  timeout: 30_000,
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${GROQ_API_KEY}`,
+  },
+});
 
 const systemInstruction = `You are Ivo, the friendly and knowledgeable virtual assistant for Esena Pharmacy. Your job is to help customers navigate the website, find products, understand services, place orders, book appointments, and get health information. Always be warm, professional, and concise.
 
@@ -105,7 +114,7 @@ Booking process:
 - Nairobi (Same Day): KSh 200 — delivered within 6–8 hours
 - Other Major Towns (1–2 days): KSh 350 — Mombasa, Kisumu, Nakuru, Eldoret, Thika
 - Remote Areas (2–3 days): KSh 350
-- FREE delivery on orders above KSh 3,000
+- FREE delivery on orders above KSh 10,000
 - Track your order at /track-order
 
 4. WhatsApp Ordering (/whatsapp-order)
@@ -143,7 +152,7 @@ Q: How do I track my order?
 A: Visit /track-order and enter your order number. You'll also receive email and SMS updates.
 
 Q: What is the delivery cost?
-A: KSh 200 for same-day Nairobi delivery, KSh 350 for other areas, FREE for orders above KSh 3,000.
+A: KSh 200 for same-day Nairobi delivery, KSh 350 for other areas, FREE for orders above KSh 10,000.
 
 Q: Do you deliver outside Nairobi?
 A: Yes, we deliver nationwide. Major towns in 1–2 days, remote areas in 2–3 days.
@@ -181,25 +190,24 @@ const sendMessage = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Message is required' });
     }
 
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-3-flash-preview',
-      systemInstruction,
-    });
-
-    // Convert history to Gemini format, ensuring it starts with a 'user' message
-    const rawHistory = history.map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.content }],
+    // Groq uses the standard OpenAI chat-completions message format.
+    const chatHistory = history.map(msg => ({
+      role: msg.role === 'user' ? 'user' : 'assistant',
+      content: msg.content,
     }));
 
-    // Gemini requires history to start with 'user' role — drop leading model messages
-    const firstUserIndex = rawHistory.findIndex(m => m.role === 'user');
-    const chatHistory = firstUserIndex > 0 ? rawHistory.slice(firstUserIndex) : rawHistory;
+    const response = await groqClient.post('/chat/completions', {
+      model: GROQ_MODEL,
+      messages: [
+        { role: 'system', content: systemInstruction },
+        ...chatHistory,
+        { role: 'user', content: message.trim() },
+      ],
+    });
 
-    const chat = model.startChat({ history: chatHistory });
-    const result = await chat.sendMessage(message.trim());
-    const response = await result.response;
-    const text = response.text().replace(/^(Ivo:|Assistant:|Bot:)\s*/i, '').trim();
+    const text = (response.data?.choices?.[0]?.message?.content || '')
+      .replace(/^(Ivo:|Assistant:|Bot:)\s*/i, '')
+      .trim();
 
     res.json({
       success: true,
@@ -207,10 +215,11 @@ const sendMessage = async (req, res) => {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Bot error:', error.message);
+    const detail = error.response?.data?.error?.message || error.message;
+    console.error('Bot error:', detail);
     res.status(500).json({
       success: false,
-      error: error.message,
+      error: detail,
       message: "I'm having trouble right now. Please call us at 0768103599 for immediate assistance.",
     });
   }
