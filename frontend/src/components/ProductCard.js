@@ -54,7 +54,9 @@ const ProductCard = ({
 
   const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
   const imageUrl = product.image
-    ? (product.image.startsWith('http') ? product.image : `${API_BASE}/uploads/products/${product.image}`)
+    ? (product.image.startsWith('http') || product.image.startsWith('/')
+        ? product.image
+        : `${API_BASE}/uploads/products/${product.image}`)
     : null;
   const videoUrl = product.video
     ? (product.video.startsWith('http') ? product.video : `${API_BASE}/uploads/videos/${product.video}`)

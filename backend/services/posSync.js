@@ -203,6 +203,16 @@ async function syncMedicinesToLocalDB() {
       upserted += chunk.length;
     }
 
+    // Push fresh stock + price into every website product already linked to
+    // a POS medicine, so admins never have to manually re-sync those fields —
+    // this is the only place stock/price drift is corrected going forward.
+    await db.query(
+      `UPDATE products p
+       JOIN pos_medicines pm ON pm.pos_id = p.pos_medicine_id
+       SET p.stock = pm.pos_quantity,
+           p.price = pm.pos_price`
+    );
+
     const durationMs = Date.now() - startAt;
     await _logSync({ fetched, upserted, status: 'success', durationMs });
 

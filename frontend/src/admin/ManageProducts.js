@@ -259,7 +259,7 @@ const ManageProducts = () => {
   };
 
   const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-  const getImageUrl = (f) => !f ? null : f.startsWith('http') ? f : `${API_BASE}/uploads/products/${f}`;
+  const getImageUrl = (f) => !f ? null : (f.startsWith('http') || f.startsWith('/')) ? f : `${API_BASE}/uploads/products/${f}`;
   const getVideoUrl = (f) => !f ? null : f.startsWith('http') ? f : `${API_BASE}/uploads/videos/${f}`;
 
   return (
