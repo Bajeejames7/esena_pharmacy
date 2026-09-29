@@ -1,0 +1,21 @@
+.login { min-height: 100%; display: flex; flex-direction: column; gap: 20px; padding: 0 20px 24px; background: var(--bg); }
+.login > form { width: 100%; max-width: 480px; margin: 0 auto; }
+/* A solid band rather than a gradient cut at a fixed height: on a wide or
+   landscape screen the cut line ran through the subtitle. */
+.login-brand { text-align: center; color: #fff; background: var(--navy); margin: 0 -20px; padding: calc(var(--safe-top) + 40px) 20px 32px; border-radius: 0 0 24px 24px; }
+.login-brand img { margin: 0 auto 10px; border-radius: 16px; }
+.login-brand h1 { margin: 0; font-size: 24px; }
+.login-brand p { margin: 4px 0 0; opacity: 0.85; font-size: 14px; }
+
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tile { background: var(--card); border: 0; border-radius: var(--radius); padding: 16px 14px; text-align: left; box-shadow: 0 1px 3px rgba(20, 30, 60, 0.08); display: flex; flex-direction: column; gap: 4px; color: inherit; }
+.tile-value { font-size: 24px; font-weight: 700; color: var(--navy); }
+.tile-label { font-size: 13px; color: var(--muted); }
+
+.thumb { width: 52px; height: 52px; flex: none; border-radius: 10px; background: #eef1f7; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+.big-thumb { width: 72px; height: 72px; }
+.clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.low { color: var(--bad); font-weight: 600; }
+.rx-image { width: 100%; border-radius: 10px; }
+.link { color: var(--navy); font-weight: 600; }

@@ -1,0 +1,11 @@
+{
+  "name": "esena-mobile",
+  "private": true,
+  "description": "Esena Pharmacy mobile apps: client (shop) and admin. Shared code in ./shared.",
+  "workspaces": ["client", "admin"],
+  "scripts": {
+    "build": "npm run build -w client && npm run build -w admin",
+    "android:client": "npm run build -w client && cd client && npx cap sync android",
+    "android:admin": "npm run build -w admin && cd admin && npx cap sync android"
+  }
+}

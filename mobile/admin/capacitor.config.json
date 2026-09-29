@@ -1,0 +1,9 @@
+{
+  "appId": "ke.co.esena.admin",
+  "appName": "Esena Admin",
+  "webDir": "dist",
+  "server": { "androidScheme": "https" },
+  "plugins": {
+    "CapacitorHttp": { "enabled": true }
+  }
+}
