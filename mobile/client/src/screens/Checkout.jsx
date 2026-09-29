@@ -60,15 +60,18 @@ export function Checkout() {
           delivery_address: deliveryAddress,
           delivery_type: form.deliveryType,
           delivery_zone: form.deliveryType === 'pickup' ? 'pickup' : form.zone,
+          // Sent for the record only: the server works out the fee itself.
           shipping_cost: shipping,
           // The website stores the payment method in notes; keep the same shape.
           notes: [form.payment, form.notes.trim()].filter(Boolean).join(' — '),
           items: cart.items.map((i) => ({ product_id: i.id, quantity: i.quantity, price: i.price })),
         },
       });
-      history.addOrder({ token: order.token, orderId: order.orderId, total, placedAt: Date.now() });
+      // The server prices the order itself; charge exactly what it says.
+      const charged = Number(order.total) || total;
+      history.addOrder({ token: order.token, orderId: order.orderId, total: charged, placedAt: Date.now() });
       cart.clear();
-      if (form.payment === 'mpesa') nav.reset('pay', { orderId: order.orderId, token: order.token, amount: total, phone: form.phone });
+      if (form.payment === 'mpesa') nav.reset('pay', { orderId: order.orderId, token: order.token, amount: charged, phone: form.phone });
       else nav.reset('track', { token: order.token, fresh: true });
     } catch (e) {
       setFailure(e.message);
