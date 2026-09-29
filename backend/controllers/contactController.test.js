@@ -28,7 +28,10 @@ const mockDb = {
 
 // Mock email transporter
 const mockTransporter = {
-  sendMail: jest.fn().mockResolvedValue({ messageId: 'test-message-id' })
+  sendMail: jest.fn().mockResolvedValue({ messageId: 'test-message-id' }),
+  // The controller calls config/mail's sendEmail wrapper; route it through the
+  // same spy so the assertions below still see every message.
+  sendEmail: (options) => mockTransporter.sendMail(options)
 };
 
 // Mock the modules
@@ -151,7 +154,7 @@ describe("Contact Controller Unit Tests", () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           errors: expect.arrayContaining([
-            expect.stringContaining("Phone must be between 10 and 20 characters")
+            expect.stringContaining("Phone must be between 10 and 15 digits")
           ])
         })
       );
@@ -194,7 +197,7 @@ describe("Contact Controller Unit Tests", () => {
 
       expect(mockTransporter.sendMail).toHaveBeenCalledWith(
         expect.objectContaining({
-          subject: `New Contact Message from ${validContactData.name}`,
+          subject: `New Contact Message: General Enquiry — ${validContactData.name}`,
           html: expect.stringContaining(validContactData.name)
         })
       );
@@ -245,7 +248,7 @@ describe("Contact Controller Unit Tests", () => {
           errors: expect.arrayContaining([
             expect.stringContaining("Name is required"),
             expect.stringContaining("Invalid email format"),
-            expect.stringContaining("Phone must be between 10 and 20 characters"),
+            expect.stringContaining("Phone must be between 10 and 15 digits"),
             expect.stringContaining("Message is required")
           ])
         })

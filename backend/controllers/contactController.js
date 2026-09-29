@@ -2,6 +2,16 @@ const db = require("../config/db");
 const { sendEmail } = require("../config/mail");
 const { recaptchaMiddleware } = require("../utils/recaptcha");
 
+// Customer-supplied text goes into staff emails as HTML. Escape it, or anyone
+// can put links, images or fake "Esena" content into the pharmacy's inbox.
+const escapeHtml = (value) =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 // Validation helper
 const validateContactData = (data) => {
   const errors = [];
@@ -23,9 +33,14 @@ const validateContactData = (data) => {
     }
   }
   
-  // Validate phone (optional)
-  if (data.phone && data.phone !== 'N/A' && (data.phone.length < 10 || data.phone.length > 20)) {
-    errors.push("Phone must be between 10 and 20 characters");
+  // Validate phone (required). Counted in digits, so "0712 345 678" and
+  // "+254 712 345 678" are both fine and "call me" is not.
+  const phoneText = String(data.phone || '').trim();
+  const phoneDigits = phoneText.replace(/\D/g, '');
+  if (phoneText.length === 0) {
+    errors.push("Phone is required");
+  } else if (phoneDigits.length < 10 || phoneDigits.length > 15 || phoneText.length > 20) {
+    errors.push("Phone must be between 10 and 15 digits");
   }
   
   // Validate message (Requirement 16.5)
@@ -41,7 +56,7 @@ const createContact = async (req, res) => {
     const { name, email, phone, subject, message } = req.body;
     
     // Validate contact data
-    const validationErrors = validateContactData({ name, email, phone: phone || 'N/A', message });
+    const validationErrors = validateContactData({ name, email, phone, message });
     if (validationErrors.length > 0) {
       return res.status(400).json({ 
         message: "Validation failed", 
@@ -62,13 +77,13 @@ const createContact = async (req, res) => {
         subject: `New Contact Message: ${subject || 'General Enquiry'} — ${name}`,
         html: `
           <h2>New Contact Form Submission</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
-          <p><strong>Subject:</strong> ${subject || 'N/A'}</p>
+          <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+          <p><strong>Phone:</strong> ${escapeHtml(phone)}</p>
+          <p><strong>Subject:</strong> ${escapeHtml(subject || 'N/A')}</p>
           <p><strong>Message:</strong></p>
           <div style="background:#f5f5f5;padding:15px;border-left:4px solid #007bff;margin:10px 0;">
-            ${message.replace(/\n/g, '<br>')}
+            ${escapeHtml(message).replace(/\n/g, '<br>')}
           </div>
           <p><em>Please respond to this inquiry promptly.</em></p>
         `
@@ -78,11 +93,11 @@ const createContact = async (req, res) => {
         to: email,
         subject: "Thank you for contacting Esena Pharmacy",
         html: `
-          <h2>Thank you for your message, ${name}!</h2>
+          <h2>Thank you for your message, ${escapeHtml(name)}!</h2>
           <p>We have received your inquiry and will get back to you as soon as possible.</p>
           <p><strong>Your message:</strong></p>
           <div style="background:#f5f5f5;padding:15px;border-left:4px solid #28a745;margin:10px 0;">
-            ${message.replace(/\n/g, '<br>')}
+            ${escapeHtml(message).replace(/\n/g, '<br>')}
           </div>
           <p>Our team typically responds within 24 hours during business days.</p>
           <p>Thank you for choosing Esena Pharmacy!</p>

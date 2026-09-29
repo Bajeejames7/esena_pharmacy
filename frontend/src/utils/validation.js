@@ -269,12 +269,10 @@ export const validateContactForm = (formData) => {
     errors.email = emailValidation.error;
   }
   
-  // Validate phone (optional)
-  if (formData.phone && formData.phone.trim().length > 0) {
-    const phoneValidation = validatePhone(formData.phone);
-    if (!phoneValidation.isValid) {
-      errors.phone = phoneValidation.error;
-    }
+  // Validate phone (required: the pharmacy calls back about most enquiries)
+  const phoneValidation = validatePhone(formData.phone);
+  if (!phoneValidation.isValid) {
+    errors.phone = phoneValidation.error;
   }
   
   // Validate subject
