@@ -178,11 +178,31 @@ exports.cancelOrderByToken = async (req, res) => {
   }
 };
 
+/**
+ * The delivery fee for a zone, from the same settings the storefront shows
+ * (GET /settings/delivery), with the same fallbacks.
+ */
+const DELIVERY_SETTING = { pickup: 'pickup_cost', nairobi: 'delivery_nairobi', outside_nairobi: 'delivery_outside_nairobi' };
+const DELIVERY_DEFAULT = { pickup: 0, nairobi: 150, outside_nairobi: 350 };
+
+async function deliveryFeeFor(connection, zone) {
+  try {
+    const [rows] = await connection.query(
+      "SELECT setting_value FROM settings WHERE setting_key = ?",
+      [DELIVERY_SETTING[zone]]
+    );
+    const value = parseFloat(rows[0]?.setting_value);
+    return Number.isFinite(value) && value >= 0 ? value : DELIVERY_DEFAULT[zone];
+  } catch {
+    return DELIVERY_DEFAULT[zone];
+  }
+}
+
 exports.createOrder = async (req, res) => {
   const connection = await db.getConnection();
   
   try {
-    const { customer_name, email, phone, delivery_address, notes, delivery_type, delivery_zone, shipping_cost, items } = req.body;
+    const { customer_name, email, phone, delivery_address, notes, delivery_type, delivery_zone, items } = req.body;
     
     // Validate required fields (Req 5.2, 5.3)
     if (!customer_name || !email || !phone || !delivery_address) {
@@ -202,31 +222,48 @@ exports.createOrder = async (req, res) => {
       return res.status(400).json({ message: "Cart is empty" });
     }
     
-    // Validate each item
+    // Validate each item. The price a client sends is ignored: see below.
     for (const item of items) {
-      if (!item.product_id || !item.quantity || !item.price) {
-        return res.status(400).json({ 
-          message: "Invalid cart item: missing product_id, quantity, or price" 
-        });
-      }
-      if (item.quantity <= 0) {
-        return res.status(400).json({ 
-          message: "Invalid cart item: quantity must be positive" 
-        });
-      }
-      if (item.price < 0) {
-        return res.status(400).json({ 
-          message: "Invalid cart item: price cannot be negative" 
+      const quantity = Number(item.quantity);
+      if (!item.product_id || !Number.isInteger(quantity) || quantity <= 0) {
+        return res.status(400).json({
+          message: "Invalid cart item: each item needs a product_id and a whole, positive quantity"
         });
       }
     }
-    
-    // Calculate subtotal from cart items
-    const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const resolvedShipping = parseFloat(shipping_cost) || 0;
+
+    // Prices and the delivery fee come from the database, never from the
+    // request. The client used to send both and the server trusted them, and
+    // the M-Pesa amount check compares against the total computed here — so a
+    // tampered cart could be ordered, and paid for, at any price it named.
+    const productIds = [...new Set(items.map((item) => Number(item.product_id)))];
+    const [productRows] = await connection.query(
+      "SELECT id, name, price FROM products WHERE id IN (?)",
+      [productIds]
+    );
+    const productsById = new Map(productRows.map((row) => [Number(row.id), row]));
+    const missing = productIds.filter((id) => !productsById.has(id));
+    if (missing.length > 0) {
+      return res.status(400).json({
+        message: "Some items in your cart are no longer available. Please refresh your cart.",
+        unavailable: missing
+      });
+    }
+
+    const pricedItems = items.map((item) => {
+      const product = productsById.get(Number(item.product_id));
+      return { ...item, quantity: Number(item.quantity), price: Number(product.price) };
+    });
+
+    const resolvedType = delivery_type === 'pickup' ? 'pickup' : 'delivery';
+    const resolvedZone = resolvedType === 'pickup'
+      ? 'pickup'
+      : (delivery_zone === 'outside_nairobi' ? 'outside_nairobi' : 'nairobi');
+    const resolvedShipping = await deliveryFeeFor(connection, resolvedZone);
+
+    const subtotal = pricedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const total = subtotal + resolvedShipping;
-    const resolvedZone = delivery_zone || (delivery_type === 'pickup' ? 'pickup' : 'nairobi');
-    
+
     // Generate unique token for order tracking (Req 5.5)
     const token = await generateUniqueToken();
     
@@ -236,14 +273,14 @@ exports.createOrder = async (req, res) => {
     // Insert order into database (Req 5.6)
     const [orderResult] = await connection.query(
       "INSERT INTO orders (customer_name, email, phone, delivery_address, notes, delivery_type, delivery_zone, shipping_cost, total, token, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')",
-      [customer_name, email, phone, delivery_address, notes, delivery_type || 'delivery', resolvedZone, resolvedShipping, total, token]
+      [customer_name, email, phone, delivery_address, notes, resolvedType, resolvedZone, resolvedShipping, total, token]
     );
     
     const orderId = orderResult.insertId;
     
     // Insert order items, decrement stock, and log movements (Req 5.7)
     // Also capture POS medicine link + cost price snapshot for profit tracking
-    for (const item of items) {
+    for (const item of pricedItems) {
       // Pull pos_medicine_id and cost_price from the product row so we
       // can snapshot them at the moment of sale (prices may change later).
       const [[productRow]] = await connection.query(
@@ -310,7 +347,7 @@ exports.createOrder = async (req, res) => {
       phone,
       delivery_address,
       notes,
-      delivery_type: delivery_type || 'delivery',
+      delivery_type: resolvedType,
       delivery_zone: resolvedZone,
       shipping_cost: resolvedShipping,
       subtotal,
@@ -346,9 +383,14 @@ exports.createOrder = async (req, res) => {
     }
     
     // Return success response (Req 5.10)
-    res.status(201).json({ 
-      orderId, 
-      token, 
+    res.status(201).json({
+      orderId,
+      token,
+      // The authoritative amounts. Clients must charge M-Pesa this total, not
+      // one they worked out themselves from a possibly stale cart.
+      subtotal,
+      shipping_cost: resolvedShipping,
+      total,
       message: "Order created successfully",
       warning: emailWarning ? "Email notification failed" : undefined
     });

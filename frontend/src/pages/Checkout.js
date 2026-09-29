@@ -25,6 +25,8 @@ const Checkout = () => {
   });
 
   const [errors, setErrors] = useState({});
+  // The server's own subtotal/delivery/total for the order just placed.
+  const [serverTotals, setServerTotals] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deliveryPrices, setDeliveryPrices] = useState({
     delivery_nairobi: 150,
@@ -121,6 +123,13 @@ const Checkout = () => {
 
       const response = await ordersAPI.create(orderPayload);
       const orderData = response.data; // axios wraps the actual body in .data
+      // What the server actually charged (it prices orders itself).
+      const charged = {
+        subtotal: Number(orderData.subtotal ?? safeTotal),
+        shipping: Number(orderData.shipping_cost ?? shippingCost),
+        total: Number(orderData.total ?? finalTotal),
+      };
+      setServerTotals(charged);
 
       if (!orderData?.orderId || !orderData?.token) {
         throw new Error('Server returned incomplete order data. Please try again.');
@@ -133,7 +142,9 @@ const Checkout = () => {
           show: true,
           orderId: orderData.orderId,
           orderToken: orderData.token,
-          amount: finalTotal,
+          // The server prices the order itself; charge what it says, not a
+          // total worked out here from a cart that may be out of date.
+          amount: Number(orderData.total) || finalTotal,
         });
         setIsSubmitting(false);
         return;
@@ -145,9 +156,9 @@ const Checkout = () => {
           orderData: {
             ...formData,
             items,
-            subtotal: safeTotal,
-            shipping: shippingCost,
-            total: finalTotal,
+            subtotal: charged.subtotal,
+            shipping: charged.shipping,
+            total: charged.total,
             orderId: orderData.orderId,
             trackingToken: orderData.token,
             deliveryType: formData.deliveryType,
@@ -400,9 +411,9 @@ const Checkout = () => {
               orderData: {
                 ...formData,
                 items,
-                subtotal: safeTotal,
-                shipping: shippingCost,
-                total: finalTotal,
+                subtotal: serverTotals?.subtotal ?? safeTotal,
+                shipping: serverTotals?.shipping ?? shippingCost,
+                total: serverTotals?.total ?? finalTotal,
                 orderId,
                 trackingToken: orderToken,
                 deliveryType: formData.deliveryType,
@@ -421,9 +432,9 @@ const Checkout = () => {
               orderData: {
                 ...formData,
                 items,
-                subtotal: safeTotal,
-                shipping: shippingCost,
-                total: finalTotal,
+                subtotal: serverTotals?.subtotal ?? safeTotal,
+                shipping: serverTotals?.shipping ?? shippingCost,
+                total: serverTotals?.total ?? finalTotal,
                 orderId: mpesaModal.orderId,
                 trackingToken: mpesaModal.orderToken,
                 deliveryType: formData.deliveryType,
