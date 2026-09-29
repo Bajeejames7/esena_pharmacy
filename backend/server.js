@@ -6,12 +6,13 @@ const db = require("./config/db");
 const { logger, requestLogger } = require("./utils/logger");
 const { initializeDatabase } = require("./utils/database");
 const { createAuditTable } = require("./middleware/audit");
-const { 
-  generalLimiter, 
-  authLimiter, 
-  apiLimiter, 
-  corsOptions, 
-  requestSizeLimit 
+const {
+  generalLimiter,
+  authLimiter,
+  apiLimiter,
+  corsOptions,
+  helmetConfig,
+  requestSizeLimit
 } = require("./middleware/security");
 
 // Load environment variables
@@ -28,6 +29,9 @@ console.log('NODE_ENV:', process.env.NODE_ENV || 'production');
 app.set('trust proxy', 1);
 
 // 1. GLOBAL MIDDLEWARE
+// Security headers (nosniff, frame-deny, HSTS, ...). Defined in
+// middleware/security.js all along but never mounted, so production sent none.
+app.use(helmetConfig);
 app.use(requestSizeLimit);
 app.use(requestLogger);
 app.use(cors(corsOptions));
@@ -56,12 +60,7 @@ app.get(["/", "/api"], (req, res) => {
   });
 });
 
-// 4. RATE LIMITING
-app.use('/auth', authLimiter);
-app.use('/', apiLimiter);
-app.use(generalLimiter);
-
-// 5. STATIC FILES - served under both /uploads and /api/uploads
+// 4. STATIC FILES - served under both /uploads and /api/uploads
 // /api/uploads is guaranteed to work via Passenger routing on cPanel
 const uploadCacheOptions = { 
   maxAge: '1y',
@@ -76,8 +75,26 @@ const frontendProductImagesDir = path.join(__dirname, "..", "frontend", "product
 app.use("/uploads/products", express.static(frontendProductImagesDir, uploadCacheOptions));
 app.use("/api/uploads/products", express.static(frontendProductImagesDir, uploadCacheOptions));
 
+// Prescriptions are patient health data: never public. Staff read them through
+// the authenticated GET /api/prescriptions/:id/file instead.
+app.use(["/uploads/prescriptions", "/api/uploads/prescriptions"], (req, res) => {
+  res.status(404).json({ success: false, message: "Route not found" });
+});
+
 app.use("/uploads", express.static(path.join(__dirname, "uploads"), uploadCacheOptions));
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads"), uploadCacheOptions));
+
+// 5. RATE LIMITING
+// After the static files on purpose: a catalogue page loads a dozen product
+// thumbnails, and counting each image against the 100-per-15-minutes general
+// limit locked ordinary shoppers out with 429s after a few pages.
+//
+// The auth limiter covers /api/auth as well as /auth. The routes are mounted
+// on both paths and the storefront calls /api/auth/login, so limiting only
+// /auth left the production login with no brute-force protection.
+app.use(['/auth', '/api/auth'], authLimiter);
+app.use('/', apiLimiter);
+app.use(generalLimiter);
 
 // 6. ROUTES - Dual path support for cPanel deployment
 app.use(["/auth", "/api/auth"], require("./routes/auth"));
@@ -103,7 +120,11 @@ app.get("/db-test", async (req, res) => {
     const [result] = await db.query("SELECT 1 as test");
     res.json({ status: "Database connected", result: result[0] });
   } catch (error) {
-    res.status(500).json({ status: "Database connection failed", error: error.message });
+    // No driver message in production: it names the host and the user.
+    res.status(500).json({
+      status: "Database connection failed",
+      ...(process.env.NODE_ENV === 'production' ? {} : { error: error.message }),
+    });
   }
 });
 

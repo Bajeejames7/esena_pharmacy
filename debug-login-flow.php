@@ -8,7 +8,8 @@
 $DB_HOST = 'localhost';
 $DB_NAME = 'ohnokmqf_esena_pharmacy';
 $DB_USER = 'ohnokmqf_esena_user';
-$DB_PASS = 'Il0v3m3579J@m3$b@j33';
+// Never commit a real password here: this repository is public.
+$DB_PASS = getenv('DB_PASSWORD') ?: '';
 
 header('Content-Type: text/html; charset=utf-8');
 ?>

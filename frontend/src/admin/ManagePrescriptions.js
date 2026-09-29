@@ -13,6 +13,58 @@ import { prescriptionsAPI } from '../services/api';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+/**
+ * The prescription image or PDF, fetched with the admin token.
+ *
+ * Prescriptions used to be plain public files under /uploads, which an <img>
+ * could point at directly. They are now served only to signed-in staff, so the
+ * file is fetched with the Authorization header and shown from a blob URL.
+ */
+function PrescriptionFile({ prescription }) {
+  const [url, setUrl] = React.useState(null);
+  const [failed, setFailed] = React.useState(false);
+  const isPdf = /\.pdf$/i.test(prescription.file_path || '');
+
+  React.useEffect(() => {
+    let objectUrl = null;
+    let live = true;
+    setUrl(null);
+    setFailed(false);
+    fetch(`${API_BASE}/prescriptions/${prescription.id}/file`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(String(res.status));
+        return res.blob();
+      })
+      .then((blob) => {
+        if (!live) return;
+        objectUrl = URL.createObjectURL(blob);
+        setUrl(objectUrl);
+      })
+      .catch(() => live && setFailed(true));
+    return () => {
+      live = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [prescription.id]);
+
+  if (failed) return <p className="text-red-500 text-sm">The prescription file could not be loaded.</p>;
+  if (!url) return <p className="text-gray-500 text-sm">Loading file…</p>;
+
+  return (
+    <div className="space-y-3">
+      {!isPdf && (
+        <img src={url} alt="Prescription" className="max-w-full rounded-lg border border-white/20 max-h-64 object-contain" />
+      )}
+      <a href={url} target="_blank" rel="noopener noreferrer"
+        className="inline-flex items-center space-x-2 px-4 py-2 bg-glass-blue/20 hover:bg-glass-blue/30 text-blue-700 dark:text-blue-300 rounded-lg transition-colors text-sm font-medium">
+        <span>{isPdf ? 'Open PDF' : 'View Full Image'}</span>
+      </a>
+    </div>
+  );
+}
+
 const STATUS_OPTIONS = [
   { value: '', label: 'All Statuses' },
   { value: 'pending', label: 'Pending' },
@@ -318,18 +370,7 @@ const ManagePrescriptions = () => {
                   <div className="p-5 bg-white/10 dark:bg-slate-700/30 rounded-lg">
                     <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-3">Prescription File</h3>
                     {selected.file_path ? (
-                      <div className="space-y-3">
-                        {/\.(jpg|jpeg|png)$/i.test(selected.file_path) && (
-                          <img src={`${API_BASE}/uploads/prescriptions/${selected.file_path}`} alt="Prescription" className="max-w-full rounded-lg border border-white/20 max-h-64 object-contain" />
-                        )}
-                        <a href={`${API_BASE}/uploads/prescriptions/${selected.file_path}`} target="_blank" rel="noopener noreferrer"
-                          className="inline-flex items-center space-x-2 px-4 py-2 bg-glass-blue/20 hover:bg-glass-blue/30 text-blue-700 dark:text-blue-300 rounded-lg transition-colors text-sm font-medium">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          <span>{/\.pdf$/i.test(selected.file_path) ? 'Open PDF' : 'View Full Image'}</span>
-                        </a>
-                      </div>
+                      <PrescriptionFile prescription={selected} />
                     ) : <p className="text-gray-500 text-sm">No file attached.</p>}
                   </div>
 

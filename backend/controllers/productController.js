@@ -51,7 +51,8 @@ exports.getAllProducts = async (req, res) => {
     const { category, search, limit, offset, price_min, price_max } = req.query;
 
     const pageLimit = Math.min(parseInt(limit) || 12, 100);
-    const pageOffset = parseInt(offset) || 0;
+    // Never negative: MySQL rejects a negative OFFSET and the request became a 500.
+    const pageOffset = Math.max(parseInt(offset) || 0, 0);
 
     const conditions = [];
     const params = [];

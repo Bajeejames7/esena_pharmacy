@@ -29,12 +29,21 @@ const generalLimiter = createRateLimit(
   'Too many requests from this IP, please try again later'
 );
 
-// Strict rate limiting for auth endpoints - 5 attempts per 15 minutes
-const authLimiter = createRateLimit(
-  15 * 60 * 1000, // 15 minutes
-  5,
-  'Too many authentication attempts, please try again later'
-);
+// Strict rate limiting for auth endpoints - 5 FAILED attempts per 15 minutes.
+// Successful requests are not counted: login, 2FA, profile and logout all live
+// under /auth, and counting them would lock out staff doing a normal day's work
+// while adding nothing against someone guessing passwords.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    console.warn(`Rate limit exceeded for IP: ${req.ip}, Path: ${req.path}`);
+    res.status(429).json({ error: 'Too many authentication attempts, please try again later' });
+  }
+});
 
 // API rate limiting - 1000 requests per hour for authenticated users
 const apiLimiter = createRateLimit(
@@ -78,6 +87,10 @@ const helmetConfig = helmet({
     }
   },
   crossOriginEmbedderPolicy: false, // Disable for development
+  // The storefront (esena.co.ke) loads product and blog images from the API
+  // host (api.esena.co.ke/uploads). Helmet's default same-origin policy would
+  // block every one of them.
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
   hsts: {
     maxAge: 31536000,
     includeSubDomains: true,

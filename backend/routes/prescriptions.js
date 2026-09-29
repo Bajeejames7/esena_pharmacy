@@ -3,6 +3,8 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
+const db = require('../config/db');
 const { uploadPrescription, getPrescriptions, updateStatus, createOrderFromPrescription } = require('../controllers/prescriptionController');
 const auth = require('../middleware/auth');
 
@@ -14,10 +16,12 @@ if (!fs.existsSync(uploadDir)) {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
+  // Random, not `originalname-timestamp`: a prescription is patient health
+  // data, and a name built from the patient's own file name plus a millisecond
+  // clock is a name somebody can guess.
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    const base = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9]/g, '_');
-    cb(null, `${base}-${Date.now()}${ext}`);
+    cb(null, `${crypto.randomBytes(16).toString('hex')}${ext}`);
   }
 });
 
@@ -42,6 +46,27 @@ router.post('/upload', upload.single('prescription'), uploadPrescription);
 
 // Admin: list all prescriptions
 router.get('/', auth, getPrescriptions);
+
+// Admin: the prescription file itself. Staff only — these are no longer served
+// from the public /uploads folder (see server.js).
+router.get('/:id/file', auth, async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT file_path FROM prescriptions WHERE id = ?', [req.params.id]);
+    const filePath = rows[0]?.file_path;
+    if (!filePath) return res.status(404).json({ message: 'No file for this prescription' });
+
+    // file_path is a bare name written by multer above; refuse anything else.
+    const name = path.basename(filePath);
+    const full = path.join(uploadDir, name);
+    if (name !== filePath || !fs.existsSync(full)) {
+      return res.status(404).json({ message: 'Prescription file not found' });
+    }
+    res.set('Cache-Control', 'private, no-store');
+    res.sendFile(full);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to load prescription file' });
+  }
+});
 
 // Admin: update status
 router.patch('/:id/status', auth, updateStatus);

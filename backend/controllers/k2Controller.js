@@ -224,7 +224,11 @@ exports.handleCallback = async (req, res) => {
     .createHmac('sha256', K2_CONFIG.apiKey)
     .update(req.rawBody || JSON.stringify(req.body))
     .digest('hex');
-  if (signature !== expectedSignature) {
+  // Constant-time comparison, so the signature cannot be guessed byte by byte
+  // from response timing.
+  const received = Buffer.from(String(signature), 'utf8');
+  const expected = Buffer.from(expectedSignature, 'utf8');
+  if (received.length !== expected.length || !crypto.timingSafeEqual(received, expected)) {
     logger.error('K2 callback rejected: signature mismatch');
     return;
   }
